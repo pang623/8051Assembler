@@ -36,5 +36,6 @@
 #define ERR_IMMEDIATE_OUT_OF_RANGE  65
 #define ERR_REG_OUT_OF_RANGE        66
 #define ERR_DIRECT_OUT_OF_RANGE     67
+#define ERR_INDIRECT_OUT_OF_RANGE   68
 
 #endif // Errors_H

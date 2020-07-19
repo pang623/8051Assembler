@@ -50,21 +50,42 @@ int addA(Token *token, Tokenizer *tokenizer) {
         opcode = getDirect(token, opcode);
         checkExtraToken(token, tokenizer);
         return opcode;
+      }else if(((CharConstToken *)token)->str[0] == '@') {
+        freeToken(token);
+        token = getToken(tokenizer);
+        uint8_t opcode = 0x26;
+        opcode = getRegister(token, opcode);
+        checkExtraToken(token, tokenizer);
+        return opcode;
       }
     }
   }
 }
 
 uint8_t getRegister(Token *token, uint8_t opcode) {
-  if(!(((IdentifierToken *)token)->str[1]))
-    throwException(ERR_INVALID_REGISTER, token, "Invalid Register", token->str);
-  else if(((IdentifierToken *)token)->str[2])
-    throwException(ERR_REG_OUT_OF_RANGE, token, "Register %s is out of range", token->str);
-  else if(((IdentifierToken *)token)->str[1] < '0' || ((IdentifierToken *)token)->str[1] > '7')
-    throwException(ERR_REG_OUT_OF_RANGE, token, "Register %s is out of range", token->str);
-  else
-    opcode += ((IdentifierToken *)token)->str[1] - 48;
+  uint8_t opcodeMode = opcode;
 
+  if((opcodeMode &= 0x0F) == 8) {
+    if(!(((IdentifierToken *)token)->str[1]))
+      throwException(ERR_INVALID_REGISTER, token, "Invalid Register", token->str);
+    else if(((IdentifierToken *)token)->str[2])
+      throwException(ERR_REG_OUT_OF_RANGE, token, "Register %s is out of range", token->str);
+    else if(((IdentifierToken *)token)->str[1] < '0' || ((IdentifierToken *)token)->str[1] > '7')
+      throwException(ERR_REG_OUT_OF_RANGE, token, "Register %s is out of range", token->str);
+    else
+      opcode += ((IdentifierToken *)token)->str[1] - 48;
+  }else if((opcodeMode &= 0x0F) == 6) {
+    if(((IdentifierToken *)token)->str[0] != 'R')
+      throwException(ERR_INVALID_OPERAND, token, "Expecting a register for indirect addressing", token->str);
+    else if(!(((IdentifierToken *)token)->str[1]))
+      throwException(ERR_INVALID_REGISTER, token, "Invalid register indirect", token->str);
+    else if(((IdentifierToken *)token)->str[2])
+      throwException(ERR_INDIRECT_OUT_OF_RANGE, token, "Register indirect %s is out of range", token->str);
+    else if(((IdentifierToken *)token)->str[1] < '0' || ((IdentifierToken *)token)->str[1] > '1')
+      throwException(ERR_INDIRECT_OUT_OF_RANGE, token, "Register indirect %s is out of range", token->str);
+    else
+      opcode += ((IdentifierToken *)token)->str[1] - 48;
+  }
   return opcode;
 }
 
@@ -88,7 +109,7 @@ uint16_t getDirect(Token *token, uint16_t opcode) {
     throwException(ERR_DIRECT_OUT_OF_RANGE, token, "Direct address %x is out of range", ((IntegerToken *)token)->value);
   else
     opcode += ((IntegerToken *)token)->value;
-  
+
   return opcode;
 }
 
