@@ -24,9 +24,10 @@ int assembleInstruction (Tokenizer *tokenizer) {
   return opcode;
 }
 
+//pass in opcode for other ins such as subb addc, modify them in this function(yet to implement)
 int addA(Token *token, Tokenizer *tokenizer) {
   if(((IdentifierToken *)token)->str[0] != 'A' || ((IdentifierToken *)token)->str[1])
-    throwException(ERR_EXPECTING_IDENTIFIER, token, "The second operand is not accumulator");			//check second operand
+    throwException(ERR_INVALID_OPERAND, token, "The second operand is not accumulator");			//check second operand
   else{
     freeToken(token);
 		token = getToken(tokenizer);
@@ -41,8 +42,10 @@ int addA(Token *token, Tokenizer *tokenizer) {
         checkExtraToken(token, tokenizer);
 				return opcode;
       }else if(((CharConstToken *)token)->str[0] == '#') {
+        freeToken(token);
+        token = getToken(tokenizer);
         uint16_t opcode = 0x2400;
-        opcode = getImmediate(token, tokenizer, opcode);
+        opcode = getImmediate(token, opcode);
         checkExtraToken(token, tokenizer);
         return opcode;
       }else if(token->type == TOKEN_INTEGER_TYPE) {
@@ -93,9 +96,7 @@ uint8_t getRegister(Token *token, uint8_t opcode) {
 }
 
 //yet to implement #xxh immediate format
-uint16_t getImmediate(Token *token, Tokenizer *tokenizer, uint16_t opcode) {
-  freeToken(token);
-  token = getToken(tokenizer);
+uint16_t getImmediate(Token *token, uint16_t opcode) {
   if(token->type != TOKEN_INTEGER_TYPE)
     throwException(ERR_INVALID_INTEGER, token, "Immediate %s is invalid", token->str);
   else if(((IntegerToken *)token)->value < 0x00 || ((IntegerToken *)token)->value > 0xFF)
@@ -112,7 +113,7 @@ uint16_t getDirect(Token *token, uint16_t opcode) {
     throwException(ERR_DIRECT_OUT_OF_RANGE, token, "Direct address %x is out of range", ((IntegerToken *)token)->value);
   else
     opcode += ((IntegerToken *)token)->value;
-
+  
   return opcode;
 }
 
@@ -121,6 +122,4 @@ void checkExtraToken(Token *token, Tokenizer *tokenizer) {
 	token = getToken(tokenizer);
 	if(token->str)
 		throwException(ERR_EXTRA_PARAMETER, token, "Does not expect an extra parameter");
-	else
-    freeToken(token);
 }
