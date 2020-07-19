@@ -159,7 +159,7 @@ void test_assembleInstruction_add_immediate_xxh_to_A() {
 	Tokenizer* tokenizer;
 	int opcode;
 	Try{
-		tokenizer = createTokenizer("add A, #44h");
+		tokenizer = createTokenizer("add A, #44");
 		opcode = assembleInstruction(tokenizer);
 		TEST_ASSERT_EQUAL(0x2444, opcode);
 	} Catch(e){
@@ -270,6 +270,81 @@ void test_assembleInstruction_invalid_immediateDEC() {
 	} Catch(e){
 		dumpTokenErrorMessage(e, 1);
 		TEST_ASSERT_EQUAL(ERR_INVALID_INTEGER, e->errorCode);
+	}
+	freeTokenizer(tokenizer);
+}
+
+void test_assembleInstruction_add_directAddr_0x9F_to_A() {
+	Token* token;
+	Tokenizer* tokenizer;
+	int opcode;
+	Try{
+		tokenizer = createTokenizer("add A, 0x9F");
+		opcode = assembleInstruction(tokenizer);
+		TEST_ASSERT_EQUAL(0x259F, opcode);
+	} Catch(e){
+		dumpTokenErrorMessage(e, 1);
+		TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+	}
+	freeTokenizer(tokenizer);
+}
+
+void test_assembleInstruction_add_directAddr_0xBA_to_A() {
+	Token* token;
+	Tokenizer* tokenizer;
+	int opcode;
+	Try{
+		tokenizer = createTokenizer("add A, 0xBA");
+		opcode = assembleInstruction(tokenizer);
+		TEST_ASSERT_EQUAL(0x25BA, opcode);
+	} Catch(e){
+		dumpTokenErrorMessage(e, 1);
+		TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+	}
+	freeTokenizer(tokenizer);
+}
+
+void test_assembleInstruction_add_directAddr_0xFFA_to_A_out_of_range() {
+	Token* token;
+	Tokenizer* tokenizer;
+	int opcode;
+	Try{
+		tokenizer = createTokenizer("add A, 0xFFA");
+		opcode = assembleInstruction(tokenizer);
+		TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+	} Catch(e){
+		dumpTokenErrorMessage(e, 1);
+		TEST_ASSERT_EQUAL(ERR_DIRECT_OUT_OF_RANGE, e->errorCode);
+	}
+	freeTokenizer(tokenizer);
+}
+
+void test_assembleInstruction_add_directAddr_0xFJGE_to_A_invalid_direct() {
+	Token* token;
+	Tokenizer* tokenizer;
+	int opcode;
+	Try{
+		tokenizer = createTokenizer("add A, 0xFJGE");
+		opcode = assembleInstruction(tokenizer);
+		TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+	} Catch(e){
+		dumpTokenErrorMessage(e, 1);
+		TEST_ASSERT_EQUAL(ERR_INVALID_INTEGER, e->errorCode);
+	}
+	freeTokenizer(tokenizer);
+}
+
+void test_assembleInstruction_add_directAddr_0x36_to_A_extra_param() {
+	Token* token;
+	Tokenizer* tokenizer;
+	int opcode;
+	Try{
+		tokenizer = createTokenizer("add A, 0x36 #34");
+		opcode = assembleInstruction(tokenizer);
+		TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+	} Catch(e){
+		dumpTokenErrorMessage(e, 1);
+		TEST_ASSERT_EQUAL(ERR_EXTRA_PARAMETER, e->errorCode);
 	}
 	freeTokenizer(tokenizer);
 }

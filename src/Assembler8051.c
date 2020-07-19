@@ -45,6 +45,11 @@ int addA(Token *token, Tokenizer *tokenizer) {
         opcode = getImmediate(token, tokenizer, opcode);
         checkExtraToken(token, tokenizer);
         return opcode;
+      }else if(token->type == TOKEN_INTEGER_TYPE) {
+        uint16_t opcode = 0x2500;
+        opcode = getDirect(token, opcode);
+        checkExtraToken(token, tokenizer);
+        return opcode;
       }
     }
   }
@@ -63,6 +68,7 @@ uint8_t getRegister(Token *token, uint8_t opcode) {
   return opcode;
 }
 
+//yet to implement #xxh immediate format
 uint16_t getImmediate(Token *token, Tokenizer *tokenizer, uint16_t opcode) {
   freeToken(token);
   token = getToken(tokenizer);
@@ -73,6 +79,16 @@ uint16_t getImmediate(Token *token, Tokenizer *tokenizer, uint16_t opcode) {
   else
     opcode += ((IntegerToken *)token)->value;
 
+  return opcode;
+}
+
+//yet to implement #xxh immediate format
+uint16_t getDirect(Token *token, uint16_t opcode) {
+  if(((IntegerToken *)token)->value < 0x00 || ((IntegerToken *)token)->value > 0xFF)
+    throwException(ERR_DIRECT_OUT_OF_RANGE, token, "Direct address %x is out of range", ((IntegerToken *)token)->value);
+  else
+    opcode += ((IntegerToken *)token)->value;
+  
   return opcode;
 }
 
