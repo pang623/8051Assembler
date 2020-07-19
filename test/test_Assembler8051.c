@@ -48,7 +48,22 @@ void test_assembleInstruction_R5() {
 	freeTokenizer(tokenizer);
 }
 
-void test_assembleInstruction_invalid_reg_out_of_range() {
+void test_assembleInstruction_invalid_reg_out_of_range_one_digit() {
+	Token* token;
+	Tokenizer* tokenizer;
+	int opcode;
+	Try{
+		tokenizer = createTokenizer("add A, R9");
+		opcode = assembleInstruction(tokenizer);
+		TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+	} Catch(e){
+		dumpTokenErrorMessage(e, 1);
+		TEST_ASSERT_EQUAL(ERR_REG_OUT_OF_RANGE, e->errorCode);
+	}
+	freeTokenizer(tokenizer);
+}
+
+void test_assembleInstruction_invalid_reg_out_of_range_three_digit() {
 	Token* token;
 	Tokenizer* tokenizer;
 	int opcode;
@@ -58,7 +73,7 @@ void test_assembleInstruction_invalid_reg_out_of_range() {
 		TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
 	} Catch(e){
 		dumpTokenErrorMessage(e, 1);
-		TEST_ASSERT_EQUAL(ERR_INVALID_REGISTER, e->errorCode);
+		TEST_ASSERT_EQUAL(ERR_REG_OUT_OF_RANGE, e->errorCode);
 	}
 	freeTokenizer(tokenizer);
 }

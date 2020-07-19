@@ -34,5 +34,6 @@
 #define ERR_EXPECTING_IDENTIFIER	64
 
 #define ERR_IMMEDIATE_OUT_OF_RANGE  65
+#define ERR_REG_OUT_OF_RANGE        66
 
 #endif // Errors_H

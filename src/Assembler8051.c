@@ -4,8 +4,9 @@
 #include "Token.h"
 #include "Tokenizer.h"
 #include <stdio.h>
+#include <stdint.h>
 
-int assembleInstruction (Tokenizer* tokenizer) {
+int assembleInstruction (Tokenizer *tokenizer) {
 	Token* token;
 	int opcode;
 
@@ -13,7 +14,7 @@ int assembleInstruction (Tokenizer* tokenizer) {
 	if (token->type != TOKEN_IDENTIFIER_TYPE)
 		throwException(ERR_EXPECTING_IDENTIFIER, token, "The first operand is not an identifier");
 	else{
-		if(((IdentifierToken *)token)->str[1] == 'd') {			//check first operand
+		if(((IdentifierToken *)token)->str[1] == 'd') {			//check first operand (need to check the word 'add', but uses 'd' atm)
 			freeToken(token);
       token = getToken(tokenizer);
       opcode = addA(token, tokenizer);
@@ -23,8 +24,8 @@ int assembleInstruction (Tokenizer* tokenizer) {
   return opcode;
 }
 
-int addA(Token *token, Tokenizer* tokenizer) {
-  if(((IdentifierToken *)token)->str[0] != 'A' || ((IdentifierToken *)token)->str[1] != NULL)
+int addA(Token *token, Tokenizer *tokenizer) {
+  if(((IdentifierToken *)token)->str[0] != 'A' || ((IdentifierToken *)token)->str[1])
     throwException(ERR_EXPECTING_IDENTIFIER, token, "The second operand is not accumulator");			//check second operand
   else{
     freeToken(token);
@@ -32,91 +33,54 @@ int addA(Token *token, Tokenizer* tokenizer) {
     if(((OperatorToken *)token)->str[0] != ',')
       throwException(ERR_MISSING_COMMA, token, "The third operand is not a comma");				//check comma
     else{
-			freeToken(token);
+      freeToken(token);
 			token = getToken(tokenizer);
 			if(((IdentifierToken *)token)->str[0] == 'R') {
-        if(((IdentifierToken *)token)->str[1] == NULL)
-          throwException(ERR_INVALID_REGISTER, token, "Invalid Register", token->str);
-        else if(((IdentifierToken *)token)->str[2] != NULL)
-          throwException(ERR_INVALID_REGISTER, token, "Register %s is invalid", token->str);
-        else {
-        uint8_t opcode;
-        int reg = getARegister(token->str[1]);
-        switch(reg) {
-					case 0: opcode = 0x28;
-									break;
-					case 1: opcode = 0x29;
-									break;
-					case 2: opcode = 0x2A;
-									break;
-					case 3: opcode = 0x2B;
-									break;
-					case 4: opcode = 0x2C;
-									break;
-					case 5: opcode = 0x2D;
-									break;
-					case 6: opcode = 0x2E;
-									break;
-					case 7: opcode = 0x2F;
-									break;
-					default: throwException(ERR_INVALID_REGISTER, token, "Register %s is invalid", token->str);
-				}
-        freeToken(token);
-				token = getToken(tokenizer);
-				if(token->str != NULL)
-					throwException(ERR_EXTRA_PARAMETER, token, "Does not expect an extra parameter");
-				else {
-          freeToken(token);
-					return opcode;
-        }
-        }
+        uint8_t opcode = 0x28;
+        opcode = getRegister(token, opcode);
+        checkExtraToken(token, tokenizer);
+				return opcode;
       }else if(((CharConstToken *)token)->str[0] == '#') {
-          freeToken(token);
-					token = getToken(tokenizer);
-					if(token->type != TOKEN_INTEGER_TYPE)
-						throwException(ERR_INVALID_INTEGER, token, "Immediate %s is invalid", token->str);
-          else{
-            uint16_t opcode;
-						get_A_Immediate(((IntegerToken *)token)->value, token);
-						opcode = 0x2400 + ((IntegerToken *)token)->value;
-						freeToken(token);
-						token = getToken(tokenizer);
-						if(token->str != NULL)
-							throwException(ERR_EXTRA_PARAMETER, token, "Does not expect an extra parameter");
-						else {
-              freeToken(token);
-							return opcode;
-            }
-          }
+        uint16_t opcode = 0x2400;
+        opcode = getImmediate(token, tokenizer, opcode);
+        checkExtraToken(token, tokenizer);
+        return opcode;
       }
     }
   }
 }
 
-int getARegister(int regs) {
-    switch(regs) {
-      case '0': regs = 0;
-            break;
-      case '1': regs = 1;
-            break;
-      case '2': regs = 2;
-            break;
-      case '3': regs = 3;
-            break;
-      case '4': regs = 4;
-            break;
-      case '5': regs = 5;
-            break;
-      case '6': regs = 6;
-            break;
-      case '7': regs = 7;
-            break;
-      default: regs = 100;
-    }
-	return regs;
+uint8_t getRegister(Token *token, uint8_t opcode) {
+  if(!(((IdentifierToken *)token)->str[1]))
+    throwException(ERR_INVALID_REGISTER, token, "Invalid Register", token->str);
+  else if(((IdentifierToken *)token)->str[2])
+    throwException(ERR_REG_OUT_OF_RANGE, token, "Register %s is out of range", token->str);
+  else if(((IdentifierToken *)token)->str[1] < '0' || ((IdentifierToken *)token)->str[1] > '7')
+    throwException(ERR_REG_OUT_OF_RANGE, token, "Register %s is out of range", token->str);
+  else
+    opcode += ((IdentifierToken *)token)->str[1] - 48;
+
+  return opcode;
 }
 
-void get_A_Immediate(int immediate, Token* token) {
-	if(immediate < 0x00 || immediate > 0xFF)
-		throwException(ERR_IMMEDIATE_OUT_OF_RANGE, token, "Immediate %x is out of range", immediate);
+uint16_t getImmediate(Token *token, Tokenizer *tokenizer, uint16_t opcode) {
+  freeToken(token);
+  token = getToken(tokenizer);
+  if(token->type != TOKEN_INTEGER_TYPE)
+    throwException(ERR_INVALID_INTEGER, token, "Immediate %s is invalid", token->str);
+  else if(((IntegerToken *)token)->value < 0x00 || ((IntegerToken *)token)->value > 0xFF)
+    throwException(ERR_IMMEDIATE_OUT_OF_RANGE, token, "Immediate %x is out of range", ((IntegerToken *)token)->value);
+  else
+    opcode += ((IntegerToken *)token)->value;
+
+  return opcode;
+}
+
+void checkExtraToken(Token *token, Tokenizer *tokenizer) {
+  freeToken(token);
+	token = getToken(tokenizer);
+	if(token->str)
+		throwException(ERR_EXTRA_PARAMETER, token, "Does not expect an extra parameter");
+	else
+    freeToken(token);
 }
