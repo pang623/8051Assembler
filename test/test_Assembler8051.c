@@ -453,3 +453,18 @@ void test_assembleInstruction_add_invalidIndirect_string_to_A_invalid_operand() 
 	}
 	freeTokenizer(tokenizer);
 }
+
+void test_assembleInstruction_add_A_with_invalid_operand() {
+	Token* token;
+	Tokenizer* tokenizer;
+	int opcode;
+	Try{
+		tokenizer = createTokenizer("add A, ABC123");
+		opcode = assembleInstruction(tokenizer);
+		TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+	} Catch(e){
+		dumpTokenErrorMessage(e, 1);
+		TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+	}
+	freeTokenizer(tokenizer);
+}

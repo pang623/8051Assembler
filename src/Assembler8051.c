@@ -57,6 +57,9 @@ int addA(Token *token, Tokenizer *tokenizer) {
         opcode = getRegister(token, opcode);
         checkExtraToken(token, tokenizer);
         return opcode;
+      }else {
+        throwException(ERR_INVALID_OPERAND, token, "Invalid operand %s", token->str);
+        freeToken(token);
       }
     }
   }
