@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 int assembleInstruction(Tokenizer *tokenizer);
-int addA(Token *token, Tokenizer *tokenizer);
+int addA(Token *token, Tokenizer *tokenizer, uint16_t opcode);
 uint8_t getRegister(Token *token, uint8_t opcode);
 uint16_t getImmediate(Token *token, uint16_t opcode);
 uint16_t getDirect(Token *token, uint16_t opcode);

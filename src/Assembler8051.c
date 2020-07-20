@@ -14,18 +14,18 @@ int assembleInstruction (Tokenizer *tokenizer) {
 	if (token->type != TOKEN_IDENTIFIER_TYPE)
 		throwException(ERR_EXPECTING_IDENTIFIER, token, "The first operand is not an identifier");
 	else{
-		if(((IdentifierToken *)token)->str[1] == 'd') {			//check first operand (need to check the word 'add', but uses 'd' atm)
-			freeToken(token);
-      token = getToken(tokenizer);
-      opcode = addA(token, tokenizer);
-    }//other instructions   else if() {
-//    }
+		if(((IdentifierToken *)token)->str[1] == 'd')		//check first operand (need to check the word 'add', but uses 'd' atm)
+      opcode = addA(token, tokenizer, 0x24);
+    else if(((IdentifierToken *)token)->str[1] == 'u')
+      opcode = addA(token, tokenizer, 0x94);
   }
   return opcode;
 }
 
-//pass in opcode for other ins such as subb addc, modify them in this function(yet to implement)
-int addA(Token *token, Tokenizer *tokenizer) {
+//pass in opcode for other ins such as subb addc, modify them in this function(done)
+int addA(Token *token, Tokenizer *tokenizer, uint16_t opcode) {
+  freeToken(token);
+  token = getToken(tokenizer);
   if(((IdentifierToken *)token)->str[0] != 'A' || ((IdentifierToken *)token)->str[1])
     throwException(ERR_INVALID_OPERAND, token, "The second operand is not accumulator");			//check second operand
   else{
@@ -37,26 +37,26 @@ int addA(Token *token, Tokenizer *tokenizer) {
       freeToken(token);
 			token = getToken(tokenizer);
 			if(((IdentifierToken *)token)->str[0] == 'R') {
-        uint8_t opcode = 0x28;
+        opcode += 0x04;
         opcode = getRegister(token, opcode);
         checkExtraToken(token, tokenizer);
 				return opcode;
       }else if(((CharConstToken *)token)->str[0] == '#') {
         freeToken(token);
         token = getToken(tokenizer);
-        uint16_t opcode = 0x2400;
+        opcode *= 0x100;
         opcode = getImmediate(token, opcode);
         checkExtraToken(token, tokenizer);
         return opcode;
       }else if(token->type == TOKEN_INTEGER_TYPE) {
-        uint16_t opcode = 0x2500;
+        opcode = (opcode + 1)*0x100;
         opcode = getDirect(token, opcode);
         checkExtraToken(token, tokenizer);
         return opcode;
       }else if(((CharConstToken *)token)->str[0] == '@') {
         freeToken(token);
         token = getToken(tokenizer);
-        uint8_t opcode = 0x26;
+        opcode += 0x02;;
         opcode = getRegister(token, opcode);
         checkExtraToken(token, tokenizer);
         return opcode;
