@@ -5,68 +5,109 @@
 #include "Tokenizer.h"
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
 
-int assembleInstruction (Tokenizer *tokenizer) {
-	Token* token;
-	int opcode;
+_8051Instructions instructionsTable[] = {
+  {"add", modifyOpcode_A, 0x24},
+  {"subb", modifyOpcode_A, 0x94},
+  /*
+  *
+  *
+  *
+  *
+  *
+  */
+  {NULL, NULL},
+};
 
-	token = getToken(tokenizer);
-	if (token->type != TOKEN_IDENTIFIER_TYPE)
-		throwException(ERR_EXPECTING_IDENTIFIER, token, "The first operand is not an identifier");
-	else{
-		if(((IdentifierToken *)token)->str[1] == 'd')		//check first operand (need to check the word 'add', but uses 'd' atm)
-      opcode = addA(token, tokenizer, 0x24);
-    else if(((IdentifierToken *)token)->str[1] == 'u')
-      opcode = addA(token, tokenizer, 0x94);
+int assembleInstruction(Tokenizer *tokenizer) {
+  Token* token;
+  int opcode;
+  int i = 0;
+
+  token = getToken(tokenizer);
+  if(token->type != TOKEN_IDENTIFIER_TYPE)
+    throwException(ERR_EXPECTING_IDENTIFIER, token, "Expecting an identifier, received %s instead", token->str);
+
+  while(stricmp(((IdentifierToken *)token)->str, instructionsTable[i].instruction)) {
+    if(instructionsTable[i++].instruction == NULL)
+      throwException(ERR_INVALID_INSTRUCTION, token, "An invalid instruction '%s' is inputted", token->str);
   }
+
+  funcPtr instructionToOpcode = instructionsTable[i].function;
+  opcode = instructionToOpcode(token, tokenizer, instructionsTable[i].opcode);
+
   return opcode;
 }
 
-//pass in opcode for other ins such as subb addc, modify them in this function(done)
-int addA(Token *token, Tokenizer *tokenizer, uint16_t opcode) {
-  freeToken(token);
-  token = getToken(tokenizer);
-  if(((IdentifierToken *)token)->str[0] != 'A' || ((IdentifierToken *)token)->str[1])
-    throwException(ERR_INVALID_OPERAND, token, "The second operand is not accumulator");			//check second operand
+int modifyOpcode_A(Token *token, Tokenizer *tokenizer, uint16_t opcode) {
+  token = getNewToken(tokenizer, token);
+  if(token->type != TOKEN_IDENTIFIER_TYPE)                                                   //check is second operand an identifier
+    throwException(ERR_EXPECTING_IDENTIFIER, token, "Expecting an identifier, received %s instead", token->str);
+
+  if(stricmp(((IdentifierToken *)token)->str, "A"))
+    throwException(ERR_INVALID_OPERAND, token, "Expecting A as second operand, received %s instead", token->str);
+
+  token = getNewToken(tokenizer, token);
+  if(token->type != TOKEN_OPERATOR_TYPE)                                                     //check is third operand an operator
+    throwException(ERR_MISSING_COMMA, token, "Expecting a comma, received %s instead", token->str);
+
+  if(stricmp(((OperatorToken *)token)->str, ","))
+    throwException(ERR_INVALID_OPERAND, token, "Expecting comma as third operand, received %s instead", token->str);
   else{
-    freeToken(token);
-		token = getToken(tokenizer);
-    if(((OperatorToken *)token)->str[0] != ',')
-      throwException(ERR_MISSING_COMMA, token, "The third operand is not a comma");				//check comma
-    else{
-      freeToken(token);
-			token = getToken(tokenizer);
-			if(((IdentifierToken *)token)->str[0] == 'R') {
-        opcode += 0x04;
-        opcode = getRegister(token, opcode);
-        checkExtraToken(token, tokenizer);
-				return opcode;
-      }else if(((CharConstToken *)token)->str[0] == '#') {
-        freeToken(token);
-        token = getToken(tokenizer);
-        opcode *= 0x100;
-        opcode = getImmediate(token, opcode);
-        checkExtraToken(token, tokenizer);
-        return opcode;
-      }else if(token->type == TOKEN_INTEGER_TYPE) {
-        opcode = (opcode + 1)*0x100;
-        opcode = getDirect(token, opcode);
-        checkExtraToken(token, tokenizer);
-        return opcode;
-      }else if(((CharConstToken *)token)->str[0] == '@') {
-        freeToken(token);
-        token = getToken(tokenizer);
-        opcode += 0x02;;
-        opcode = getRegister(token, opcode);
-        checkExtraToken(token, tokenizer);
-        return opcode;
-      }else {
-        throwException(ERR_INVALID_OPERAND, token, "Invalid operand %s", token->str);
-        freeToken(token);
+    token = getNewToken(tokenizer, token);
+    if((token->type != TOKEN_IDENTIFIER_TYPE) && (token->type != TOKEN_OPERATOR_TYPE) && (token->type != TOKEN_INTEGER_TYPE))
+      throwException(ERR_INVALID_OPERAND, token, "Last operand '%s' is invalid", token->str);
+
+    switch(token->type) {
+      case TOKEN_IDENTIFIER_TYPE :  if(((IdentifierToken *)token)->str[0] != 'R')
+                                      throwException(ERR_INVALID_OPERAND, token, "Expecting a register, received %s instead", token->str);
+                                    else
+                                      opcode = getRegister(token, opcode += 0x04);
+                                    break;
+      case TOKEN_OPERATOR_TYPE   :  if(stricmp(((OperatorToken *)token)->str, "#") && stricmp(((OperatorToken *)token)->str, "@"))
+                                      throwException(ERR_INVALID_OPERAND, token, "Expecting a '#' or '@', received %s instead", token->str);
+                                    else if(!stricmp(((OperatorToken *)token)->str, "#")) {
+                                      token = getNewToken(tokenizer, token);
+                                      opcode = getImmediate(token, opcode *= 0x100);
+                                    }else {
+                                      token = getNewToken(tokenizer, token);
+                                      opcode = getRegister(token, opcode += 0x02);
+                                    }
+                                    break;
+      case TOKEN_INTEGER_TYPE    :  opcode = getDirect(token, opcode = (opcode + 1)*0x100);
+                                    break;
       }
-    }
+      
+      checkExtraToken(token, tokenizer);
+      return opcode;
   }
 }
+  /*    
+    if(((IdentifierToken *)token)->str[0] != 'R')
+      throwException(ERR_INVALID_REGISTER, token, "Expecting a register, received %s instead", token->str);
+    else{
+      opcode = getRegister(token, opcode += 0x04);
+      checkExtraToken(token, tokenizer);
+      return opcode;
+    }
+    if(!stricmp(((OperatorToken *)token)->str, "#")) {
+      token = getNewToken(tokenizer, token);
+      opcode = getImmediate(token, opcode *= 0x100);
+      checkExtraToken(token, tokenizer);
+      return opcode;
+    }else if(token->type == TOKEN_INTEGER_TYPE) {
+      opcode = getDirect(token, opcode = (opcode + 1)*0x100);
+      checkExtraToken(token, tokenizer);
+      return opcode;
+    }else if(!stricmp(((OperatorToken *)token)->str, "@")) {
+      token = getNewToken(tokenizer, token);
+      opcode = getRegister(token, opcode += 0x02);
+      checkExtraToken(token, tokenizer);
+      return opcode;
+    }
+  }
+}*/
 
 uint8_t getRegister(Token *token, uint8_t opcode) {
   uint8_t opcodeMode = opcode;
@@ -113,13 +154,18 @@ uint16_t getDirect(Token *token, uint16_t opcode) {
     throwException(ERR_DIRECT_OUT_OF_RANGE, token, "Direct address %x is out of range", ((IntegerToken *)token)->value);
   else
     opcode += ((IntegerToken *)token)->value;
-  
+
   return opcode;
 }
 
 void checkExtraToken(Token *token, Tokenizer *tokenizer) {
   freeToken(token);
-	token = getToken(tokenizer);
-	if(token->str)
-		throwException(ERR_EXTRA_PARAMETER, token, "Does not expect an extra parameter");
+  token = getToken(tokenizer);
+  if(token->str)
+    throwException(ERR_EXTRA_PARAMETER, token, "Does not expect an extra parameter");
+}
+
+Token* getNewToken(Tokenizer *tokenizer, Token *token) {
+  freeToken(token);
+  return token = getToken(tokenizer);
 }
