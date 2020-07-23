@@ -83,46 +83,22 @@ int modifyOpcode_A(Token *token, Tokenizer *tokenizer, uint16_t opcode) {
       return opcode;
   }
 }
-  /*    
-    if(((IdentifierToken *)token)->str[0] != 'R')
-      throwException(ERR_INVALID_REGISTER, token, "Expecting a register, received %s instead", token->str);
-    else{
-      opcode = getRegister(token, opcode += 0x04);
-      checkExtraToken(token, tokenizer);
-      return opcode;
-    }
-    if(!stricmp(((OperatorToken *)token)->str, "#")) {
-      token = getNewToken(tokenizer, token);
-      opcode = getImmediate(token, opcode *= 0x100);
-      checkExtraToken(token, tokenizer);
-      return opcode;
-    }else if(token->type == TOKEN_INTEGER_TYPE) {
-      opcode = getDirect(token, opcode = (opcode + 1)*0x100);
-      checkExtraToken(token, tokenizer);
-      return opcode;
-    }else if(!stricmp(((OperatorToken *)token)->str, "@")) {
-      token = getNewToken(tokenizer, token);
-      opcode = getRegister(token, opcode += 0x02);
-      checkExtraToken(token, tokenizer);
-      return opcode;
-    }
-  }
-}*/
 
+//possible code optimization(yet to be done)
 uint8_t getRegister(Token *token, uint8_t opcode) {
   uint8_t opcodeMode = opcode;
 
-  if((opcodeMode &= 0x0F) == 8) {
+  if((opcodeMode & 0x0F) == 8) {
     if(!(((IdentifierToken *)token)->str[1]))
-      throwException(ERR_INVALID_REGISTER, token, "Invalid Register", token->str);
+      throwException(ERR_INVALID_REGISTER, token, "Expecting register of R0-R7, received %s instead", token->str);
     else if(((IdentifierToken *)token)->str[2])
       throwException(ERR_REG_OUT_OF_RANGE, token, "Register %s is out of range", token->str);
     else if(((IdentifierToken *)token)->str[1] < '0' || ((IdentifierToken *)token)->str[1] > '7')
       throwException(ERR_REG_OUT_OF_RANGE, token, "Register %s is out of range", token->str);
     else
       opcode += ((IdentifierToken *)token)->str[1] - 48;
-  }else if((opcodeMode &= 0x0F) == 6) {
-    if(((IdentifierToken *)token)->str[0] != 'R')
+  }else if((opcodeMode & 0x0F) == 6) {
+    if(((IdentifierToken *)token)->str[0] != 'R')             //check token type is identifier first, if true then only check 'R'(yet to be done)
       throwException(ERR_INVALID_OPERAND, token, "Expecting a register for indirect addressing", token->str);
     else if(!(((IdentifierToken *)token)->str[1]))
       throwException(ERR_INVALID_REGISTER, token, "Invalid register indirect", token->str);
@@ -139,7 +115,7 @@ uint8_t getRegister(Token *token, uint8_t opcode) {
 //yet to implement #xxh immediate format
 uint16_t getImmediate(Token *token, uint16_t opcode) {
   if(token->type != TOKEN_INTEGER_TYPE)
-    throwException(ERR_INVALID_INTEGER, token, "Immediate %s is invalid", token->str);
+    throwException(ERR_EXPECTING_INTEGER, token, "Expecting an integer, received '%s' instead", token->str);
   else if(((IntegerToken *)token)->value < 0x00 || ((IntegerToken *)token)->value > 0xFF)
     throwException(ERR_IMMEDIATE_OUT_OF_RANGE, token, "Immediate %x is out of range", ((IntegerToken *)token)->value);
   else
@@ -159,10 +135,11 @@ uint16_t getDirect(Token *token, uint16_t opcode) {
 }
 
 void checkExtraToken(Token *token, Tokenizer *tokenizer) {
-  freeToken(token);
-  token = getToken(tokenizer);
-  if(token->str)
-    throwException(ERR_EXTRA_PARAMETER, token, "Does not expect an extra parameter");
+  token = getNewToken(tokenizer, token);
+  if(token->type != TOKEN_NULL_TYPE)
+    throwException(ERR_EXTRA_PARAMETER, token, "Does not expect an extra parameter '%s'", token->str);
+  else
+    freeToken(token);
 }
 
 Token* getNewToken(Tokenizer *tokenizer, Token *token) {
