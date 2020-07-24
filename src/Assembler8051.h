@@ -6,21 +6,23 @@
 
 //funcPtr is a pointer to function taking in (Token *token, Tokenizer *tokenizer, uint16_t opcode) 
 //returning integer
-typedef int (*funcPtr)(Token *token, Tokenizer *tokenizer, uint16_t opcode);
+typedef int (*funcPtr)(Token *token, Tokenizer *tokenizer, int opcode);
 typedef struct _8051Instructions _8051Instructions;
 
 struct _8051Instructions {
   char *instruction;
   funcPtr function;
-  uint16_t opcode;
+  int opcode;
 };
 
 int assembleInstruction(Tokenizer *tokenizer);
-int modifyOpcode_A(Token *token, Tokenizer *tokenizer, uint16_t opcode);
+int modifyOpcode_Direct(Token *token, Tokenizer *tokenizer, int opcode);
+int modifyOpcode_A(Token *token, Tokenizer *tokenizer, int opcode);
 uint8_t getRegister(Token *token, uint8_t opcode);
-uint16_t getImmediate(Token *token, uint16_t opcode);
-uint16_t getDirect(Token *token, uint16_t opcode);
+int getImmediate(Token *token, int opcode);
+int getDirect(Token *token, int opcode);
 void checkExtraToken(Token *token, Tokenizer *tokenizer);
+int destAorDirect(Token *token, Tokenizer *tokenizer, int opcode);
 Token* getNewToken(Tokenizer *tokenizer, Token *token);
 
 #endif // ASSEMBLER8051_H
