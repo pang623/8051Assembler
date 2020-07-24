@@ -363,7 +363,7 @@ void test_assembleInstruction_given_add_A_with_indirect_out_of_range_expect_exce
   freeTokenizer(tokenizer);
 }
 
-void test_assembleInstruction_given_add_A_with_indirect_out_of_range_2_digits_expect_exception_ERR_INDIRECT_OUT_OF_RANGE_to_be_thrown() {
+void test_assembleInstruction_given_add_A_with_indirect_out_of_range_2_digits_expect_exception_ERR_REG_OUT_OF_RANGE_to_be_thrown() {
   Token* token;
   Tokenizer* tokenizer;
   int opcode;
@@ -373,12 +373,12 @@ void test_assembleInstruction_given_add_A_with_indirect_out_of_range_2_digits_ex
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
-    TEST_ASSERT_EQUAL(ERR_INDIRECT_OUT_OF_RANGE, e->errorCode);
+    TEST_ASSERT_EQUAL(ERR_REG_OUT_OF_RANGE, e->errorCode);
   }
   freeTokenizer(tokenizer);
 }
 
-void test_assembleInstruction_given_add_A_with_invalid_indirect_integers_expect_exception_ERR_INVALID_OPERAND_to_be_thrown() {
+void test_assembleInstruction_given_add_A_with_invalid_indirect_integers_expect_exception_ERR_EXPECTING_IDENTIFIER_to_be_thrown() {
   Token* token;
   Tokenizer* tokenizer;
   int opcode;
@@ -388,12 +388,12 @@ void test_assembleInstruction_given_add_A_with_invalid_indirect_integers_expect_
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
-    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+    TEST_ASSERT_EQUAL(ERR_EXPECTING_IDENTIFIER, e->errorCode);
   }
   freeTokenizer(tokenizer);
 }
 
-void test_assembleInstruction_given_add_A_with_invalid_indirect_symbols_expect_exception_ERR_INVALID_OPERAND_to_be_thrown() {
+void test_assembleInstruction_given_add_A_with_invalid_indirect_symbols_expect_exception_ERR_EXPECTING_IDENTIFIER_to_be_thrown() {
   Token* token;
   Tokenizer* tokenizer;
   int opcode;
@@ -403,7 +403,7 @@ void test_assembleInstruction_given_add_A_with_invalid_indirect_symbols_expect_e
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
-    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+    TEST_ASSERT_EQUAL(ERR_EXPECTING_IDENTIFIER, e->errorCode);
   }
   freeTokenizer(tokenizer);
 }
