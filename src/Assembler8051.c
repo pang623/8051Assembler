@@ -88,16 +88,18 @@ uint8_t getRegister(Token *token, uint8_t opcode) {
 
   if(((IdentifierToken *)token)->str[0] != 'R')
     throwException(ERR_INVALID_OPERAND, token, "Expecting a register, received %s instead", token->str);
-  if(!(((IdentifierToken *)token)->str[1]))
+  if((!(((IdentifierToken *)token)->str[1])) || (((IdentifierToken *)token)->str[1] > '@'))
     throwException(ERR_INVALID_REGISTER, token, "A invalid register '%s' is inputted", token->str);
-  if(((IdentifierToken *)token)->str[2])
+  if(((IdentifierToken *)token)->str[2] >= '0' && ((IdentifierToken *)token)->str[2] <= '9')
     throwException(ERR_REG_OUT_OF_RANGE, token, "Register %s is out of range, register cannot be of more than one digit range", token->str);
-  
+  if(((IdentifierToken *)token)->str[2] >= '@')
+    throwException(ERR_INVALID_REGISTER, token, "A invalid register '%s' is inputted", token->str);
+    
   if((opcodeMode & 0x0F) == 8) {
-    if(((IdentifierToken *)token)->str[1] < '0' || ((IdentifierToken *)token)->str[1] > '7')
+    if(((IdentifierToken *)token)->str[1] < ':' && ((IdentifierToken *)token)->str[1] > '7')
       throwException(ERR_REG_OUT_OF_RANGE, token, "Register %s is out of range, expecting register of R0-R7", token->str);
   }else if((opcodeMode & 0x0F) == 6) {
-    if(((IdentifierToken *)token)->str[1] < '0' || ((IdentifierToken *)token)->str[1] > '1')
+    if(((IdentifierToken *)token)->str[1] < ':' && ((IdentifierToken *)token)->str[1] > '1')
       throwException(ERR_INDIRECT_OUT_OF_RANGE, token, "Register indirect %s is out of range, expecting register of R0-R1", token->str);
   }
   
