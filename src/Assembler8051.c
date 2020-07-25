@@ -7,14 +7,25 @@
 #include <stdint.h>
 #include <string.h>
 
+/*
+* to-do
+* register in lowercase could not be read
+* modify some function to be reused (similar patterns)
+* way to implement mov instructions
+*/
+
 _8051Instructions instructionsTable[] = {
-  {"add" , modifyOpcode_A, 0x24},
-  {"addc", modifyOpcode_A, 0x34},
-  {"orl" , destAorDirect , 0x42},
-  {"anl" , destAorDirect , 0x52},
-  {"xrl" , destAorDirect , 0x62},
-//  {"mov" ,???, 0x74},               yet to implement
-  {"subb", modifyOpcode_A, 0x94},
+  {"nop" , NULL                 , 0x00},
+  {"ret" , NULL                 , 0x22},
+  {"reti", NULL                 , 0x32},
+  {"add" , modifyOpcode_A       , 0x24},
+  {"addc", modifyOpcode_A       , 0x34},
+  {"subb", modifyOpcode_A       , 0x94},
+  {"orl" , destAorDirect        , 0x42},
+  {"anl" , destAorDirect        , 0x52},
+  {"xrl" , destAorDirect        , 0x62},
+  {"inc" , modifyOpcode_sOperand, 0x04},
+  {"dec" , modifyOpcode_sOperand, 0x14},
   /*
   *
   *
@@ -22,6 +33,7 @@ _8051Instructions instructionsTable[] = {
   *
   *
   */
+  //  {"mov" ,???, ???},               yet to implement
   {NULL, NULL},
 };
 
@@ -39,9 +51,14 @@ int assembleInstruction(Tokenizer *tokenizer) {
       throwException(ERR_INVALID_INSTRUCTION, token, "An invalid instruction '%s' is inputted", token->str);
   }
 
-  funcPtr instructionToOpcode = instructionsTable[i].function;
-  token = getNewToken(tokenizer, token);
-  opcode = instructionToOpcode(token, tokenizer, instructionsTable[i].opcode);
+  if(instructionsTable[i].function) {
+    funcPtr instructionToOpcode = instructionsTable[i].function;
+    token = getNewToken(tokenizer, token);
+    opcode = instructionToOpcode(token, tokenizer, instructionsTable[i].opcode);
+  }else {
+    checkExtraToken(token, tokenizer);
+    return instructionsTable[i].opcode;
+  }
 
   return opcode;
 }
@@ -56,13 +73,40 @@ int destAorDirect(Token *token, Tokenizer *tokenizer, int opcode) {
   return opcode;
 }
 
+int modifyOpcode_sOperand(Token *token, Tokenizer *tokenizer, int opcode) {
+  if((token->type != TOKEN_IDENTIFIER_TYPE) && (token->type != TOKEN_OPERATOR_TYPE) && (token->type != TOKEN_INTEGER_TYPE))
+      throwException(ERR_INVALID_OPERAND, token, "Last operand '%s' is invalid", token->str);
+
+    switch(token->type) {
+      case TOKEN_IDENTIFIER_TYPE :  if(stricmp(((IdentifierToken *)token)->str, "A") && (((IdentifierToken *)token)->str[0]) != 'R')
+                                      throwException(ERR_INVALID_OPERAND, token, "Expecting a register or 'A', received %s instead", token->str);
+                                    else if(((IdentifierToken *)token)->str[0] == 'R')
+                                      opcode = getRegister(token, opcode += 0x04);
+                                    break;
+      case TOKEN_OPERATOR_TYPE   :  if(stricmp(((OperatorToken *)token)->str, "@"))
+                                      throwException(ERR_INVALID_OPERAND, token, "Expecting a '@', received %s instead", token->str);
+                                    else {
+                                      token = getNewToken(tokenizer, token);
+                                      if(token->type != TOKEN_IDENTIFIER_TYPE)
+                                        throwException(ERR_EXPECTING_IDENTIFIER, token, "Expecting an identifier, received %s instead", token->str);
+                                      opcode = getRegister(token, opcode += 0x02);
+                                    }
+                                    break;
+      case TOKEN_INTEGER_TYPE    :  opcode = getDirect(token, opcode = (opcode + 1)*0x100);
+                                    break;
+      }
+
+      checkExtraToken(token, tokenizer);
+      return opcode;
+}
+
 int modifyOpcode_Direct(Token *token, Tokenizer *tokenizer, int opcode) {
   opcode = getDirect(token, opcode);
   
   token = getNewToken(tokenizer, token);
   if(token->type != TOKEN_OPERATOR_TYPE)
     throwException(ERR_MISSING_COMMA, token, "Expecting a comma, received %s instead", token->str);
-  if(stricmp(((OperatorToken *)token)->str, ","))
+  if(strcmp(((OperatorToken *)token)->str, ","))
     throwException(ERR_INVALID_OPERAND, token, "Expecting comma as third operand, received %s instead", token->str);
   
   token = getNewToken(tokenizer, token);
@@ -73,7 +117,7 @@ int modifyOpcode_Direct(Token *token, Tokenizer *tokenizer, int opcode) {
     case  TOKEN_IDENTIFIER_TYPE : if(stricmp(((IdentifierToken *)token)->str, "A"))
                                     throwException(ERR_INVALID_OPERAND, token, "Expecting A as last operand, received %s instead", token->str);
                                   break;
-    case  TOKEN_OPERATOR_TYPE   : if(stricmp(((OperatorToken *)token)->str, "#"))
+    case  TOKEN_OPERATOR_TYPE   : if(strcmp(((OperatorToken *)token)->str, "#"))
                                     throwException(ERR_INVALID_OPERAND, token, "Expecting a '#', received %s instead", token->str);
                                   token = getNewToken(tokenizer, token);
                                   opcode = getImmediate(token, (opcode*0x100) + 0x010000);
@@ -88,13 +132,13 @@ int modifyOpcode_A(Token *token, Tokenizer *tokenizer, int opcode) {
     throwException(ERR_EXPECTING_IDENTIFIER, token, "Expecting an identifier, received %s instead", token->str);
 
   if(stricmp(((IdentifierToken *)token)->str, "A"))
-    throwException(ERR_INVALID_OPERAND, token, "Expecting A as second operand, received %s instead", token->str);
+    throwException(ERR_INVALID_OPERAND, token, "Expecting A as operand, received %s instead", token->str);
 
   token = getNewToken(tokenizer, token);
   if(token->type != TOKEN_OPERATOR_TYPE)                                                     //check is third operand an operator
     throwException(ERR_MISSING_COMMA, token, "Expecting a comma, received %s instead", token->str);
 
-  if(stricmp(((OperatorToken *)token)->str, ","))
+  if(strcmp(((OperatorToken *)token)->str, ","))
     throwException(ERR_INVALID_OPERAND, token, "Expecting comma as third operand, received %s instead", token->str);
   else{
     token = getNewToken(tokenizer, token);
@@ -104,7 +148,7 @@ int modifyOpcode_A(Token *token, Tokenizer *tokenizer, int opcode) {
     switch(token->type) {
       case TOKEN_IDENTIFIER_TYPE :  opcode = getRegister(token, opcode += 0x04);
                                     break;
-      case TOKEN_OPERATOR_TYPE   :  if(stricmp(((OperatorToken *)token)->str, "#") && stricmp(((OperatorToken *)token)->str, "@"))
+      case TOKEN_OPERATOR_TYPE   :  if(strcmp(((OperatorToken *)token)->str, "#") && strcmp(((OperatorToken *)token)->str, "@"))
                                       throwException(ERR_INVALID_OPERAND, token, "Expecting a '#' or '@', received %s instead", token->str);
                                     else if(!stricmp(((OperatorToken *)token)->str, "#")) {
                                       token = getNewToken(tokenizer, token);
@@ -131,11 +175,11 @@ uint8_t getRegister(Token *token, uint8_t opcode) {
   if(((IdentifierToken *)token)->str[0] != 'R')
     throwException(ERR_INVALID_OPERAND, token, "Expecting a register, received %s instead", token->str);
   if((!(((IdentifierToken *)token)->str[1])) || (((IdentifierToken *)token)->str[1] > '@'))
-    throwException(ERR_INVALID_REGISTER, token, "A invalid register '%s' is inputted", token->str);
+    throwException(ERR_INVALID_REGISTER, token, "An invalid register '%s' is inputted", token->str);
   if(((IdentifierToken *)token)->str[2] >= '0' && ((IdentifierToken *)token)->str[2] <= '9')
     throwException(ERR_REG_OUT_OF_RANGE, token, "Register %s is out of range, register cannot be of more than one digit range", token->str);
   if(((IdentifierToken *)token)->str[2] >= '@')
-    throwException(ERR_INVALID_REGISTER, token, "A invalid register '%s' is inputted", token->str);
+    throwException(ERR_INVALID_REGISTER, token, "An invalid register '%s' is inputted", token->str);
 
   if((opcodeMode & 0x0F) == 8) {
     if(((IdentifierToken *)token)->str[1] < ':' && ((IdentifierToken *)token)->str[1] > '7')

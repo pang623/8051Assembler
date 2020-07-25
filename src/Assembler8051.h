@@ -16,13 +16,14 @@ struct _8051Instructions {
 };
 
 int assembleInstruction(Tokenizer *tokenizer);
+int destAorDirect(Token *token, Tokenizer *tokenizer, int opcode);
+int modifyOpcode_sOperand(Token *token, Tokenizer *tokenizer, int opcode);
 int modifyOpcode_Direct(Token *token, Tokenizer *tokenizer, int opcode);
 int modifyOpcode_A(Token *token, Tokenizer *tokenizer, int opcode);
 uint8_t getRegister(Token *token, uint8_t opcode);
 int getImmediate(Token *token, int opcode);
 int getDirect(Token *token, int opcode);
 void checkExtraToken(Token *token, Tokenizer *tokenizer);
-int destAorDirect(Token *token, Tokenizer *tokenizer, int opcode);
 Token* getNewToken(Tokenizer *tokenizer, Token *token);
 
 #endif // ASSEMBLER8051_H
