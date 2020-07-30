@@ -23,7 +23,7 @@ void test_assembleInstruction_given_add_A_with_r7_expect_opcode_0x2f() {
   Tokenizer* tokenizer;
   int opcode;
   Try{
-    tokenizer = createTokenizer("add A, R7");
+    tokenizer = createTokenizer("add A, R7\n");
     opcode = assembleInstruction(tokenizer);
     TEST_ASSERT_EQUAL(0x2F, opcode);
     } Catch(e){
@@ -38,7 +38,7 @@ void test_assembleInstruction_given_add_A_with_r5_expect_opcode_0x2d() {
   Tokenizer* tokenizer;
   int opcode;
   Try{
-    tokenizer = createTokenizer("add A, R5");
+    tokenizer = createTokenizer("add A, r5    ");
     opcode = assembleInstruction(tokenizer);
     TEST_ASSERT_EQUAL(0x2D, opcode);
   } Catch(e){
@@ -233,7 +233,7 @@ void test_assembleInstruction_given_add_A_with_indirect_R1_expect_opcode_0x27() 
   Tokenizer* tokenizer;
   int opcode;
   Try{
-    tokenizer = createTokenizer("add A, @R1");
+    tokenizer = createTokenizer("add A, @r1");
     opcode = assembleInstruction(tokenizer);
     TEST_ASSERT_EQUAL(0x27, opcode);
   } Catch(e){
@@ -257,7 +257,7 @@ void test_assembleInstruction_given_ret_expect_opcode_0x22() {
   }
   freeTokenizer(tokenizer);
 }
-
+/*
 void test_assembleInstruction_given_inc_indirectR1_expect_opcode_0x07() {
   Token* token;
   Tokenizer* tokenizer;
@@ -272,13 +272,13 @@ void test_assembleInstruction_given_inc_indirectR1_expect_opcode_0x07() {
   }
   freeTokenizer(tokenizer);
 }
-
+*/
 void test_assembleInstruction_given_add_A_with_reg_out_of_range_expect_exception_ERR_REG_OUT_OF_RANGE_to_be_thrown() {
   Token* token;
   Tokenizer* tokenizer;
   int opcode;
   Try{
-    tokenizer = createTokenizer("add A, R9");
+    tokenizer = createTokenizer("add a, R9 ");
     opcode = assembleInstruction(tokenizer);
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
@@ -308,7 +308,7 @@ void test_assembleInstruction_given_add_A_with_invalid_register_expect_exception
   Tokenizer* tokenizer;
   int opcode;
   Try{
-    tokenizer = createTokenizer("add A, Rs321");
+    tokenizer = createTokenizer("add A, R22ss");
     opcode = assembleInstruction(tokenizer);
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
@@ -328,7 +328,7 @@ void test_assembleInstruction_given_add_instruction_with_comma_missing_expect_ex
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
-    TEST_ASSERT_EQUAL(ERR_MISSING_COMMA, e->errorCode);
+    TEST_ASSERT_EQUAL(ERR_EXPECTING_OPERATOR, e->errorCode);
   }
   freeTokenizer(tokenizer);
 }
@@ -493,7 +493,7 @@ void test_assembleInstruction_given_add_A_with_indirect_out_of_range_2_digits_ex
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
-    TEST_ASSERT_EQUAL(ERR_REG_OUT_OF_RANGE, e->errorCode);
+    TEST_ASSERT_EQUAL(ERR_INDIRECT_OUT_OF_RANGE, e->errorCode);
   }
   freeTokenizer(tokenizer);
 }
@@ -572,7 +572,7 @@ void test_assembleInstruction_given_invalid_instruction_divide_A_expect_exceptio
   }
   freeTokenizer(tokenizer);
 }
-
+/*
 void test_assembleInstruction_given_orl_A_with_R3_expect_opcode_0x4B() {
   Token* token;
   Tokenizer* tokenizer;
@@ -676,4 +676,4 @@ void test_assembleInstruction_given_invalid_operand_imm23_expect_exception_ERR_I
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
   }
   freeTokenizer(tokenizer);
-}
+}*/
