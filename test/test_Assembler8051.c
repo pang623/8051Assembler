@@ -257,7 +257,7 @@ void test_assembleInstruction_given_ret_expect_opcode_0x22() {
   }
   freeTokenizer(tokenizer);
 }
-/*
+
 void test_assembleInstruction_given_inc_indirectR1_expect_opcode_0x07() {
   Token* token;
   Tokenizer* tokenizer;
@@ -272,7 +272,22 @@ void test_assembleInstruction_given_inc_indirectR1_expect_opcode_0x07() {
   }
   freeTokenizer(tokenizer);
 }
-*/
+
+void test_assembleInstruction_given_dec_direct_expect_opcode_0x15AD() {
+  Token* token;
+  Tokenizer* tokenizer;
+  int opcode;
+  Try{
+    tokenizer = createTokenizer("dEc 0xAD");
+    opcode = assembleInstruction(tokenizer);
+    TEST_ASSERT_EQUAL(0x15AD, opcode);
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
 void test_assembleInstruction_given_add_A_with_reg_out_of_range_expect_exception_ERR_REG_OUT_OF_RANGE_to_be_thrown() {
   Token* token;
   Tokenizer* tokenizer;
@@ -647,7 +662,7 @@ void test_assembleInstruction_given_invalid_second_operand_$_expect_exception_ER
   }
   freeTokenizer(tokenizer);
 }
-
+*/
 void test_assembleInstruction_given_extra_parameter_expect_exception_ERR_EXTRA_PARAMETER_to_be_thrown() {
   Token* token;
   Tokenizer* tokenizer;
@@ -676,4 +691,4 @@ void test_assembleInstruction_given_invalid_operand_imm23_expect_exception_ERR_I
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
   }
   freeTokenizer(tokenizer);
-}*/
+}

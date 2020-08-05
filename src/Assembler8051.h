@@ -19,11 +19,12 @@ struct _8051Instructions {
   int op2;
   int op3;
   int op4;
+  int flags;
 };
 
 int assembleInstruction(Tokenizer *tokenizer);
 //int destAorDirect(Token *token, Tokenizer *tokenizer, int opcode);
-//int modifyOpcode_sOperand(Token *token, Tokenizer *tokenizer, int opcode);
+int modifyOpcode_sOperand(Token *token, Tokenizer *tokenizer, _8051Instructions *opcPtr);
 //int modifyOpcode_Direct(Token *token, Tokenizer *tokenizer, int opcode);
 int modifyOpcode_A(Token *token, Tokenizer *tokenizer, _8051Instructions *opcPtr);
 uint8_t verifyValidRegisterRangeAndReturnRespectiveOpcode(Token *token, uint8_t opcode);
