@@ -14,19 +14,17 @@
 //else if(directWithA | directWithImm) call another function to encode the opcode?
 
 _8051Instructions instructionsTable[] = {
-  {"nop" , NULL                 , 0x00, 0, 0, 0},
-  {"ret" , NULL                 , 0x22, 0, 0, 0},
-  {"reti", NULL                 , 0x32, 0, 0, 0},
-  {"add" , modifyOpcode_A       , 0x24, 0x25, 0x26, 0x28},
-  {"addc", modifyOpcode_A       , 0x34, 0x35, 0x36, 0x38},
-  {"subb", modifyOpcode_A       , 0x94, 0x95, 0x96, 0x98},
- // {"orl" , destAorDirect        , 0x42,.....some opcode, 1, 1, 1, 1, 1, 1, 0....}, flags that are set are AwithReg, AwithInd, AwithDirect, AwithImm, 
- //                                                                           directWithImm, directWithA, other flags is 0
-                                                                                
- // {"anl" , destAorDirect        , 0x52},
- // {"xrl" , destAorDirect        , 0x62},
-  {"inc" , modifyOpcode_sOperand, 0x04, 0x05, 0x06, 0x08},
-  {"dec" , modifyOpcode_sOperand, 0x14, 0x15, 0x16, 0x18},
+  {"nop" , NULL                 , {0x00, 0}},
+  {"ret" , NULL                 , {0x22, 0}},
+  {"reti", NULL                 , {0x32, 0}},
+  {"add" , assembleArithAndLogicalOperation, {0x20, A_WITH_OPERANDS}},
+  {"addc", assembleArithAndLogicalOperation, {0x30, A_WITH_OPERANDS}},
+  {"subb", assembleArithAndLogicalOperation, {0x90, A_WITH_OPERANDS}},
+  {"orl" , assembleArithAndLogicalOperation, {0x40, A_WITH_OPERANDS | DIRECT_WITH_OPERANDS | C_WITH_BIT}},
+  {"anl" , assembleArithAndLogicalOperation, {0x50, A_WITH_OPERANDS | DIRECT_WITH_OPERANDS | C_WITH_BIT}},
+ // {"mov" , assembleMovOperation,  {0x70, A_WITH_OPERANDS | DIRECT_WITH_OPERANDS | C_WITH_BIT | INDIRECT_WITH_OPERANDS | REGISTER_WITH_OPERANDS}},
+ // {"inc" , modifyOpcode_sOperand, 0x04, 0x05, 0x06, 0x08},
+ // {"dec" , modifyOpcode_sOperand, 0x14, 0x15, 0x16, 0x18},
   /*
   *
   *
@@ -34,7 +32,6 @@ _8051Instructions instructionsTable[] = {
   *
   *
   */
-  //  {"mov" ,???, ???},               yet to implement
   {NULL, NULL},
 };
 
@@ -42,164 +39,325 @@ int assembleInstruction(Tokenizer *tokenizer) {
   Token* token;
   int opcode;
   int i = 0;
-  _8051Instructions *opcPtr;
+  _8051Instructions *instructionPtr;
 
   token = getToken(tokenizer);
   if(token->type != TOKEN_IDENTIFIER_TYPE)
-    throwException(ERR_EXPECTING_IDENTIFIER, token, 
+    throwException(ERR_EXPECTING_IDENTIFIER, token,
     "Expecting an identifier, received %s instead", token->str);
 
   while(stricmp(token->str, instructionsTable[i].instruction)) {
     if(instructionsTable[i++].instruction == NULL)
-      throwException(ERR_INVALID_INSTRUCTION, token, 
+      throwException(ERR_INVALID_INSTRUCTION, token,
       "An invalid instruction '%s' is inputted", token->str);
   }
-  opcPtr = &instructionsTable[i];
-  if(opcPtr->function) {
-    funcPtr instructionToOpcode = opcPtr->function;
-    token = getNewToken(tokenizer, token);
-    opcode = instructionToOpcode(token, tokenizer, opcPtr);
+  instructionPtr = &instructionsTable[i];
+  if(instructionPtr->function) {
+    funcPtr instructionToOpcode = instructionPtr->function;
+    opcode = instructionToOpcode(tokenizer, instructionPtr);
   }else {
     checkExtraToken(token, tokenizer);
-    return opcPtr->op1;
+    return instructionPtr->data[0];
   }
+  freeToken(token);
   return opcode;
 }
 /*
-int destAorDirect(Token *token, Tokenizer *tokenizer, int opcode) {
-  if(token->type == TOKEN_INTEGER_TYPE)
-    opcode = modifyOpcode_Direct(token, tokenizer, opcode*0x100);
-  else if(token->type == TOKEN_IDENTIFIER_TYPE)
-    opcode = modifyOpcode_A(token, tokenizer, opcode + 2);
-  else
-    throwException(ERR_INVALID_OPERAND, token, "Expecting an identifier or integer as the second operand, received %s instead", token->str);
-  return opcode;
+//yet to be done
+int assembleMovOperation(Tokenizer *tokenizer, _8051Instructions *info) {
+  Token *token1, *token2, *token3;
+  int opcode;
+  token1 = getToken(tokenizer);
+  token2 = getToken(tokenizer);
+  token3 = getToken(tokenizer);
+  if(isOperatorToken(token3, "#"))
+    pushBackToken(tokenizer, token3);
+    pushBackToken(tokenizer, token2);
+    if(isIdentifierToken(token1, "A")) {
+      pushBackToken(tokenizer, token1);
+      assembleAwithOperands(tokenizer, info->data[0]);
+    }else if(tolower(token->str[0]) == 'r') {
+      pushBackToken(tokenizer, token1);
+      assembleRegwithOperands(tokenizer, info->data[0]);
+    
+  
+  if(isIdentifierToken(token1, "A")) {
+    if(info->data[1] & A_WITH_OPERANDS)
+      if(isOperatorToken(token3, "#")
+        pushBackToken(tokenizer, token3);
+        pushBackToken(tokenizer, token2);
+        pushBackToken(tokenizer, token1);
+        opcode = assembleAwithOperands(tokenizer, info->data[0]);
+      else
+        pushBackToken(tokenizer, token3);
+        pushBackToken(tokenizer, token2);
+        pushBackToken(tokenizer, token1);
+        opcode = assembleAwithOperands(tokenizer, info->data[0] + 0x70);
+    else
+      throwException(ERR_INVALID_OPERAND, token,
+      "Did not expect %s as an operand", token->str);
+  }else if(
 }
 */
-int modifyOpcode_sOperand(Token *token, Tokenizer *tokenizer, _8051Instructions *opcPtr) {
+int assembleArithAndLogicalOperation(Tokenizer *tokenizer, _8051Instructions *info) {
+  Token *token;
   int opcode;
-  if((token->type != TOKEN_IDENTIFIER_TYPE) && 
-      (token->type != TOKEN_OPERATOR_TYPE) && (token->type != TOKEN_INTEGER_TYPE))
-      throwException(ERR_INVALID_OPERAND, token, 
-      "Operand '%s' is invalid", token->str);
+  token = getToken(tokenizer);
+  if(isIdentifierToken(token, "A")) {
+    pushBackToken(tokenizer, token);
+    if(info->data[1] & A_WITH_OPERANDS)
+      opcode = assembleAwithOperands(tokenizer, info->data[0]);
+    else
+      throwException(ERR_INVALID_OPERAND, token,
+      "Did not expect %s as an operand", token->str);
+  }else if(isIdentifierToken(token, "C")) {
+    pushBackToken(tokenizer, token);
+    if(info->data[1] & C_WITH_BIT)
+      opcode = assembleCwithBit(tokenizer, info->data[0] + 0x30);
+    else
+      throwException(ERR_INVALID_OPERAND, token,
+      "Did not expect %s as an operand", token->str);
+  }else if(isIntegerToken(token)) {
+    pushBackToken(tokenizer, token);
+    if(info->data[1] & DIRECT_WITH_OPERANDS)
+      opcode = assembleDirectWithAandImmediateOnly(tokenizer, info->data[0]);
+    else
+      throwException(ERR_INVALID_OPERAND, token,
+      "Did not expect %s as an operand", token->str);
+  }else
+    throwException(ERR_INVALID_OPERAND, token,
+    "An invalid operand of %s has been inputted", token->str);
 
-    switch(token->type) {
-      case TOKEN_IDENTIFIER_TYPE :  
-        if(tolower(token->str[0]) == 'r')
-          opcode = verifyValidRegisterRangeAndReturnRespectiveOpcode(token, opcPtr->op4);
-        else if(!stricmp(token->str, "A"))
-          opcode = opcPtr->op1;
-        else
-          throwException(ERR_INVALID_OPERAND, token, 
-          "Expecting a register or 'A', received %s instead", token->str);
-        break;
-      
-      case TOKEN_OPERATOR_TYPE   :  
-        if(isOperatorToken(token, "@")) {
-          token = getNewToken(tokenizer, token);
-          if(token->type != TOKEN_IDENTIFIER_TYPE)
-            throwException(ERR_EXPECTING_IDENTIFIER, token, 
-            "Expecting an identifier, received %s instead", token->str);
-          opcode = verifyValidRegisterRangeAndReturnRespectiveOpcode(token, opcPtr->op3);
-        }else
-          throwException(ERR_INVALID_OPERAND, token, 
-          "Expecting a '@', received %s instead", token->str); 
-        break;
-        
-      case TOKEN_INTEGER_TYPE    :  
-        opcode = getDirect(token, opcPtr->op2);
-        break;
-      }
-
-      checkExtraToken(token, tokenizer);
-      return opcode;
-}
-/*
-int modifyOpcode_Direct(Token *token, Tokenizer *tokenizer, int opcode) {
-  opcode = getDirect(token, opcode);
-
-  token = getNewToken(tokenizer, token);
-  if(token->type != TOKEN_OPERATOR_TYPE)
-    throwException(ERR_MISSING_COMMA, token, "Expecting a comma, received %s instead", token->str);
-  if(strcmp(((OperatorToken *)token)->str, ","))
-    throwException(ERR_INVALID_OPERAND, token, "Expecting comma as third operand, received %s instead", token->str);
-
-  token = getNewToken(tokenizer, token);
-  if((token->type != TOKEN_IDENTIFIER_TYPE) && (token->type != TOKEN_OPERATOR_TYPE))
-    throwException(ERR_INVALID_OPERAND, token, "Last operand '%s' is invalid", token->str);
-
-  switch(token->type) {
-    case  TOKEN_IDENTIFIER_TYPE : if(stricmp(((IdentifierToken *)token)->str, "A"))
-                                    throwException(ERR_INVALID_OPERAND, token, "Expecting A as last operand, received %s instead", token->str);
-                                  break;
-    case  TOKEN_OPERATOR_TYPE   : if(strcmp(((OperatorToken *)token)->str, "#"))
-                                    throwException(ERR_INVALID_OPERAND, token, "Expecting a '#', received %s instead", token->str);
-                                  token = getNewToken(tokenizer, token);
-                                  opcode = getImmediate(token, (opcode*0x100) + 0x010000);
-                                  break;
-  }
-  checkExtraToken(token, tokenizer);
   return opcode;
 }
-*/
-int isOperatorToken(Token *token, char *operators) {
-  if(token->type != TOKEN_OPERATOR_TYPE)
-    throwException(ERR_EXPECTING_OPERATOR, token, 
-    "Expecting an operator, received %s instead", token->str);
 
-  if(strcmp(token->str, operators))
-    return 0;
+int assembleIndirectWithOperands(Tokenizer *tokenizer, int opcode) {
+  Token *token;
+  int regNum;
+  token = getToken(tokenizer);
+  freeToken(token);
+  token = getToken(tokenizer);
+  if(tolower(token->str[0]) == 'r')
+    regNum = verifyValidRegisterRangeAndReturnRegisterNumber(token, 0);
   else
-    return 1;
-}
-
-int modifyOpcode_A(Token *token, Tokenizer *tokenizer, _8051Instructions *opcPtr) {
-  int opcode;
-  if(token->type != TOKEN_IDENTIFIER_TYPE)
-    throwException(ERR_EXPECTING_IDENTIFIER, token, 
-    "Expecting an identifier, received %s instead", token->str);
-
-  if(stricmp(token->str, "A"))
-    throwException(ERR_INVALID_OPERAND, token, 
-    "Expecting A as operand, received %s instead", token->str);
-
-  token = getNewToken(tokenizer, token);
+    throwException(ERR_EXPECTING_REGISTER, token,
+    "Expecting a register, received %s instead", token->str);
+    
+  freeToken(token);
+  token = getToken(tokenizer);
   if(!isOperatorToken(token, ","))
-    throwException(ERR_INVALID_OPERAND, token, 
+    throwException(ERR_INVALID_OPERAND, token,
     "Expecting a comma , received %s instead", token->str);
-
   token = getNewToken(tokenizer, token);
-  if((token->type != TOKEN_IDENTIFIER_TYPE) && 
-      (token->type != TOKEN_OPERATOR_TYPE) && (token->type != TOKEN_INTEGER_TYPE))
-    throwException(ERR_INVALID_OPERAND, token, 
-    "Last operand '%s' is invalid", token->str);
-
-    switch(token->type) {
-      case TOKEN_IDENTIFIER_TYPE :
-        opcode = verifyValidRegisterRangeAndReturnRespectiveOpcode(token, opcPtr->op4);
-        break;
-
-      case TOKEN_OPERATOR_TYPE :
-        if(isOperatorToken(token, "#")) {
-          token = getNewToken(tokenizer, token);
-          opcode = getImmediate(token, opcPtr->op1);
-        }else if(isOperatorToken(token, "@")) {
-          token = getNewToken(tokenizer, token);
-          if(token->type != TOKEN_IDENTIFIER_TYPE)
-            throwException(ERR_EXPECTING_IDENTIFIER, token, 
-            "Expecting an identifier, received %s instead", token->str);
-          opcode = verifyValidRegisterRangeAndReturnRespectiveOpcode(token, opcPtr->op3);
-        }else
-          throwException(ERR_INVALID_OPERAND, token, 
-          "Expecting a # or @, received %s instead", token->str);
-          break;
-
-      case TOKEN_INTEGER_TYPE :
-        opcode = getDirect(token, opcPtr->op2);
-        break;
-      }
+  if(isIdentifierToken(token, "A"))
+    opcode = (opcode | 0x06) + regNum;
+  else if(isIntegerToken(token))
+    opcode = (((opcode | 0x06) + regNum) << 8) | ((IntegerToken *)token)->value;
+  else if(isOperatorToken(token, "#")) {
+    token = getNewToken(tokenizer, token);
+    if(isIntegerToken(token))
+      opcode = (((opcode | 0x06) + regNum) << 8) | ((IntegerToken *)token)->value;
+    else
+      throwException(ERR_EXPECTING_INTEGER, token,
+      "Expecting an integer, received '%s' instead", token->str);
+  }else
+    throwException(ERR_INVALID_OPERAND, token,
+    "An invalid operand of %s has been inputted", token->str);
+  
   checkExtraToken(token, tokenizer);
   return opcode;
+}
+
+int assembleRegWithOperands(Tokenizer *tokenizer, int opcode) {
+  Token *token;
+  token = getToken(tokenizer);
+  int regNum = verifyValidRegisterRangeAndReturnRegisterNumber(token, 1);
+  freeToken(token);
+  token = getToken(tokenizer);
+  if(!isOperatorToken(token, ","))
+    throwException(ERR_INVALID_OPERAND, token,
+    "Expecting a comma , received %s instead", token->str);
+  token = getNewToken(tokenizer, token);
+  if(isIdentifierToken(token, "A"))
+    opcode = (opcode | 0x08) + regNum;
+  else if(isOperatorToken(token, "#")) {
+    token = getNewToken(tokenizer, token);
+    if(isIntegerToken(token))
+      opcode = (((opcode | 0x08) + regNum) << 8) | ((IntegerToken *)token)->value;
+    else
+      throwException(ERR_EXPECTING_INTEGER, token,
+      "Expecting an integer, received '%s' instead", token->str);
+  }else if(isIntegerToken(token))
+    opcode = (((opcode | 0x08) + regNum) << 8) | ((IntegerToken *)token)->value;
+  else
+    throwException(ERR_INVALID_OPERAND, token,
+    "An invalid operand of %s has been inputted", token->str);
+  
+  checkExtraToken(token, tokenizer);
+  return opcode;
+}
+
+int assembleAwithOperands(Tokenizer *tokenizer, int opcode) {
+  Token *token;
+  token = getToken(tokenizer);
+  freeToken(token);
+  token = getToken(tokenizer);
+  if(!isOperatorToken(token, ","))
+    throwException(ERR_INVALID_OPERAND, token,
+    "Expecting a comma , received %s instead", token->str);
+  token = getNewToken(tokenizer, token);
+  if(isIntegerToken(token))                                           //direct
+    opcode = ((opcode | 0x05) << 8) | ((IntegerToken *)token)->value;
+  else if(tolower(token->str[0]) == 'r') {                            //register
+    int regNum = verifyValidRegisterRangeAndReturnRegisterNumber(token, 1);
+    opcode = (opcode | 0x08) + regNum;
+  }else if(isOperatorToken(token, "#")) {                             //immediate
+    token = getNewToken(tokenizer, token);
+    if(isIntegerToken(token))
+      opcode = ((opcode | 0x04) << 8) | ((IntegerToken *)token)->value;
+    else
+      throwException(ERR_EXPECTING_INTEGER, token,
+      "Expecting an integer, received '%s' instead", token->str);
+  }else if(isOperatorToken(token, "@")) {                             //indirect
+    token = getNewToken(tokenizer, token);
+    if(tolower(token->str[0]) == 'r') {
+      int regNum = verifyValidRegisterRangeAndReturnRegisterNumber(token, 0);
+      opcode = (opcode | 0x06) + regNum;
+    }else
+      throwException(ERR_EXPECTING_REGISTER, token,
+      "Expecting a register, received %s instead", token->str);
+  }else
+    throwException(ERR_INVALID_OPERAND, token,
+    "An invalid operand of %s has been inputted", token->str);
+
+  checkExtraToken(token, tokenizer);
+  return opcode;
+}
+
+//for orl, anl, ...
+int assembleDirectWithAandImmediateOnly(Tokenizer *tokenizer, int opcode) {
+  Token *token;
+  token = getToken(tokenizer);
+  int direct = ((IntegerToken *)token)->value;
+  freeToken(token);
+  token = getToken(tokenizer);
+  if(!isOperatorToken(token, ","))
+    throwException(ERR_INVALID_OPERAND, token,
+    "Expecting a comma , received %s instead", token->str);
+  token = getNewToken(tokenizer, token);
+  if(isIdentifierToken(token, "A"))                            //A
+    opcode = ((opcode | 0x02) << 8) | direct;
+  else if(isOperatorToken(token, "#")) {                       //immediate
+    token = getNewToken(tokenizer, token);
+    if(isIntegerToken(token))
+      opcode = ((opcode | 0x03) << 16) | (direct << 8) |
+      (((IntegerToken *)token)->value);
+    else
+      throwException(ERR_EXPECTING_INTEGER, token,
+      "Expecting an integer, received '%s' instead", token->str);
+  }else
+    throwException(ERR_INVALID_OPERAND, token,
+    "An invalid operand of %s has been inputted", token->str);
+
+  checkExtraToken(token, tokenizer);
+  return opcode;
+}
+
+//for mov instruction
+int assembleDirectWithOperands(Tokenizer *tokenizer, int opcode) {
+  Token *token;
+  token = getToken(tokenizer);
+  int direct = ((IntegerToken *)token)->value;
+  freeToken(token);
+  token = getToken(tokenizer);
+  if(!isOperatorToken(token, ","))
+    throwException(ERR_INVALID_OPERAND, token,
+    "Expecting a comma , received %s instead", token->str);
+  token = getNewToken(tokenizer, token);
+  if(isIdentifierToken(token, "A"))                            //A
+    opcode = ((opcode | 0x05) << 8) | direct;
+  else if(tolower(token->str[0]) == 'r') {                     //Reg
+    int regNum = verifyValidRegisterRangeAndReturnRegisterNumber(token, 1);
+    opcode = (((opcode | 0x08) + regNum) << 8) | direct;
+  }else if(isIntegerToken(token))                              //Direct
+    opcode = ((opcode | 0x05) << 16) | (((IntegerToken *)token)->value) << 8 |
+    direct;
+  else if(isOperatorToken(token, "#")) {                       //Immediate
+    token = getNewToken(tokenizer, token);
+    if(isIntegerToken(token))
+      opcode = ((opcode | 0x05) << 16) | direct << 8 |
+      (((IntegerToken *)token)->value);
+    else
+      throwException(ERR_EXPECTING_INTEGER, token,
+      "Expecting an integer, received '%s' instead", token->str);
+  }else if(isOperatorToken(token, "@")) {                      //Indirect
+    token = getNewToken(tokenizer, token);
+    if(tolower(token->str[0]) == 'r') {
+      int regNum = verifyValidRegisterRangeAndReturnRegisterNumber(token, 0);
+      opcode = (((opcode | 0x06) + regNum) << 8) | direct;
+    }else
+      throwException(ERR_EXPECTING_REGISTER, token,
+      "Expecting a register, received %s instead", token->str);
+  }else
+    throwException(ERR_INVALID_OPERAND, token,
+    "An invalid operand of %s has been inputted", token->str);
+
+  checkExtraToken(token, tokenizer);
+  return opcode;
+}
+
+int assembleCwithBit(Tokenizer *tokenizer, int opcode) {
+  Token *token;
+  token = getToken(tokenizer);
+  freeToken(token);
+  token = getToken(tokenizer);
+  if(!isOperatorToken(token, ","))
+    throwException(ERR_INVALID_OPERAND, token,
+    "Expecting a comma , received %s instead", token->str);
+  token = getToken(tokenizer);
+  if(isIntegerToken(token))                                    //C
+    opcode = ((opcode | 0x02) << 8) | ((IntegerToken *)token)->value;
+  else if(isOperatorToken(token, "/")) {                        //barC
+    token = getNewToken(tokenizer, token);
+    if(isIntegerToken(token))
+      opcode = ((opcode + 0x30) << 8) | ((IntegerToken *)token)->value;
+    else
+      throwException(ERR_EXPECTING_INTEGER, token,
+      "Expecting an integer, received '%s' instead", token->str);
+  }
+  checkExtraToken(token, tokenizer);
+  return opcode;
+}
+
+int isIdentifierToken(Token *token, char *identifier) {
+  if(token->type == TOKEN_IDENTIFIER_TYPE)
+    if(stricmp(token->str, identifier))
+      return 0;
+    else
+      return 1;
+  else
+    return 0;
+}
+
+int isIntegerToken(Token* token) {
+  if(token->type == TOKEN_INTEGER_TYPE)
+    if(((IntegerToken* )token)->value > 0xFF)
+    throwException(ERR_INTEGER_OUT_OF_RANGE, token,
+    "Expecting integer of range 0x00-0xFF, received %x instead", ((IntegerToken *)token)->value);
+    else
+      return 1;
+  else
+    return 0;
+}
+
+int isOperatorToken(Token *token, char *Operator) {
+  if(token->type == TOKEN_OPERATOR_TYPE)
+    if(strcmp(token->str, Operator))
+      return 0;
+    else
+      return 1;
+  else
+    return 0;
 }
 
 int extractNum(char *start, Token *token) {
@@ -207,60 +365,34 @@ int extractNum(char *start, Token *token) {
   char *end;
   num = strtol(start, &end, 10);
   if ( (start[0] == end[0]) || (end[0]) )
-    throwException(ERR_INVALID_REGISTER, token, 
+    throwException(ERR_INVALID_REGISTER, token,
     "An invalid register '%s' is inputted", token->str);
   else
     return num;
 }
 
-uint8_t verifyValidRegisterRangeAndReturnRespectiveOpcode(Token *token, uint8_t opcode) {
-  uint8_t opcodeMode = opcode;
-  int addrMode = opcodeMode & 0x0F;
+int verifyValidRegisterRangeAndReturnRegisterNumber(Token *token, int addrMode) {
   int regNum;
-
-  if(tolower(token->str[0]) != 'r')
-    throwException(ERR_INVALID_OPERAND, token, 
-    "Expecting a register, received %s instead", token->str);
 
   regNum = extractNum(token->str+1, token);
 
-  if(addrMode == RegAddr) {
+  if(addrMode == 1) {
     if(regNum > 7)
-      throwException(ERR_REG_OUT_OF_RANGE, token, 
+      throwException(ERR_REG_OUT_OF_RANGE, token,
       "Register %s is out of range, expecting register of R0-R7", token->str);
-  }else if(addrMode == IndAddr) {
+  }else if(addrMode == 0) {
     if(regNum > 1)
-      throwException(ERR_INDIRECT_OUT_OF_RANGE, token, 
+      throwException(ERR_INDIRECT_OUT_OF_RANGE, token,
       "Register indirect %s is out of range, expecting register of R0-R1", token->str);
   }
-  return opcode += regNum;
-}
-
-//yet to implement #xxh immediate format
-int getImmediate(Token *token, int opcode) {
-  if(token->type != TOKEN_INTEGER_TYPE)
-    throwException(ERR_EXPECTING_INTEGER, token, 
-    "Expecting an integer, received '%s' instead", token->str);
-  else if(((IntegerToken *)token)->value < 0x00 || ((IntegerToken *)token)->value > 0xFF)
-    throwException(ERR_IMMEDIATE_OUT_OF_RANGE, token, 
-    "Immediate %x is out of range", ((IntegerToken *)token)->value);
-  else
-    return opcode = (opcode << 8) + (((IntegerToken *)token)->value);
-}
-
-//yet to implement #xxh immediate format
-int getDirect(Token *token, int opcode) {
-  if(((IntegerToken *)token)->value < 0x00 || ((IntegerToken *)token)->value > 0xFF)
-    throwException(ERR_DIRECT_OUT_OF_RANGE, token, 
-    "Direct address %x is out of range", ((IntegerToken *)token)->value);
-  else
-    return opcode = (opcode << 8) + (((IntegerToken *)token)->value);
+  return regNum;
 }
 
 void checkExtraToken(Token *token, Tokenizer *tokenizer) {
-  token = getNewToken(tokenizer, token);
+  freeToken(token);
+  token = getToken(tokenizer);
   if(token->type != TOKEN_NULL_TYPE && token->type != TOKEN_NEWLINE_TYPE)
-    throwException(ERR_EXTRA_PARAMETER, token, 
+    throwException(ERR_EXTRA_PARAMETER, token,
     "Does not expect an extra parameter '%s'", token->str);
   else
     freeToken(token);
