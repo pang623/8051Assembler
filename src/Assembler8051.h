@@ -4,11 +4,16 @@
 #include "Tokenizer.h"
 #include <stdint.h>
 
+//flags
 #define     A_WITH_OPERANDS          (1 << 0)
 #define     DIRECT_WITH_OPERANDS     (1 << 1)
 #define     C_WITH_BIT               (1 << 2)
 #define     INDIRECT_WITH_OPERANDS   (1 << 3)
 #define     REGISTER_WITH_OPERANDS   (1 << 4)
+
+//addressing mode
+#define     REGISTER_ADDRESSING     100
+#define     INDIRECT_ADDRESSING     200
 
 //funcPtr is a pointer to function taking in (Token *token, Tokenizer *tokenizer, uint16_t opcode) 
 //returning integer
