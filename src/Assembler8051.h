@@ -10,6 +10,8 @@
 #define     C_WITH_BIT               (1 << 2)
 #define     INDIRECT_WITH_OPERANDS   (1 << 3)
 #define     REGISTER_WITH_OPERANDS   (1 << 4)
+#define     DIRECT_WITH_A_AND_IMM    (1 << 5)
+#define     C_WITH_BARBIT            (1 << 6)
 
 //addressing mode
 #define     REGISTER_ADDRESSING     100
@@ -34,12 +36,10 @@ int assembleRegWithOperands(Tokenizer *tokenizer, int opcode);
 int assembleDirectWithAandImmediateOnly(Tokenizer *tokenizer, int opcode);
 int assembleDirectWithOperands(Tokenizer *tokenizer, int opcode);
 int assembleAwithOperands(Tokenizer *tokenizer, int opcode);
-int assembleCwithBit(Tokenizer *tokenizer, int opcode);
-//int modifyOpcode_sOperand(Token *token, Tokenizer *tokenizer, _8051Instructions *opcPtr);
+int assembleCwithBit(Tokenizer *tokenizer, int opcode, int flags);
 int verifyValidRegisterRangeAndReturnRegisterNumber(Token *token, int addrMode);
 int extractRegNum(char *start, Token *token);
-void checkExtraToken(Token *token, Tokenizer *tokenizer);
-Token* getNewToken(Tokenizer *tokenizer, Token *token);
+void checkExtraToken(Tokenizer *tokenizer);
 int isOperatorToken(Token *token, char *Operator);
 int isIdentifierToken(Token *token, char *identifier);
 int isIntegerToken(Token *token);
