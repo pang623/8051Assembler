@@ -287,6 +287,81 @@ void test_assembleDirectWithAandImmediateOnly_given_0xED_with_Imm_0xFF_expect_op
   freeTokenizer(tokenizer);
 }
 
+void test_assembleDirectWithOperands_given_0xCD_with_A_expect_opcode_0x45CD() {
+  Token* token;
+  Tokenizer* tokenizer;
+  int opcode;
+  Try{
+    tokenizer = createTokenizer("0xCD, A");
+    opcode = assembleDirectWithOperands(tokenizer, 0x40);
+    TEST_ASSERT_EQUAL(0x45CD, opcode);
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleDirectWithOperands_given_0x7A_with_R4_expect_opcode_0x1C7A() {
+  Token* token;
+  Tokenizer* tokenizer;
+  int opcode;
+  Try{
+    tokenizer = createTokenizer("0x7A, R4");
+    opcode = assembleDirectWithOperands(tokenizer, 0x10);
+    TEST_ASSERT_EQUAL(0x1C7A, opcode);
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleDirectWithOperands_given_0xCC_with_indirectR1_expect_opcode_0x27CC() {
+  Token* token;
+  Tokenizer* tokenizer;
+  int opcode;
+  Try{
+    tokenizer = createTokenizer("0xCC, @r1");
+    opcode = assembleDirectWithOperands(tokenizer, 0x20);
+    TEST_ASSERT_EQUAL(0x27CC, opcode);
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleDirectWithOperands_given_0x03_with_imm_0xBA_expect_opcode_0x6503BA() {
+  Token* token;
+  Tokenizer* tokenizer;
+  int opcode;
+  Try{
+    tokenizer = createTokenizer("0x03, #0xBA");
+    opcode = assembleDirectWithOperands(tokenizer, 0x60);
+    TEST_ASSERT_EQUAL(0x6503BA, opcode);
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleDirectWithOperands_given_0x9C_with_0xC9_expect_opcode_0x85C99C() {
+  Token* token;
+  Tokenizer* tokenizer;
+  int opcode;
+  Try{
+    tokenizer = createTokenizer("0x9C, 0xC9");
+    opcode = assembleDirectWithOperands(tokenizer, 0x80);
+    TEST_ASSERT_EQUAL(0x85C99C, opcode);
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
 void test_assembleRegWithOperands_given_invalid_last_operand_expect_exception_ERR_INVALID_OPERAND_to_be_thrown() {
   Token* token;
   Tokenizer* tokenizer;

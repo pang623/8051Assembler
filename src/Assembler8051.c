@@ -146,7 +146,7 @@ int assembleIndirectWithOperands(Tokenizer *tokenizer, int opcode) {
   freeToken(token);
   token = getToken(tokenizer);
   if(tolower(token->str[0]) == 'r')
-    regNum = verifyValidRegisterRangeAndReturnRegisterNumber(token, 0);
+    regNum = verifyValidRegisterRangeAndReturnRegisterNumber(token, INDIRECT_ADDRESSING);
   else
     throwException(ERR_EXPECTING_REGISTER, token,
     "Expecting a register, received %s instead", token->str);
@@ -179,7 +179,7 @@ int assembleIndirectWithOperands(Tokenizer *tokenizer, int opcode) {
 int assembleRegWithOperands(Tokenizer *tokenizer, int opcode) {
   Token *token;
   token = getToken(tokenizer);
-  int regNum = verifyValidRegisterRangeAndReturnRegisterNumber(token, 1);
+  int regNum = verifyValidRegisterRangeAndReturnRegisterNumber(token, REGISTER_ADDRESSING);
   freeToken(token);
   token = getToken(tokenizer);
   if(!isOperatorToken(token, ","))
@@ -278,7 +278,6 @@ int assembleDirectWithOperands(Tokenizer *tokenizer, int opcode) {
   int direct = ((IntegerToken *)token)->value;
   freeToken(token);
   token = getToken(tokenizer);
-  printf("%s", token->str);
   if(!isOperatorToken(token, ","))
     throwException(ERR_INVALID_OPERAND, token,
     "Expecting a comma , received %s instead", token->str);
