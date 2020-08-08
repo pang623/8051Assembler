@@ -13,6 +13,16 @@
 #define     DIRECT_WITH_A_AND_IMM    (1 << 5)
 #define     C_WITH_BARBIT            (1 << 6)
 
+//single operand flags
+#define     ROTATE_A                 (1 << 7)
+#define     OTHER_A                  (1 << 8)
+#define     OPERAND_AB               (1 << 9)
+#define     OPERAND_REG              (1 << 10)
+#define     OPERAND_INDIRECT         (1 << 11)
+#define     STACK_DIRECT             (1 << 12)
+#define     OTHER_DIRECT             (1 << 13)
+#define     OPERAND_C                (1 << 14)
+
 //addressing mode
 #define     REGISTER_ADDRESSING     100
 #define     INDIRECT_ADDRESSING     200
@@ -31,6 +41,7 @@ struct _8051Instructions {
 int assembleInstruction(Tokenizer *tokenizer);
 int assembleArithAndLogicalOperation(Tokenizer *tokenizer, _8051Instructions *info);
 int assembleMovOperation(Tokenizer *tokenizer, _8051Instructions *info);
+int assembleSingleOperand(Tokenizer *tokenizer, _8051Instructions *info);
 int assembleIndirectWithOperands(Tokenizer *tokenizer, int opcode);
 int assembleRegWithOperands(Tokenizer *tokenizer, int opcode);
 int assembleDirectWithAandImmediateOnly(Tokenizer *tokenizer, int opcode);

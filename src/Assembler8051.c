@@ -16,12 +16,20 @@ _8051Instructions instructionsTable[] = {
   {"add" , assembleArithAndLogicalOperation, {0x20, A_WITH_OPERANDS}},
   {"addc", assembleArithAndLogicalOperation, {0x30, A_WITH_OPERANDS}},
   {"subb", assembleArithAndLogicalOperation, {0x90, A_WITH_OPERANDS}},
+  {"div" , assembleSingleOperand           , {0x80, OPERAND_AB}},
+  {"mul" , assembleSingleOperand           , {0xA0, OPERAND_AB}},
   {"orl" , assembleArithAndLogicalOperation, {0x40, A_WITH_OPERANDS | DIRECT_WITH_A_AND_IMM | C_WITH_BIT | C_WITH_BARBIT}},
   {"anl" , assembleArithAndLogicalOperation, {0x50, A_WITH_OPERANDS | DIRECT_WITH_A_AND_IMM | C_WITH_BIT | C_WITH_BARBIT}},
   {"xrl" , assembleArithAndLogicalOperation, {0x60, A_WITH_OPERANDS | DIRECT_WITH_A_AND_IMM}},
   {"mov" , assembleMovOperation,  {0xE0, A_WITH_OPERANDS | DIRECT_WITH_OPERANDS | C_WITH_BIT | INDIRECT_WITH_OPERANDS | REGISTER_WITH_OPERANDS}},
- // {"inc" , modifyOpcode_sOperand, 0x04, 0x05, 0x06, 0x08},
- // {"dec" , modifyOpcode_sOperand, 0x14, 0x15, 0x16, 0x18},
+//  instruction     instr. ptr                 opcode           flags for destination (second operand)                    flags for source (last operand)
+//                                             data[0]                  data[1]                                                 data[2]
+//  {"xch" , assembleArithAndLogicalOperation, {0xC0, A_WITH_OPERANDS, A_WITH_DIRECT | A_WITH_INDIRECT | A_WITH_REGISTER}},
+//  {"xchd", assembleArithAndLogicalOperation, {0xD0, A_WITH_OPERANDS, A_WITH_INDIRECT}},
+//  {"orl" , assembleArithAndLogicalOperation, {0x40, A_WITH_OPERANDS | DIRECT_WITH_OPERANDS | C_WITH_OPERANDS, A_WITH_OPERANDS | DIRECT_WITH_OPERANDS | C_WITH_OPERANDS}},
+//  {"xrl" , assembleArithAndLogicalOperation, {0x60, A_WITH_OPERANDS | DIRECT_WITH_OPERANDS,                   A_WITH_OPERANDS | DIRECT_WITH_OPERANDS}},
+//  {"mov" , assembleMovOperation,             {0xE0, A_WITH_OPERANDS | DIRECT_WITH_OPERANDS | C_WITH_OPERANDS | INDIRECT_WITH_OPERANDS | REGISTER_WITH_OPERANDS,
+//                                              A_WITH_OPERANDS | DIRECT_WITH_OPERANDS | C_WITH_BIT | INDIRECT_WITH_OPERANDS | REGISTER_WITH_OPERANDS}},
   /*
   *
   *
@@ -138,6 +146,60 @@ int assembleArithAndLogicalOperation(Tokenizer *tokenizer, _8051Instructions *in
     throwException(ERR_INVALID_OPERAND, token,
     "An invalid operand of %s has been inputted", token->str);
 
+  return opcode;
+}
+
+int assembleSingleOperand(Tokenizer *tokenizer, _8051Instructions *info) {
+  Token *token;
+  int opcode, regNum;
+  token = getToken(tokenizer);
+  if(isIdentifierToken(token, "A")) {
+    if(info->data[1] & ROTATE_A)
+      opcode = info->data[0] | 0x03;
+    else if(info->data[1] & OTHER_A)
+      opcode = info->data[0] | 0x04;
+    else
+      throwException(ERR_INVALID_OPERAND, token,
+      "Did not expect %s as an operand", token->str);
+  }else if(isIdentifierToken(token, "AB")) {
+    if(info->data[1] & OPERAND_AB)
+      opcode = info->data[0] | 0x04;
+    else
+      throwException(ERR_INVALID_OPERAND, token,
+      "Did not expect %s as an operand", token->str);
+  }else if(tolower(token->str[0]) == 'r') {
+    if(info->data[1] & OPERAND_REG) {
+      regNum = verifyValidRegisterRangeAndReturnRegisterNumber(token, REGISTER_ADDRESSING);
+      opcode = (info->data[0] | 0x08) + regNum;
+    }else
+      throwException(ERR_INVALID_OPERAND, token,
+      "Did not expect %s as an operand", token->str);
+  }else if(isOperatorToken(token, "@")) {
+    if(info->data[1] & OPERAND_INDIRECT) {
+      token = getToken(tokenizer);
+      if(tolower(token->str[0]) == 'r') {
+        regNum = verifyValidRegisterRangeAndReturnRegisterNumber(token, INDIRECT_ADDRESSING);
+        opcode = (info->data[0] | 0x06) + regNum;
+      }else
+        throwException(ERR_EXPECTING_REGISTER, token,
+        "Expecting a register, received %s instead", token->str);
+    }else
+      throwException(ERR_INVALID_OPERAND, token,
+      "Did not expect %s as an operand", token->str);
+  }else if(isIntegerToken(token)) {
+    if(info->data[1] & STACK_DIRECT)
+      opcode = (info->data[0] << 8) | ((IntegerToken *)token)->value;
+    else if(info->data[1] & OTHER_DIRECT)
+      opcode = ((info->data[0] | 0x05) << 8) | ((IntegerToken *)token)->value;
+    else
+      throwException(ERR_INVALID_OPERAND, token,
+      "Did not expect %s as an operand", token->str);
+  }else
+    throwException(ERR_INVALID_OPERAND, token,
+    "An invalid operand of %s has been inputted", token->str);
+  
+  freeToken(token);
+  checkExtraToken(tokenizer);
   return opcode;
 }
 
