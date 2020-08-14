@@ -9,19 +9,14 @@
 #define     C_WITH_OPERANDS          (1 << 4)
 
 //flags(DIRECT)(src)
-#define     DIRECT_A_LOGICAL         (1 << 5)
-#define     DIRECT_A_OTHER           (1 << 6)
-#define     DIRECT_REG               (1 << 7)
-#define     DIRECT_DIRECT            (1 << 8)
-#define     DIRECT_IMM_LOGICAL       (1 << 9)
-#define     DIRECT_IMM_OTHER         (1 << 10)
-#define     DIRECT_INDIRECT          (1 << 11)
+#define     DIR_A         (1 << 5)
+#define     DIR_IMM           (1 << 6)
 
 //flags(A)(src)
-#define     A_WITH_REGISTER          (1 << 12)
-#define     A_WITH_INDIRECT          (1 << 13)
-#define     A_WITH_IMMEDIATE         (1 << 14)
-#define     A_WITH_DIRECT            (1 << 15)
+#define     A_REG          (1 << 12)
+#define     A_IND          (1 << 13)
+#define     A_IMM         (1 << 14)
+#define     A_DIR            (1 << 15)
 
 //flags(REG)(src)
 #define     REG_WITH_A               (1 << 16)
@@ -34,8 +29,8 @@
 #define     INDIRECT_IMM             (1 << 21)
 
 //flags(C)(src)
-#define     C_WITH_BIT               (1 << 22)
-#define     C_WITH_BARBIT            (1 << 23)
+#define     C_BIT               (1 << 22)
+#define     C_BARBIT            (1 << 23)
 
 //single operand flags
 #define     ROTATE_A                 (1 << 24)

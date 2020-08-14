@@ -2,7 +2,6 @@
 #define ASSEMBLER8051_H
 
 #include "Tokenizer.h"
-#include <stdint.h>
 
 //addressing mode
 #define     REGISTER_ADDRESSING     100
@@ -19,20 +18,28 @@ struct _8051Instructions {
   int data[3];
 };
 
-int assembleInstruction(Tokenizer *tokenizer);
-int assembleArithAndLogicalOperation(Tokenizer *tokenizer, _8051Instructions *info);
-int assembleMovOperation(Tokenizer *tokenizer, _8051Instructions *info);
-int assembleSingleOperand(Tokenizer *tokenizer, _8051Instructions *info);
-int assembleIndirectWithOperands(Tokenizer *tokenizer, int opcode, int flags);
-int assembleRegWithOperands(Tokenizer *tokenizer, int opcode, int flags);
-int assembleAwithOperands(Tokenizer *tokenizer, int opcode, int flags);
+int assembleAllInstruction(Tokenizer *tokenizer);
+int assembleMOVCInstruction(Tokenizer *tokenizer, _8051Instructions *info);
+int assembleInstructionWithOnlyAccAsFirstOperand(Tokenizer *tokenizer, _8051Instructions *info);
+int assembleLogicalInstructionWithoutXRL(Tokenizer *tokenizer, _8051Instructions *info);
+int assembleXRLinstruction(Tokenizer *tokenizer, _8051Instructions *info);
+//int assembleMovOperation(Tokenizer *tokenizer, _8051Instructions *info);
+//int assembleSingleOperand(Tokenizer *tokenizer, _8051Instructions *info);
+//int assembleIndirectWithOperands(Tokenizer *tokenizer, int opcode, int flags);
+//int assembleRegWithOperands(Tokenizer *tokenizer, int opcode, int flags);
+int assembleAWithOperands(Tokenizer *tokenizer, int opcode, int flags);
 int assembleDirectWithOperands(Tokenizer *tokenizer, int opcode, int flags);
-int assembleCwithBit(Tokenizer *tokenizer, int opcode, int flags);
-int verifyValidRegisterRangeAndReturnRegisterNumber(Token *token, int addrMode);
-int extractRegNum(char *start, Token *token);
+int assembleCWithOperands(Tokenizer *tokenizer, int opcode, int flags);
+int extractNum(char *start, Token *token);
 void checkExtraToken(Tokenizer *tokenizer);
-int isOperatorToken(Token *token, char *Operator);
-int isIdentifierToken(Token *token, char *identifier);
-int isIntegerToken(Token *token);
+int isOperatorTokenThenConsume(Tokenizer *tokenizer, char *Operator);
+void verifyIsOperatorTokenThenConsume(Tokenizer *tokenizer, char *Operator);
+int isIdentifierTokenThenConsume(Tokenizer *tokenizer, char *identifier);
+void verifyIsIdentifierTokenThenConsume(Tokenizer *tokenizer, char *identifier);
+int isIntegerTokenThenConsume(Tokenizer *tokenizer, int *value);
+void verifyIsIntegerTokenThenConsume(Tokenizer *tokenizer, int *value);
+int isRegisterAndGetItsNumber(Tokenizer *tokenizer, int addrMode, int *number);
+void verifyIsRegisterAndGetItsNumber(Tokenizer *tokenizer, int addrMode, int *number);
+void throwInvalidOperandException(Token *token);
 
 #endif // ASSEMBLER8051_H
