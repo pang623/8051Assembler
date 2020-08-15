@@ -19,27 +19,29 @@ struct _8051Instructions {
 };
 
 int assembleAllInstruction(Tokenizer *tokenizer);
+int assembleMOVInstruction(Tokenizer *tokenizer, _8051Instructions *info);
 int assembleMOVCInstruction(Tokenizer *tokenizer, _8051Instructions *info);
+int assembleMOVXInstruction(Tokenizer *tokenizer, _8051Instructions *info);
 int assembleInstructionWithOnlyAccAsFirstOperand(Tokenizer *tokenizer, _8051Instructions *info);
 int assembleLogicalInstructionWithoutXRL(Tokenizer *tokenizer, _8051Instructions *info);
 int assembleXRLinstruction(Tokenizer *tokenizer, _8051Instructions *info);
-//int assembleMovOperation(Tokenizer *tokenizer, _8051Instructions *info);
 //int assembleSingleOperand(Tokenizer *tokenizer, _8051Instructions *info);
-//int assembleIndirectWithOperands(Tokenizer *tokenizer, int opcode, int flags);
-//int assembleRegWithOperands(Tokenizer *tokenizer, int opcode, int flags);
 int assembleAWithOperands(Tokenizer *tokenizer, int opcode, int flags);
 int assembleDirectWithOperands(Tokenizer *tokenizer, int opcode, int flags);
 int assembleCWithOperands(Tokenizer *tokenizer, int opcode, int flags);
-int extractNum(char *start, Token *token);
-void checkExtraToken(Tokenizer *tokenizer);
 int isOperatorTokenThenConsume(Tokenizer *tokenizer, char *Operator);
 void verifyIsOperatorTokenThenConsume(Tokenizer *tokenizer, char *Operator);
 int isIdentifierTokenThenConsume(Tokenizer *tokenizer, char *identifier);
 void verifyIsIdentifierTokenThenConsume(Tokenizer *tokenizer, char *identifier);
-int isIntegerTokenThenConsume(Tokenizer *tokenizer, int *value);
-void verifyIsIntegerTokenThenConsume(Tokenizer *tokenizer, int *value);
+int isIntegerTokenThenConsume(Tokenizer *tokenizer, int *value, int integerRange);
+void verifyIsIntegerTokenThenConsume(Tokenizer *tokenizer, int *value, int integerRange);
 int isRegisterAndGetItsNumber(Tokenizer *tokenizer, int addrMode, int *number);
 void verifyIsRegisterAndGetItsNumber(Tokenizer *tokenizer, int addrMode, int *number);
+int isIndRegisterThenGetItsNumberAndConsume(Tokenizer *tokenizer, int *number);
+int isImmediateThenGetsItsValueAndConsume(Tokenizer *tokenizer, int *value, int integerRange);
+void verifyIsImmediateThenGetsItsValueAndConsume(Tokenizer *tokenizer, int *value, int integerRange);
+int extractNum(char *start, Token *token);
+void checkExtraToken(Tokenizer *tokenizer);
 void throwInvalidOperandException(Token *token);
 
 #endif // ASSEMBLER8051_H
