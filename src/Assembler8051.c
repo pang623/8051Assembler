@@ -392,7 +392,7 @@ void verifyIsIntegerTokenThenConsume(Tokenizer *tokenizer, int *value, int integ
   int val = 0;
   if(!isIntegerTokenThenConsume(tokenizer, &val, integerRange)) {
     token = getToken(tokenizer);
-    throwException(ERR_INVALID_OPERAND, token,
+    throwException(ERR_EXPECTING_INTEGER, token,
     "Expecting integer, but received %s instead", token->str);
   }else
     *value = val;

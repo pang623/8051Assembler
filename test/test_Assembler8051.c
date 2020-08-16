@@ -256,6 +256,174 @@ void test_assembleAllInstruction_given_xchd_a_with_indirect_reg_expect_opcode_0x
   freeTokenizer(tokenizer);
 }
 
+void test_isIndRegisterThenGetItsNumberAndConsume_given_indR0_token_expect_number_extracted_is_0_and_token_is_consumed() {
+  Tokenizer* tokenizer;
+  Token *token;
+  int number = 8;
+  Try{
+    tokenizer = createTokenizer(" @r0 , A");
+    int isTrue = isIndRegisterThenGetItsNumberAndConsume(tokenizer, &number);
+    token = getToken(tokenizer);
+    TEST_ASSERT_EQUAL(0, number);                           //token is indirect, so number is extracted
+    TEST_ASSERT_EQUAL_STRING("," , token->str);             //token is indirect, so token is consumed
+    TEST_ASSERT_EQUAL(1, isTrue);                           //token is indirect, so function returns true
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_isIndRegisterThenGetItsNumberAndConsume_given_not_indirect_expect_number_is_not_extracted_and_token_is_pushed_back() {
+  Tokenizer* tokenizer;
+  Token *token;
+  int number = 8;
+  Try{
+    tokenizer = createTokenizer("r3 #0x55");
+    int isTrue = isIndRegisterThenGetItsNumberAndConsume(tokenizer, &number);
+    token = getToken(tokenizer);
+    TEST_ASSERT_EQUAL(8, number);                           //number is not extracted since token is not indirect
+    TEST_ASSERT_EQUAL_STRING("r3", token->str);             //token is not consumed since its not indirect
+    TEST_ASSERT_EQUAL(0, isTrue);                           //function returns false since token is not indirect
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_isIndRegisterThenGetItsNumberAndConsume_given_is_indReg_but_invalidReg_expect_exception_ERR_INVALID_REGISTER_to_be_thrown() {
+  Tokenizer* tokenizer;
+  int number;
+  Try{
+    tokenizer = createTokenizer("    @ratatouille ");
+    int isTrue = isIndRegisterThenGetItsNumberAndConsume(tokenizer, &number);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_INVALID_REGISTER, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_isIndRegisterThenGetItsNumberAndConsume_given_is_indReg_but_outOfRange_expect_exception_ERR_INDIRECT_OUT_OF_RANGE_to_be_thrown() {
+  Tokenizer* tokenizer;
+  int number;
+  Try{
+    tokenizer = createTokenizer("  @r3 ");
+    int isTrue = isIndRegisterThenGetItsNumberAndConsume(tokenizer, &number);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_INDIRECT_OUT_OF_RANGE, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+//@A+DPTR, @A+PC and @DPTR operands are only found in MOVX and MOVC instructions,
+//all other instructions have only @Ri as operands, which also means when @ token is detected,
+//automatically the token next to it must be a register, 
+//this function is not used in assembling MOVX and MOVC instruction (@Ri is not checked using this function for MOVX and MOVC)
+void test_isIndRegisterThenGetItsNumberAndConsume_given_is_ind_but_not_register_expect_exception_ERR_EXPECTING_REGISTER_to_be_thrown() {
+  Tokenizer* tokenizer;
+  int number;
+  Try{
+    tokenizer = createTokenizer("  @hello ");
+    int isTrue = isIndRegisterThenGetItsNumberAndConsume(tokenizer, &number);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_EXPECTING_REGISTER, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_isImmediateThenGetsItsValueAndConsume_given_imm0xFA_token_expect_value_extracted_is_0xFA_and_token_is_consumed() {
+  Tokenizer* tokenizer;
+  Token *token;
+  int value = 0xAA;
+  Try{
+    tokenizer = createTokenizer("   #0xFa@123");
+    //maximum range is set to 0xFF, 0xFA is in range
+    int isTrue = isImmediateThenGetsItsValueAndConsume(tokenizer, &value, 0xFF);
+    token = getToken(tokenizer);
+    TEST_ASSERT_EQUAL(0xFA, value);                         //token is immediate, so value is extracted
+    TEST_ASSERT_EQUAL_STRING("@" , token->str);             //token is immediate, so token is consumed
+    TEST_ASSERT_EQUAL(1, isTrue);                           //token is immediate, so function returns true
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_isImmediateThenGetsItsValueAndConsume_given_imm0xA5A5_token_expect_value_extracted_is_0xA5A5_and_token_is_consumed() {
+  Tokenizer* tokenizer;
+  Token *token;
+  int value = 0xB0;
+  Try{
+    tokenizer = createTokenizer(" #0xa5A5 happy");
+    //maximum range is set to 0xFFFF, 0xA5A5 is in range
+    int isTrue = isImmediateThenGetsItsValueAndConsume(tokenizer, &value, 0xFFFF);
+    token = getToken(tokenizer);
+    TEST_ASSERT_EQUAL(0xA5A5, value);                       //token is immediate, so value is extracted
+    TEST_ASSERT_EQUAL_STRING("happy" , token->str);         //token is immediate, so token is consumed
+    TEST_ASSERT_EQUAL(1, isTrue);                           //token is immediate, so function returns true
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_isImmediateThenGetsItsValueAndConsume_given_not_imm_expect_value_is_not_extracted_and_token_is_pushed_back() {
+  Tokenizer* tokenizer;
+  Token *token;
+  int value = 0x88;
+  Try{
+    tokenizer = createTokenizer(" 0xA0 haha");
+    int isTrue = isImmediateThenGetsItsValueAndConsume(tokenizer, &value, 0xFF);
+    token = getToken(tokenizer);
+    TEST_ASSERT_EQUAL(0x88, value);                         //value is not extracted since token is not immediate
+    TEST_ASSERT_EQUAL_STRING("0xA0", token->str);           //token is not consumed since its not immediate
+    TEST_ASSERT_EQUAL(0, isTrue);                           //function returns false since token is not immediate
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_isImmediateThenGetsItsValueAndConsume_given_is_imm_but_outOfRange_expect_exception_ERR_INTEGER_OUT_OF_RANGE_to_be_thrown() {
+  Tokenizer* tokenizer;
+  int value;
+  Try{
+    tokenizer = createTokenizer("#0xFFA  ");
+    int isTrue = isImmediateThenGetsItsValueAndConsume(tokenizer, &value, 0xFF);      //maximum range is set to 0xFF
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_INTEGER_OUT_OF_RANGE, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+//when token # is detected, it indicates it is immediate,
+//automatically the token next to it must be integer
+void test_isImmediateThenGetsItsValueAndConsume_given_is_imm_but_not_integer_expect_exception_ERR_EXPECTING_INTEGER_to_be_thrown() {
+  Tokenizer* tokenizer;
+  int value;
+  Try{
+    tokenizer = createTokenizer("  #R7  ");
+    int isTrue = isImmediateThenGetsItsValueAndConsume(tokenizer, &value, 0xFF);      //maximum range is set to 0xFF
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_EXPECTING_INTEGER, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
 /*
 void test_assembleInstruction_given_DIV_AB_expect_opcode_0x84() {
   Tokenizer* tokenizer;
@@ -439,34 +607,6 @@ void test_assembleDirectWithOperands_given_0x03_with_imm_0xBA_and_DIRECT_IMM_OTH
   freeTokenizer(tokenizer);
 }
 
-void test_assembleRegWithOperands_given_invalid_last_operand_expect_exception_ERR_INVALID_OPERAND_to_be_thrown() {
-  Tokenizer* tokenizer;
-  int opcode;
-  Try{
-    tokenizer = createTokenizer("R6, AB");
-    opcode = assembleRegWithOperands(tokenizer, 0x80, REGISTER_WITH_OPERANDS);
-    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
-  } Catch(e){
-    dumpTokenErrorMessage(e, 1);
-    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
-  }
-  freeTokenizer(tokenizer);
-}
-
-void test_assembleRegWithOperands_given_R6_with_imm_and_no_REG_WITH_IMM_flag_expect_exception_ERR_INVALID_OPERAND_to_be_thrown() {
-  Tokenizer* tokenizer;
-  int opcode;
-  Try{
-    tokenizer = createTokenizer("R6, #0x23");
-    opcode = assembleRegWithOperands(tokenizer, 0x80, REG_WITH_A);
-    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
-  } Catch(e){
-    dumpTokenErrorMessage(e, 1);
-    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
-  }
-  freeTokenizer(tokenizer);
-}
-
 void test_assembleAwithOperands_given_invalid_last_operand_expect_exception_ERR_INVALID_OPERAND_to_be_thrown() {
   Tokenizer* tokenizer;
   int opcode;
@@ -505,20 +645,6 @@ void test_assembleDirectWithOperands_given_invalid_indirect_expect_exception_ERR
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
     TEST_ASSERT_EQUAL(ERR_EXPECTING_REGISTER, e->errorCode);
-  }
-  freeTokenizer(tokenizer);
-}
-
-void test_assembleIndirectWithOperands_given_invalid_last_operand_expect_exception_ERR_INVALID_OPERAND_to_be_thrown() {
-  Tokenizer* tokenizer;
-  int opcode;
-  Try{
-    tokenizer = createTokenizer("@r0, @R1");
-    opcode = assembleIndirectWithOperands(tokenizer, 0x20);
-    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
-  } Catch(e){
-    dumpTokenErrorMessage(e, 1);
-    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
   }
   freeTokenizer(tokenizer);
 }
