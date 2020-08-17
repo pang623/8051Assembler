@@ -25,7 +25,7 @@ int assembleMOVXInstruction(Tokenizer *tokenizer, _8051Instructions *info);
 int assembleInstructionWithOnlyAccAsFirstOperand(Tokenizer *tokenizer, _8051Instructions *info);
 int assembleLogicalInstructionWithoutXRL(Tokenizer *tokenizer, _8051Instructions *info);
 int assembleXRLinstruction(Tokenizer *tokenizer, _8051Instructions *info);
-//int assembleSingleOperand(Tokenizer *tokenizer, _8051Instructions *info);
+int assembleSingleOperand(Tokenizer *tokenizer, _8051Instructions *info);
 int assembleAWithOperands(Tokenizer *tokenizer, int opcode, int flags);
 int assembleDirectWithOperands(Tokenizer *tokenizer, int opcode, int flags);
 int assembleCWithOperands(Tokenizer *tokenizer, int opcode, int flags);

@@ -256,6 +256,34 @@ void test_assembleAllInstruction_given_xchd_a_with_indirect_reg_expect_opcode_0x
   freeTokenizer(tokenizer);
 }
 
+void test_assembleAllInstruction_given_DIV_AB_expect_opcode_0x84() {
+  Tokenizer* tokenizer;
+  int opcode;
+  Try{
+    tokenizer = createTokenizer("dIv aB");
+    opcode = assembleAllInstruction(tokenizer);
+    TEST_ASSERT_EQUAL(0x84, opcode);
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleAllInstruction_given_ret_expect_opcode_0x22() {
+  Tokenizer* tokenizer;
+  int opcode;
+  Try{
+    tokenizer = createTokenizer("rET  ");
+    opcode = assembleAllInstruction(tokenizer);
+    TEST_ASSERT_EQUAL(0x22, opcode);
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
 void test_isIndRegisterThenGetItsNumberAndConsume_given_indR0_token_expect_number_extracted_is_0_and_token_is_consumed() {
   Tokenizer* tokenizer;
   Token *token;
@@ -415,7 +443,7 @@ void test_isImmediateThenGetsItsValueAndConsume_given_is_imm_but_not_integer_exp
   int value;
   Try{
     tokenizer = createTokenizer("  #R7  ");
-    int isTrue = isImmediateThenGetsItsValueAndConsume(tokenizer, &value, 0xFF);      //maximum range is set to 0xFF
+    int isTrue = isImmediateThenGetsItsValueAndConsume(tokenizer, &value, 0xFF);
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
@@ -424,35 +452,116 @@ void test_isImmediateThenGetsItsValueAndConsume_given_is_imm_but_not_integer_exp
   freeTokenizer(tokenizer);
 }
 
+void test_verifyIsImmediateThenGetsItsValueAndConsume_given_is_imm_expect_value_is_extracted_and_token_is_consumed() {
+  Tokenizer* tokenizer;
+  Token *token;
+  int value = 0x70;
+  Try{
+    tokenizer = createTokenizer("     #0x11A hehe");
+    verifyIsImmediateThenGetsItsValueAndConsume(tokenizer, &value, 0xFFFF);
+    token = getToken(tokenizer);
+    TEST_ASSERT_EQUAL(0x11A, value);
+    TEST_ASSERT_EQUAL_STRING("hehe", token->str);
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_verifyIsImmediateThenGetsItsValueAndConsume_given_not_imm_expect_exception_ERR_INVALID_OPERAND_to_be_thrown() {
+  Tokenizer* tokenizer;
+  int value;
+  Try{
+    tokenizer = createTokenizer(" @r0  ");
+    verifyIsImmediateThenGetsItsValueAndConsume(tokenizer, &value, 0xFF);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_isOperatorTokenThenConsume_given_is_correct_operator_expect_token_is_consumed_and_return_1() {
+  Tokenizer* tokenizer;
+  Token *token;
+  Try{
+    tokenizer = createTokenizer(" @r0, r1");
+    int isTrue = isOperatorTokenThenConsume(tokenizer, "@");
+    token = getToken(tokenizer);
+    TEST_ASSERT_EQUAL(1, isTrue);
+    TEST_ASSERT_EQUAL_STRING("r0", token->str);
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_isOperatorTokenThenConsume_given_wrong_operator_expect_token_is_pushed_back_and_return_0() {
+  Tokenizer* tokenizer;
+  Token *token;
+  Try{
+    tokenizer = createTokenizer(" $hello  ");
+    int isTrue = isOperatorTokenThenConsume(tokenizer, "#");
+    token = getToken(tokenizer);
+    TEST_ASSERT_EQUAL(0, isTrue);
+    TEST_ASSERT_EQUAL_STRING("$", token->str);
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_isOperatorTokenThenConsume_given_not_operator_expect_token_is_pushed_back_and_return_0() {
+  Tokenizer* tokenizer;
+  Token *token;
+  Try{
+    tokenizer = createTokenizer(" doom  ");
+    int isTrue = isOperatorTokenThenConsume(tokenizer, "%");
+    token = getToken(tokenizer);
+    TEST_ASSERT_EQUAL(0, isTrue);
+    TEST_ASSERT_EQUAL_STRING("doom", token->str);
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_verifyIsOperatorTokenThenConsume_given_is_correct_operator_expect_token_is_consumed_and_return_1() {
+  Tokenizer* tokenizer;
+  Token *token;
+  Try{
+    tokenizer = createTokenizer(" +#@ret");
+    int isTrue = isOperatorTokenThenConsume(tokenizer, "+");
+    token = getToken(tokenizer);
+    TEST_ASSERT_EQUAL(1, isTrue);
+    TEST_ASSERT_EQUAL_STRING("#", token->str);
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_verifyIsOperatorTokenThenConsume_given_wrong_operator_expect_exception_ERR_INVALID_OPERAND_to_be_thrown() {
+  Tokenizer* tokenizer;
+  int value;
+  Try{
+    tokenizer = createTokenizer(" -A+B  ");
+    verifyIsOperatorTokenThenConsume(tokenizer, "=");
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
 /*
-void test_assembleInstruction_given_DIV_AB_expect_opcode_0x84() {
-  Tokenizer* tokenizer;
-  int opcode;
-  Try{
-    tokenizer = createTokenizer("dIv Ab");
-    opcode = assembleInstruction(tokenizer);
-    TEST_ASSERT_EQUAL(0x84, opcode);
-  } Catch(e){
-    dumpTokenErrorMessage(e, 1);
-    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
-  }
-  freeTokenizer(tokenizer);
-}
-
-void test_assembleInstruction_given_ret_expect_opcode_0x22() {
-  Tokenizer* tokenizer;
-  int opcode;
-  Try{
-    tokenizer = createTokenizer("rET");
-    opcode = assembleInstruction(tokenizer);
-    TEST_ASSERT_EQUAL(0x22, opcode);
-  } Catch(e){
-    dumpTokenErrorMessage(e, 1);
-    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
-  }
-  freeTokenizer(tokenizer);
-}
-
 void test_assembleAwithOperands_given_AWithIndirect_expect_opcode_0x46() {
   Tokenizer* tokenizer;
   int opcode;

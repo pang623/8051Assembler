@@ -15,18 +15,18 @@ _8051Instructions instructionsTable[] = {
   {"nop" , NULL                                        , {0x00, 0}},
   {"ret" , NULL                                        , {0x22, 0}},
   {"reti", NULL                                        , {0x32, 0}},
-/*  {"div" , assembleSingleOperand                       , {0x80, OPERAND_AB}},
+  {"div" , assembleSingleOperand                       , {0x80, OPERAND_AB}},
   {"mul" , assembleSingleOperand                       , {0xA0, OPERAND_AB}},
-  {"swap", assembleSingleOperand                       , {0xC0, OTHER_A}},
-  {"da"  , assembleSingleOperand                       , {0xD0, OTHER_A}},
-  {"rl"  , assembleSingleOperand                       , {0x20, ROTATE_A}},
-  {"rlc" , assembleSingleOperand                       , {0x30, ROTATE_A}},
-  {"rr"  , assembleSingleOperand                       , {0x00, ROTATE_A}},
-  {"rrc" , assembleSingleOperand                       , {0x10, ROTATE_A}},
-  {"push", assembleSingleOperand                       , {0xC0, STACK_DIRECT}},
-  {"pop" , assembleSingleOperand                       , {0xD0, STACK_DIRECT}},
-  {"inc" , assembleSingleOperand                       , {0x00, OTHER_A | OPERAND_REG | OTHER_DIRECT | OPERAND_INDIRECT}},
-  {"dec" , assembleSingleOperand                       , {0x10, OTHER_A | OPERAND_REG | OTHER_DIRECT | OPERAND_INDIRECT}},*/
+  {"swap", assembleSingleOperand                       , {0xC0, OPERAND_A}},
+  {"da"  , assembleSingleOperand                       , {0xD0, OPERAND_A}},
+  {"rl"  , assembleSingleOperand                       , {0x20, OPERAND_A_ROT}},
+  {"rlc" , assembleSingleOperand                       , {0x30, OPERAND_A_ROT}},
+  {"rr"  , assembleSingleOperand                       , {0x00, OPERAND_A_ROT}},
+  {"rrc" , assembleSingleOperand                       , {0x10, OPERAND_A_ROT}},
+  {"push", assembleSingleOperand                       , {0xC0, OPERAND_DIR_STACK}},
+  {"pop" , assembleSingleOperand                       , {0xD0, OPERAND_DIR_STACK}},
+  {"inc" , assembleSingleOperand                       , {0x00, OPERAND_A | OPERAND_REG | OPERAND_DIR | OPERAND_IND}},
+  {"dec" , assembleSingleOperand                       , {0x10, OPERAND_A | OPERAND_REG | OPERAND_DIR | OPERAND_IND}},
   {"add" , assembleInstructionWithOnlyAccAsFirstOperand, {0x20, A_DIR | A_IMM | A_IND | A_REG}},
   {"addc", assembleInstructionWithOnlyAccAsFirstOperand, {0x30, A_DIR | A_IMM | A_IND | A_REG}},
   {"subb", assembleInstructionWithOnlyAccAsFirstOperand, {0x90, A_DIR | A_IMM | A_IND | A_REG}},
@@ -219,53 +219,47 @@ int assembleXRLinstruction(Tokenizer *tokenizer, _8051Instructions *info) {
     throwException(ERR_INVALID_OPERAND, token,
     "Expecting an 'A' or integer, received %s instead", token->str);
 }
-/*
-//not yet implement operand C, DPTR, BIT, REL
+
+//not yet implement operand C, BIT, REL
 int assembleSingleOperand(Tokenizer *tokenizer, _8051Instructions *info) {
   Token *token;
-  int opcode, regNum;
+  int opcode, regNum = 0, direct = 0;
   token = getToken(tokenizer);
-  if(isIdentifierToken(token, "A")) {
-    if(info->data[1] & ROTATE_A)
+  pushBackToken(tokenizer, token);
+  if(isIdentifierTokenThenConsume(tokenizer, "A")) {
+    if(info->data[1] & OPERAND_A_ROT)
       opcode = info->data[0] | 0x03;
-    else if(info->data[1] & OTHER_A)
+    else if(info->data[1] & OPERAND_A)
       opcode = info->data[0] | 0x04;
     else
-      throwException(ERR_INVALID_OPERAND, token,
-      "Did not expect %s as an operand", token->str);
-  }else if(isIdentifierToken(token, "AB")) {
+      throwInvalidOperandException(token);
+  }else if(isIdentifierTokenThenConsume(tokenizer, "AB")) {
     if(info->data[1] & OPERAND_AB)
       opcode = info->data[0] | 0x04;
     else
-      throwException(ERR_INVALID_OPERAND, token,
-      "Did not expect %s as an operand", token->str);
-  }else if(tolower(token->str[0]) == 'r') {
-    if(info->data[1] & OPERAND_REG) {
-      regNum = verifyValidRegisterRangeAndReturnRegisterNumber(token, REGISTER_ADDRESSING);
+      throwInvalidOperandException(token);
+  }else if(isRegisterAndGetItsNumber(tokenizer, REGISTER_ADDRESSING, &regNum)) {
+    if(info->data[1] & OPERAND_REG)
       opcode = (info->data[0] | 0x08) + regNum;
-    }else
-      throwException(ERR_INVALID_OPERAND, token,
-      "Did not expect %s as an operand", token->str);
-  }else if(isOperatorToken(token, "@")) {
-    if(info->data[1] & OPERAND_INDIRECT) {
-      token = getToken(tokenizer);
-      if(tolower(token->str[0]) == 'r') {
-        regNum = verifyValidRegisterRangeAndReturnRegisterNumber(token, INDIRECT_ADDRESSING);
-        opcode = (info->data[0] | 0x06) + regNum;
-      }else
-        throwException(ERR_EXPECTING_REGISTER, token,
-        "Expecting a register, received %s instead", token->str);
-    }else
-      throwException(ERR_INVALID_OPERAND, token,
-      "Did not expect %s as an operand", token->str);
-  }else if(isIntegerToken(token)) {
-    if(info->data[1] & STACK_DIRECT)
-      opcode = (info->data[0] << 8) | ((IntegerToken *)token)->value;
-    else if(info->data[1] & OTHER_DIRECT)
-      opcode = ((info->data[0] | 0x05) << 8) | ((IntegerToken *)token)->value;
     else
-      throwException(ERR_INVALID_OPERAND, token,
-      "Did not expect %s as an operand", token->str);
+      throwInvalidOperandException(token);
+  }else if(isIndRegisterThenGetItsNumberAndConsume(tokenizer, &regNum)) {
+    if(info->data[1] & OPERAND_IND)
+      opcode = (info->data[0] | 0x06) + regNum;
+    else
+      throwInvalidOperandException(token);
+  }else if(isIntegerTokenThenConsume(tokenizer, &direct, 0xFF)) {
+    if(info->data[1] & OPERAND_DIR_STACK)
+      opcode = (info->data[0] << 8) | direct;
+    else if(info->data[1] & OPERAND_DIR)
+      opcode = ((info->data[0] | 0x05) << 8) | direct;
+    else
+      throwInvalidOperandException(token);
+  }else if(isIdentifierTokenThenConsume(tokenizer, "DPTR")) {
+    if(info->data[1] & OPERAND_DPTR)
+      opcode = 0xA3;
+    else
+      throwInvalidOperandException(token);
   }else
     throwException(ERR_INVALID_OPERAND, token,
     "An invalid operand of %s has been inputted", token->str);
@@ -274,7 +268,7 @@ int assembleSingleOperand(Tokenizer *tokenizer, _8051Instructions *info) {
   checkExtraToken(tokenizer);
   return opcode;
 }
-*/
+
 int assembleAWithOperands(Tokenizer *tokenizer, int opcode, int flags) {
   Token *token;
   int regNum = 0, immediate = 0, direct = 0;
