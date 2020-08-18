@@ -75,7 +75,7 @@ int assembleMOVInstruction(Tokenizer *tokenizer, _8051Instructions *info) {
 
   if(isIdentifierTokenThenConsume(tokenizer, "A")) {
     verifyIsOperatorTokenThenConsume(tokenizer, ",");
-    if(isRegisterAndGetItsNumber(tokenizer, REGISTER_ADDRESSING, &regNum))
+    if(isRegisterConsumeAndGetItsNumber(tokenizer, REGISTER_ADDRESSING, &regNum))
       opcode = 0xE8 | regNum;
     else if(isIntegerTokenThenConsume(tokenizer, &direct, 0xFF))
       opcode = 0xE5 << 8 | direct;
@@ -85,7 +85,7 @@ int assembleMOVInstruction(Tokenizer *tokenizer, _8051Instructions *info) {
       opcode = 0x74 | immediate;
     else
       throwAWithInvalidOperandException(tokenizer);
-  }else if(isRegisterAndGetItsNumber(tokenizer, REGISTER_ADDRESSING, &regNum)) {
+  }else if(isRegisterConsumeAndGetItsNumber(tokenizer, REGISTER_ADDRESSING, &regNum)) {
     verifyIsOperatorTokenThenConsume(tokenizer, ",");
     if(isIdentifierTokenThenConsume(tokenizer, "A"))
       opcode = 0xF8 + regNum;
@@ -109,7 +109,7 @@ int assembleMOVInstruction(Tokenizer *tokenizer, _8051Instructions *info) {
     verifyIsOperatorTokenThenConsume(tokenizer, ",");
     if(isIdentifierTokenThenConsume(tokenizer, "A"))
       opcode = (0xF5 << 8) | direct;
-    else if(isRegisterAndGetItsNumber(tokenizer, REGISTER_ADDRESSING, &regNum))
+    else if(isRegisterConsumeAndGetItsNumber(tokenizer, REGISTER_ADDRESSING, &regNum))
       opcode = ((0x88 + regNum) << 8) | direct;
     else if(isIntegerTokenThenConsume(tokenizer, &directSrc, 0xFF))
       opcode = (0x85 << 16) | (directSrc << 8) | direct;
@@ -140,14 +140,14 @@ int assembleMOVXInstruction(Tokenizer *tokenizer, _8051Instructions *info) {
   if(isIdentifierTokenThenConsume(tokenizer, "A")) {
     verifyIsOperatorTokenThenConsume(tokenizer, ",");
     verifyIsOperatorTokenThenConsume(tokenizer, "@");
-    if(isRegisterAndGetItsNumber(tokenizer, INDIRECT_ADDRESSING, &regNum))
+    if(isRegisterConsumeAndGetItsNumber(tokenizer, INDIRECT_ADDRESSING, &regNum))
       opcode = 0xE2 + regNum;
     else if(isIdentifierTokenThenConsume(tokenizer, "DPTR"))
       opcode = 0xE0;
     else
       throwExpectingRegisterOrDPTRexception(tokenizer);
   }else if(isOperatorTokenThenConsume(tokenizer, "@")) {
-    if(isRegisterAndGetItsNumber(tokenizer, INDIRECT_ADDRESSING, &regNum))
+    if(isRegisterConsumeAndGetItsNumber(tokenizer, INDIRECT_ADDRESSING, &regNum))
       opcode = 0xF2 + regNum;
     else if(isIdentifierTokenThenConsume(tokenizer, "DPTR"))
       opcode = 0xF0;
@@ -238,7 +238,7 @@ int assembleSingleOperand(Tokenizer *tokenizer, _8051Instructions *info) {
       opcode = info->data[0] | 0x04;
     else
       throwInvalidOperandException(token);
-  }else if(isRegisterAndGetItsNumber(tokenizer, REGISTER_ADDRESSING, &regNum)) {
+  }else if(isRegisterConsumeAndGetItsNumber(tokenizer, REGISTER_ADDRESSING, &regNum)) {
     if(info->data[1] & OPERAND_REG)
       opcode = (info->data[0] | 0x08) + regNum;
     else
@@ -281,7 +281,7 @@ int assembleAWithOperands(Tokenizer *tokenizer, int opcode, int flags) {
       opcode = ((opcode | 0x05) << 8) | direct;
     else
       throwInvalidOperandException(token);
-  }else if(isRegisterAndGetItsNumber(tokenizer, REGISTER_ADDRESSING, &regNum)) {
+  }else if(isRegisterConsumeAndGetItsNumber(tokenizer, REGISTER_ADDRESSING, &regNum)) {
     if(flags & A_REG)
       opcode = (opcode | 0x08) + regNum;
     else
@@ -294,7 +294,7 @@ int assembleAWithOperands(Tokenizer *tokenizer, int opcode, int flags) {
       throwInvalidOperandException(token);
   }else if(isOperatorTokenThenConsume(tokenizer, "@")) {
     if(flags & A_IND) {
-      verifyIsRegisterAndGetItsNumber(tokenizer, INDIRECT_ADDRESSING, &regNum);
+      verifyIsRegisterConsumeAndGetItsNumber(tokenizer, INDIRECT_ADDRESSING, &regNum);
       opcode = (opcode | 0x06) + regNum;
     }else
         throwInvalidOperandException(token);
@@ -414,7 +414,7 @@ void verifyIsIdentifierTokenThenConsume(Tokenizer *tokenizer, char *identifier) 
   if(!isIdentifierTokenThenConsume(tokenizer, identifier)) {
     token = getToken(tokenizer);
     throwException(ERR_INVALID_OPERAND, token,
-    "Expecting '%s', but received %s instead", identifier, token->str);
+    "Expecting '%s' as identifier, but received %s instead", identifier, token->str);
   }
 }
 
@@ -440,14 +440,14 @@ void verifyIsOperatorTokenThenConsume(Tokenizer *tokenizer, char *Operator) {
   if(!isOperatorTokenThenConsume(tokenizer, Operator)) {
     token = getToken(tokenizer);
     throwException(ERR_INVALID_OPERAND, token,
-    "Expecting '%s', but received %s instead", Operator, token->str);
+    "Expecting '%s' as operator, but received %s instead", Operator, token->str);
   }
 }
 
 //consume token if is register and get reg num, else pushback token and return 0
 //does not throw exception if its not register
 //return 1 if register is valid and in range
-int isRegisterAndGetItsNumber(Tokenizer *tokenizer, int addrMode, int *number) {
+int isRegisterConsumeAndGetItsNumber(Tokenizer *tokenizer, int addrMode, int *number) {
   Token *token;
   token = getToken(tokenizer);
   
@@ -471,10 +471,10 @@ int isRegisterAndGetItsNumber(Tokenizer *tokenizer, int addrMode, int *number) {
 }
 
 //throw exception if token is not register, else consume token and get register number
-void verifyIsRegisterAndGetItsNumber(Tokenizer *tokenizer, int addrMode, int *number) {
+void verifyIsRegisterConsumeAndGetItsNumber(Tokenizer *tokenizer, int addrMode, int *number) {
   Token *token;
   int n = 0;
-  if(!isRegisterAndGetItsNumber(tokenizer, addrMode, &n)) {
+  if(!isRegisterConsumeAndGetItsNumber(tokenizer, addrMode, &n)) {
     token = getToken(tokenizer);
     throwException(ERR_EXPECTING_REGISTER, token,
     "Expecting a register, but received %s instead", token->str);
@@ -488,7 +488,7 @@ int isIndRegisterThenGetItsNumberAndConsume(Tokenizer *tokenizer, int *number) {
   int regNum = 0;
 
   if(isOperatorTokenThenConsume(tokenizer, "@")) {
-    verifyIsRegisterAndGetItsNumber(tokenizer, INDIRECT_ADDRESSING, &regNum);
+    verifyIsRegisterConsumeAndGetItsNumber(tokenizer, INDIRECT_ADDRESSING, &regNum);
     *number = regNum;
     return 1;
   }else
@@ -514,7 +514,7 @@ void verifyIsImmediateThenGetsItsValueAndConsume(Tokenizer *tokenizer, int *valu
   Token *token;
   if(!isImmediateThenGetsItsValueAndConsume(tokenizer, &immediate, integerRange)) {
     token = getToken(tokenizer);
-    throwException(ERR_INVALID_OPERAND, token,
+    throwException(ERR_EXPECTING_IMMEDIATE, token,
     "Expecting a '#', but received %s instead", token->str);
   }else
     *value = immediate;

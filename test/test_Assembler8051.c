@@ -469,7 +469,7 @@ void test_verifyIsImmediateThenGetsItsValueAndConsume_given_is_imm_expect_value_
   freeTokenizer(tokenizer);
 }
 
-void test_verifyIsImmediateThenGetsItsValueAndConsume_given_not_imm_expect_exception_ERR_INVALID_OPERAND_to_be_thrown() {
+void test_verifyIsImmediateThenGetsItsValueAndConsume_given_not_imm_expect_exception_ERR_EXPECTING_IMMEDIATE_to_be_thrown() {
   Tokenizer* tokenizer;
   int value;
   Try{
@@ -478,7 +478,7 @@ void test_verifyIsImmediateThenGetsItsValueAndConsume_given_not_imm_expect_excep
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
-    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+    TEST_ASSERT_EQUAL(ERR_EXPECTING_IMMEDIATE, e->errorCode);
   }
   freeTokenizer(tokenizer);
 }
@@ -531,14 +531,13 @@ void test_isOperatorTokenThenConsume_given_not_operator_expect_token_is_pushed_b
   freeTokenizer(tokenizer);
 }
 
-void test_verifyIsOperatorTokenThenConsume_given_is_correct_operator_expect_token_is_consumed_and_return_1() {
+void test_verifyIsOperatorTokenThenConsume_given_is_correct_operator_expect_token_is_consumed() {
   Tokenizer* tokenizer;
   Token *token;
   Try{
     tokenizer = createTokenizer(" +#@ret");
-    int isTrue = isOperatorTokenThenConsume(tokenizer, "+");
+    verifyIsOperatorTokenThenConsume(tokenizer, "+");
     token = getToken(tokenizer);
-    TEST_ASSERT_EQUAL(1, isTrue);
     TEST_ASSERT_EQUAL_STRING("#", token->str);
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
@@ -549,7 +548,6 @@ void test_verifyIsOperatorTokenThenConsume_given_is_correct_operator_expect_toke
 
 void test_verifyIsOperatorTokenThenConsume_given_wrong_operator_expect_exception_ERR_INVALID_OPERAND_to_be_thrown() {
   Tokenizer* tokenizer;
-  int value;
   Try{
     tokenizer = createTokenizer(" -A+B  ");
     verifyIsOperatorTokenThenConsume(tokenizer, "=");
@@ -557,6 +555,206 @@ void test_verifyIsOperatorTokenThenConsume_given_wrong_operator_expect_exception
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_verifyIsOperatorTokenThenConsume_given_not_operator_expect_exception_ERR_INVALID_OPERAND_to_be_thrown() {
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer(" 123456+  654321  ");
+    verifyIsOperatorTokenThenConsume(tokenizer, "+");
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_isIdentifierTokenThenConsume_given_is_correct_identifier_expect_token_is_consumed_and_return_1() {
+  Tokenizer* tokenizer;
+  Token *token;
+  Try{
+    tokenizer = createTokenizer(" abcd123 x1y2z");
+    int isTrue = isIdentifierTokenThenConsume(tokenizer, "abcd123");
+    token = getToken(tokenizer);
+    TEST_ASSERT_EQUAL(1, isTrue);
+    TEST_ASSERT_EQUAL_STRING("x1y2z", token->str);
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_isIdentifierTokenThenConsume_given_wrong_identifier_expect_token_is_pushed_back_and_return_0() {
+  Tokenizer* tokenizer;
+  Token *token;
+  Try{
+    tokenizer = createTokenizer("     good bad  ");
+    int isTrue = isIdentifierTokenThenConsume(tokenizer, "bad");
+    token = getToken(tokenizer);
+    TEST_ASSERT_EQUAL(0, isTrue);
+    TEST_ASSERT_EQUAL_STRING("good", token->str);
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_isIdentifierTokenThenConsume_given_not_identifier_expect_token_is_pushed_back_and_return_0() {
+  Tokenizer* tokenizer;
+  Token *token;
+  Try{
+    tokenizer = createTokenizer(" 9987@#1  ");
+    int isTrue = isIdentifierTokenThenConsume(tokenizer, "byebye321");
+    token = getToken(tokenizer);
+    TEST_ASSERT_EQUAL(0, isTrue);
+    TEST_ASSERT_EQUAL_STRING("9987", token->str);
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_verifyIsIdentifierTokenThenConsume_given_is_correct_identifier_expect_token_is_consumed() {
+  Tokenizer* tokenizer;
+  Token *token;
+  Try{
+    tokenizer = createTokenizer(" boba isgood2");
+    verifyIsIdentifierTokenThenConsume(tokenizer, "boba");
+    token = getToken(tokenizer);
+    TEST_ASSERT_EQUAL_STRING("isgood2", token->str);
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_verifyIsIdentifierTokenThenConsume_given_wrong_identifier_expect_exception_ERR_INVALID_OPERAND_to_be_thrown() {
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer(" McDonalds Or KFC");
+    verifyIsIdentifierTokenThenConsume(tokenizer, "KFC");
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_verifyIsIdentifierTokenThenConsume_given_not_identifier_expect_exception_ERR_INVALID_OPERAND_to_be_thrown() {
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer(" @!# done");
+    verifyIsIdentifierTokenThenConsume(tokenizer, "fries");
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_isIntegerTokenThenConsume_given_is_integer_expect_token_is_consumed_value_is_extracted_and_return_1() {
+  Tokenizer* tokenizer;
+  Token *token;
+  int value = 0xAA;
+  Try{
+    tokenizer = createTokenizer(" 0xBBAF 6699876 A");
+    int isTrue = isIntegerTokenThenConsume(tokenizer, &value, 0xFFFF);
+    token = getToken(tokenizer);
+    TEST_ASSERT_EQUAL(1, isTrue);
+    TEST_ASSERT_EQUAL_STRING("6699876", token->str);
+    TEST_ASSERT_EQUAL(0xBBAF, value);
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_isIntegerTokenThenConsume_given_is_integer_but_out_of_range_expect_ERR_INTEGER_OUT_OF_RANGE_exception_to_be_thrown() {
+  Tokenizer* tokenizer;
+  int value = 0xAA;
+  Try{
+    tokenizer = createTokenizer(" 0xFFFF 666");
+    int isTrue = isIntegerTokenThenConsume(tokenizer, &value, 0xFF);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_INTEGER_OUT_OF_RANGE, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_isIntegerTokenThenConsume_given_not_integer_expect_token_is_pushed_back_and_return_0() {
+  Tokenizer* tokenizer;
+  Token *token;
+  int value = 0xAA;
+  Try{
+    tokenizer = createTokenizer(" abcdef xyz  ");
+    int isTrue = isIntegerTokenThenConsume(tokenizer, &value, 0xFF);
+    token = getToken(tokenizer);
+    TEST_ASSERT_EQUAL(0, isTrue);
+    TEST_ASSERT_EQUAL_STRING("abcdef", token->str);
+    TEST_ASSERT_EQUAL(0xAA, value);
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_verifyIsIntegerTokenThenConsume_given_is_integer_expect_token_is_consumed_and_value_is_extracted() {
+  Tokenizer* tokenizer;
+  Token *token;
+  int value = 0xAA;
+  Try{
+    tokenizer = createTokenizer(" 0x789 muthu");
+    verifyIsIntegerTokenThenConsume(tokenizer, &value, 0xFFF);
+    token = getToken(tokenizer);
+    TEST_ASSERT_EQUAL_STRING("muthu", token->str);
+    TEST_ASSERT_EQUAL(0x789, value);
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_verifyIsIntegerTokenThenConsume_given_not_integer_expect_exception_ERR_EXPECTING_INTEGER_to_be_thrown() {
+  Tokenizer* tokenizer;
+  int value;
+  Try{
+    tokenizer = createTokenizer("  beef  or chicken");
+    verifyIsIntegerTokenThenConsume(tokenizer, &value, 0xFF);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_EXPECTING_INTEGER, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_isRegisterConsumeAndGetItsNumber_given_is_register_expect_token_is_consumed_and_value_is_extracted_and_return_1() {
+  Tokenizer* tokenizer;
+  Token *token;
+  int regNum = 0;
+  Try{
+    tokenizer = createTokenizer(" r5 C");
+    int isTrue = isRegisterConsumeAndGetItsNumber(tokenizer, REGISTER_ADDRESSING, &regNum);
+    token = getToken(tokenizer);
+    TEST_ASSERT_EQUAL_STRING("C", token->str);
+    TEST_ASSERT_EQUAL(5, regNum);
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
 }
