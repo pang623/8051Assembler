@@ -742,7 +742,11 @@ void test_verifyIsIntegerTokenThenConsume_given_not_integer_expect_exception_ERR
   freeTokenizer(tokenizer);
 }
 
+<<<<<<< HEAD
 void test_isRegisterConsumeAndGetItsNumber_given_is_register_of_valid_range_expect_token_is_consumed_and_value_is_extracted_and_return_1() {
+=======
+void test_isRegisterConsumeAndGetItsNumber_given_is_register_expect_token_is_consumed_and_value_is_extracted_and_return_1() {
+>>>>>>> 960d0bfbfc452bff733d94ce7eab932b10ad1911
   Tokenizer* tokenizer;
   Token *token;
   int regNum = 0;
@@ -750,7 +754,10 @@ void test_isRegisterConsumeAndGetItsNumber_given_is_register_of_valid_range_expe
     tokenizer = createTokenizer(" r5 C");
     int isTrue = isRegisterConsumeAndGetItsNumber(tokenizer, REGISTER_ADDRESSING, &regNum);
     token = getToken(tokenizer);
+<<<<<<< HEAD
     TEST_ASSERT_EQUAL(1, isTrue);
+=======
+>>>>>>> 960d0bfbfc452bff733d94ce7eab932b10ad1911
     TEST_ASSERT_EQUAL_STRING("C", token->str);
     TEST_ASSERT_EQUAL(5, regNum);
   } Catch(e){
@@ -760,6 +767,7 @@ void test_isRegisterConsumeAndGetItsNumber_given_is_register_of_valid_range_expe
   freeTokenizer(tokenizer);
 }
 
+<<<<<<< HEAD
 void test_isRegisterConsumeAndGetItsNumber_given_not_register_expect_token_is_pushed_back_and_return_0() {
   Tokenizer* tokenizer;
   Token *token;
@@ -923,6 +931,10 @@ void test_extractNum_given_string_null_expect_exception_ERR_INVALID_REGISTER_is_
 }
 
 void test_assembleAWithOperands_given_AWithIndirect_expect_opcode_0x46() {
+=======
+/*
+void test_assembleAwithOperands_given_AWithIndirect_expect_opcode_0x46() {
+>>>>>>> 960d0bfbfc452bff733d94ce7eab932b10ad1911
   Tokenizer* tokenizer;
   int opcode;
   Try{
