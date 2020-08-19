@@ -53,3 +53,17 @@ void throwExpectingPCorDPTRexception(Tokenizer *tokenizer) {
   throwException(ERR_INVALID_OPERAND, token,
   "Expecting 'DPTR' or 'PC', but received %s instead", token->str);
 }
+
+void throwExpectingIntOrImmException(Tokenizer *tokenizer) {
+  Token *token;
+  token = getToken(tokenizer);
+  throwException(ERR_INVALID_OPERAND, token,
+  "Expecting integer or '#', but received %s instead", token->str);
+}
+
+void throwInvalidCJNEFirstOperandException(Tokenizer *tokenizer) {
+  Token *token;
+  token = getToken(tokenizer);
+  throwException(ERR_INVALID_OPERAND, token,
+  "Expecting 'A', '@' or register, but received %s instead", token->str);
+}

@@ -35,7 +35,7 @@ int isOperatorTokenThenConsume(Tokenizer *tokenizer, char *Operator);
 void verifyIsOperatorTokenThenConsume(Tokenizer *tokenizer, char *Operator);
 int isIdentifierTokenThenConsume(Tokenizer *tokenizer, char *identifier);
 void verifyIsIdentifierTokenThenConsume(Tokenizer *tokenizer, char *identifier);
-int isIntegerTokenThenConsume(Tokenizer *tokenizer, int *value, int integerRange);
+int isIntegerTokenThenConsume(Tokenizer *tokenizer, uint8_t *value, int min, int max);
 void verifyIsIntegerTokenThenConsume(Tokenizer *tokenizer, int *value, int integerRange);
 int isRegisterConsumeAndGetItsNumber(Tokenizer *tokenizer, int addrMode, int *number);
 void verifyIsRegisterConsumeAndGetItsNumber(Tokenizer *tokenizer, int addrMode, int *number);

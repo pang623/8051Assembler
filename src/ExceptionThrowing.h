@@ -10,5 +10,7 @@ void throwInvalidMovOperand(Tokenizer *tokenizer);
 void throwExpectingRegisterOrDPTRexception(Tokenizer *tokenizer);
 void throwExpectingAOrIndException(Tokenizer *tokenizer);
 void throwExpectingPCorDPTRexception(Tokenizer *tokenizer);
+void throwExpectingIntOrImmException(Tokenizer *tokenizer);
+void throwInvalidCJNEFirstOperandException(Tokenizer *tokenizer);
 
 #endif // EXCEPTIONTHROWING_H

@@ -19,6 +19,39 @@ void tearDown(void)
 
 CEXCEPTION_T e;
 
+void test_isIntegerTokenThenConsume_given_is_integer_expect_ERR_INTEGER_OUT_OF_RANGE_exception_to_be_thrown() {
+  Tokenizer* tokenizer;
+  Token *token;
+  uint8_t value = 0xFF;
+  Try{
+    tokenizer = createTokenizer(" -50 hi ");
+    int isTrue = isIntegerTokenThenConsume(tokenizer, &value, -128, 127);
+    token = getToken(tokenizer);
+    TEST_ASSERT_EQUAL(1, isTrue);
+    TEST_ASSERT_EQUAL_STRING("hi", token->str);
+    TEST_ASSERT_EQUAL(0xCE, value);
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_isIntegerTokenThenConsume_given_is_integer_but_out_of_range_expect_ERR_INTEGER_OUT_OF_RANGE_exception_to_be_thrown() {
+  Tokenizer* tokenizer;
+  uint8_t value = 0xAA;
+  Try{
+    tokenizer = createTokenizer(" -300 ");
+    int isTrue = isIntegerTokenThenConsume(tokenizer, &value, -128, 255);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_INTEGER_OUT_OF_RANGE, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+  
+/*
 void test_assembleAWithOperands_given_AWithIndirect_expect_opcode_0x47() {
   Tokenizer* tokenizer;
   int opcode;
@@ -1099,7 +1132,7 @@ void test_assembleAWithOperands_given_extra_operand_expect_exception_ERR_EXTRA_P
   freeTokenizer(tokenizer);
 }
 
-/*
+
 void test_assembleDirectWithOperands_given_0xCD_with_A_and_DIRECT_A_LOGICAL_flag_expect_opcode_0x42CD() {
   Tokenizer* tokenizer;
   int opcode;
