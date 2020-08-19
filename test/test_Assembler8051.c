@@ -742,11 +742,7 @@ void test_verifyIsIntegerTokenThenConsume_given_not_integer_expect_exception_ERR
   freeTokenizer(tokenizer);
 }
 
-<<<<<<< HEAD
 void test_isRegisterConsumeAndGetItsNumber_given_is_register_of_valid_range_expect_token_is_consumed_and_value_is_extracted_and_return_1() {
-=======
-void test_isRegisterConsumeAndGetItsNumber_given_is_register_expect_token_is_consumed_and_value_is_extracted_and_return_1() {
->>>>>>> 960d0bfbfc452bff733d94ce7eab932b10ad1911
   Tokenizer* tokenizer;
   Token *token;
   int regNum = 0;
@@ -754,10 +750,7 @@ void test_isRegisterConsumeAndGetItsNumber_given_is_register_expect_token_is_con
     tokenizer = createTokenizer(" r5 C");
     int isTrue = isRegisterConsumeAndGetItsNumber(tokenizer, REGISTER_ADDRESSING, &regNum);
     token = getToken(tokenizer);
-<<<<<<< HEAD
     TEST_ASSERT_EQUAL(1, isTrue);
-=======
->>>>>>> 960d0bfbfc452bff733d94ce7eab932b10ad1911
     TEST_ASSERT_EQUAL_STRING("C", token->str);
     TEST_ASSERT_EQUAL(5, regNum);
   } Catch(e){
@@ -767,7 +760,6 @@ void test_isRegisterConsumeAndGetItsNumber_given_is_register_expect_token_is_con
   freeTokenizer(tokenizer);
 }
 
-<<<<<<< HEAD
 void test_isRegisterConsumeAndGetItsNumber_given_not_register_expect_token_is_pushed_back_and_return_0() {
   Tokenizer* tokenizer;
   Token *token;
@@ -931,10 +923,6 @@ void test_extractNum_given_string_null_expect_exception_ERR_INVALID_REGISTER_is_
 }
 
 void test_assembleAWithOperands_given_AWithIndirect_expect_opcode_0x46() {
-=======
-/*
-void test_assembleAwithOperands_given_AWithIndirect_expect_opcode_0x46() {
->>>>>>> 960d0bfbfc452bff733d94ce7eab932b10ad1911
   Tokenizer* tokenizer;
   int opcode;
   Try{
@@ -986,6 +974,90 @@ void test_assembleAWithOperands_given_AWithDirect_expect_opcode_0x7538() {
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleAWithOperands_given_missing_comma_expect_exception_ERR_INVALID_OPERAND_is_thrown() {
+  Tokenizer* tokenizer;
+  int opcode;
+  Try{
+    tokenizer = createTokenizer(" a r3");
+    opcode = assembleAWithOperands(tokenizer, 0x80, A_REG);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleAWithOperands_given_first_operand_not_Acc_expect_exception_ERR_INVALID_OPERAND_is_thrown() {
+  Tokenizer* tokenizer;
+  int opcode;
+  Try{
+    tokenizer = createTokenizer(" 0x56 ,@r1");
+    opcode = assembleAWithOperands(tokenizer, 0x80, A_REG);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleAWithOperands_given_correct_operand_combi_but_flag_is_not_set_expect_exception_ERR_INVALID_OPERAND_is_thrown() {
+  Tokenizer* tokenizer;
+  int opcode;
+  Try{
+    tokenizer = createTokenizer(" A , 0x54 ");
+    opcode = assembleAWithOperands(tokenizer, 0x40, A_IMM);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleAWithOperands_given_indirect_but_not_register_expect_exception_ERR_EXPECTING_REGISTER_is_thrown() {
+  Tokenizer* tokenizer;
+  int opcode;
+  Try{
+    tokenizer = createTokenizer(" A , @0x55 ");
+    opcode = assembleAWithOperands(tokenizer, 0x40, A_IND);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_EXPECTING_REGISTER, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleAWithOperands_given_invalid_second_operand_expect_exception_ERR_INVALID_OPERAND_is_thrown() {
+  Tokenizer* tokenizer;
+  int opcode;
+  Try{
+    tokenizer = createTokenizer(" a     , HELLO ");
+    opcode = assembleAWithOperands(tokenizer, 0x40, A_IND);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleAWithOperands_given_extra_operand_expect_exception_ERR_EXTRA_PARAMETER_is_thrown() {
+  Tokenizer* tokenizer;
+  int opcode;
+  Try{
+    tokenizer = createTokenizer(" a , @r0 r1 ");
+    opcode = assembleAWithOperands(tokenizer, 0x40, A_IND);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_EXTRA_PARAMETER, e->errorCode);
   }
   freeTokenizer(tokenizer);
 }
