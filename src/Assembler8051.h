@@ -3,14 +3,16 @@
 
 #include "Tokenizer.h"
 
+#define     getCurrentAbsoluteAddr()    codePtr - codeMemory
+
 //addressing mode
-#define     REGISTER_ADDRESSING     100
-#define     INDIRECT_ADDRESSING     200
+#define     REGISTER_ADDRESSING         100
+#define     INDIRECT_ADDRESSING         200
 
 //funcPtr is a pointer to function taking in (Tokenizer *tokenizer, _8051Instructions *instructionPtr) 
 //returning integer
 typedef struct _8051Instructions _8051Instructions;
-typedef int (*funcPtr)(Tokenizer *tokenizer, _8051Instructions *instructionPtr);
+typedef int (*funcPtr)(Tokenizer *tokenizer, _8051Instructions *instructionPtr, uint8_t **codePtrPtr);
 
 struct _8051Instructions {
   char *instruction;
@@ -18,14 +20,14 @@ struct _8051Instructions {
   int data[3];
 };
 
-int assembleAllInstruction(Tokenizer *tokenizer);
-int assembleMOVInstruction(Tokenizer *tokenizer, _8051Instructions *info);
-int assembleMOVCInstruction(Tokenizer *tokenizer, _8051Instructions *info);
-int assembleMOVXInstruction(Tokenizer *tokenizer, _8051Instructions *info);
-int assembleInstructionWithOnlyAccAsFirstOperand(Tokenizer *tokenizer, _8051Instructions *info);
-int assembleLogicalInstructionWithoutXRL(Tokenizer *tokenizer, _8051Instructions *info);
-int assembleXRLinstruction(Tokenizer *tokenizer, _8051Instructions *info);
-int assembleSingleOperand(Tokenizer *tokenizer, _8051Instructions *info);
+int assembleInstruction(Tokenizer *tokenizer, uint8_t **codePtrPtr);
+int assembleMOVInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);
+int assembleMOVCInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);
+int assembleMOVXInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);
+int assembleInstructionWithOnlyAccAsFirstOperand(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);
+int assembleLogicalInstructionWithoutXRL(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);
+int assembleXRLinstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);
+int assembleSingleOperand(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);
 int assembleAWithOperands(Tokenizer *tokenizer, int opcode, int flags);
 int assembleDirectWithOperands(Tokenizer *tokenizer, int opcode, int flags);
 int assembleCWithOperands(Tokenizer *tokenizer, int opcode, int flags);
@@ -43,5 +45,6 @@ void verifyIsImmediateThenGetsItsValueAndConsume(Tokenizer *tokenizer, int *valu
 int extractNum(char *start, Token *token);
 void checkExtraToken(Tokenizer *tokenizer);
 void throwInvalidOperandException(Token *token);
+int writeCodeToCodeMemory(int opcode, uint8_t *codePtr);
 
 #endif // ASSEMBLER8051_H

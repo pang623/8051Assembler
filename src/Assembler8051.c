@@ -35,16 +35,17 @@ _8051Instructions instructionsTable[] = {
   {"xrl" , assembleXRLinstruction                      , {0x60, A_DIR | A_IMM | A_IND | A_REG | DIR_A | DIR_IMM}},
   {"xch" , assembleInstructionWithOnlyAccAsFirstOperand, {0xC0, A_DIR | A_IND | A_REG}},
   {"xchd", assembleInstructionWithOnlyAccAsFirstOperand, {0xD0, A_IND}},
+ // {"cjne", assembleCJNEInstruction                     , {0, 0}},
   {"movc", assembleMOVCInstruction                     , {0, 0}},
   {"movx", assembleMOVXInstruction                     , {0, 0}},
   {"mov" , assembleMOVInstruction                      , {0, 0}},
   {NULL  , NULL, {0, 0}},
 };
 
-int assembleAllInstruction(Tokenizer *tokenizer) {
+int assembleInstruction(Tokenizer *tokenizer, uint8_t **codePtrPtr) {
   Token* token;
   int opcode;
-  int i = 0;
+  int i = 0, len = 0;
   _8051Instructions *instructionPtr;
 
   token = getToken(tokenizer);
@@ -60,18 +61,54 @@ int assembleAllInstruction(Tokenizer *tokenizer) {
   instructionPtr = &instructionsTable[i];
   if(instructionPtr->function) {
     funcPtr instructionToOpcode = instructionPtr->function;
-    opcode = instructionToOpcode(tokenizer, instructionPtr);
-  }else {
+    len = instructionToOpcode(tokenizer, instructionPtr, codePtrPtr);
+  }else {                                            //when the instruction is with no operand (RET)
+    uint8_t *codePtr = *codePtrPtr;
     checkExtraToken(tokenizer);
-    return instructionPtr->data[0];
+    len = writeCodeToCodeMemory(instructionPtr->data[0], codePtr);
+    (*codePtrPtr) += len;
+    return len;
   }
   freeToken(token);
-  return opcode;
+  return len;
+}
+/*
+int assembleCJNEInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr) {
+  int opcode, direct = 0, relative = 0;
+  uint8_t *codePtr = *codePtrPtr;
+  if(isIdentifierTokenThenConsume(tokenizer, "A")) {
+    verifyIsOperatorTokenThenConsume(tokenizer, ",");
+    if(isIntegerTokenThenConsume(tokenizer, &direct, 0, 0xFF)) {
+      verifyIsOperatorTokenThenConsume(tokenizer, ",");
+      verifyIsIntegerTokenThenConsume(tokenizer, &relative, +
+
+  
+  
+
+}*/
+
+int writeCodeToCodeMemory(int opcode, uint8_t *codePtr) {
+  int bytes;
+  if(opcode < 0xFF)
+    bytes = 1;
+  else if(opcode < 0xFFFF)
+    bytes = 2;
+  else if(opcode < 0xFFFFFF)
+    bytes = 3;
+  
+  int pos = bytes;
+  
+  for(int i = 0; i < bytes; i++) {
+    codePtr[i] = (opcode >> ((pos - 1) * 8)) & 0xFF;
+    pos--;
+  }
+  return bytes;
 }
 
 //only MOV uses this function
-int assembleMOVInstruction(Tokenizer *tokenizer, _8051Instructions *info) {
+int assembleMOVInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr) {
   int opcode, regNum = 0, direct = 0, directSrc = 0, immediate = 0, bitAddr = 0;
+  uint8_t *codePtr = *codePtrPtr;
 
   if(isIdentifierTokenThenConsume(tokenizer, "A")) {
     verifyIsOperatorTokenThenConsume(tokenizer, ",");
@@ -133,12 +170,15 @@ int assembleMOVInstruction(Tokenizer *tokenizer, _8051Instructions *info) {
     throwInvalidMovOperand(tokenizer);
 
   checkExtraToken(tokenizer);
-  return opcode;
+  int len = writeCodeToCodeMemory(opcode, codePtr);
+  (*codePtrPtr) += len;
+  return len;
 }
 
-int assembleMOVXInstruction(Tokenizer *tokenizer, _8051Instructions *info) {
+int assembleMOVXInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr) {
   int opcode, regNum = 0;
-  
+  uint8_t *codePtr = *codePtrPtr;
+
   if(isIdentifierTokenThenConsume(tokenizer, "A")) {
     verifyIsOperatorTokenThenConsume(tokenizer, ",");
     verifyIsOperatorTokenThenConsume(tokenizer, "@");
@@ -161,11 +201,15 @@ int assembleMOVXInstruction(Tokenizer *tokenizer, _8051Instructions *info) {
     throwExpectingAOrIndException(tokenizer);
 
   checkExtraToken(tokenizer);
-  return opcode;
+  int len = writeCodeToCodeMemory(opcode, codePtr);
+  (*codePtrPtr) += len;
+  return len;
 }
 
-int assembleMOVCInstruction(Tokenizer *tokenizer, _8051Instructions *info) {
+int assembleMOVCInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr) {
   int opcode;
+  uint8_t *codePtr = *codePtrPtr;
+
   verifyIsIdentifierTokenThenConsume(tokenizer, "A");
   verifyIsOperatorTokenThenConsume(tokenizer, ",");
   verifyIsOperatorTokenThenConsume(tokenizer, "@");
@@ -179,53 +223,74 @@ int assembleMOVCInstruction(Tokenizer *tokenizer, _8051Instructions *info) {
     throwExpectingPCorDPTRexception(tokenizer);
 
   checkExtraToken(tokenizer);
-  return opcode;
+  int len = writeCodeToCodeMemory(opcode, codePtr);
+  (*codePtrPtr) += len;
+  return len;
 }
 
-int assembleInstructionWithOnlyAccAsFirstOperand(Tokenizer *tokenizer, _8051Instructions *info) {
-  return assembleAWithOperands(tokenizer, info->data[0], info->data[1]);
+int assembleInstructionWithOnlyAccAsFirstOperand(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr) {
+  uint8_t *codePtr = *codePtrPtr;
+  
+  int opcode = assembleAWithOperands(tokenizer, info->data[0], info->data[1]);
+  int len = writeCodeToCodeMemory(opcode, codePtr);
+  (*codePtrPtr) += len;
+  return len;
 }
 
 //orl, anl
-int assembleLogicalInstructionWithoutXRL(Tokenizer *tokenizer, _8051Instructions *info) {
+int assembleLogicalInstructionWithoutXRL(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr) {
   Token *token;
-  int value;
+  int value, opcode, len;
+  uint8_t *codePtr = *codePtrPtr;
+  
   token = getToken(tokenizer);
   pushBackToken(tokenizer, token);
   if(isIdentifierTokenThenConsume(tokenizer, "A")) {
     pushBackToken(tokenizer, token);
-    return assembleAWithOperands(tokenizer, info->data[0], info->data[1]);
+    opcode = assembleAWithOperands(tokenizer, info->data[0], info->data[1]);
   }else if(isIdentifierTokenThenConsume(tokenizer, "C")) {
     pushBackToken(tokenizer, token);
-    return assembleCWithOperands(tokenizer, info->data[0] + 0x30, info->data[1]);
+    opcode = assembleCWithOperands(tokenizer, info->data[0] + 0x30, info->data[1]);
   }else if(isIntegerTokenThenConsume(tokenizer, &value, 0xFF)) {
     pushBackToken(tokenizer, token);
-    return assembleDirectWithOperands(tokenizer, info->data[0], info->data[1]);
+    opcode = assembleDirectWithOperands(tokenizer, info->data[0], info->data[1]);
   }else
     throwException(ERR_INVALID_OPERAND, token,
     "Expecting an 'A', 'C' or integer, received %s instead", token->str);
+    
+  len = writeCodeToCodeMemory(opcode, codePtr);
+  (*codePtrPtr) += len;
+  return len;
 }
 
-int assembleXRLinstruction(Tokenizer *tokenizer, _8051Instructions *info) {
+int assembleXRLinstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr) {
   Token *token;
-  int value;
+  int value, opcode, len;
+  uint8_t *codePtr = *codePtrPtr;
+  
   token = getToken(tokenizer);
   pushBackToken(tokenizer, token);
   if(isIdentifierTokenThenConsume(tokenizer, "A")) {
     pushBackToken(tokenizer, token);
-    return assembleAWithOperands(tokenizer, info->data[0], info->data[1]);
+    opcode = assembleAWithOperands(tokenizer, info->data[0], info->data[1]);
   }else if(isIntegerTokenThenConsume(tokenizer, &value, 0xFF)) {
     pushBackToken(tokenizer, token);
-    return assembleDirectWithOperands(tokenizer, info->data[0], info->data[1]);
+    opcode = assembleDirectWithOperands(tokenizer, info->data[0], info->data[1]);
   }else
     throwException(ERR_INVALID_OPERAND, token,
     "Expecting an 'A' or integer, received %s instead", token->str);
+    
+  len = writeCodeToCodeMemory(opcode, codePtr);
+  (*codePtrPtr) += len;
+  return len;
 }
 
 //not yet implement operand C, BIT, REL
-int assembleSingleOperand(Tokenizer *tokenizer, _8051Instructions *info) {
+int assembleSingleOperand(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr) {
   Token *token;
-  int opcode, regNum = 0, direct = 0;
+  int opcode, len, regNum = 0, direct = 0;
+  uint8_t *codePtr = *codePtrPtr;
+  
   token = getToken(tokenizer);
   pushBackToken(tokenizer, token);
   if(isIdentifierTokenThenConsume(tokenizer, "A")) {
@@ -265,10 +330,12 @@ int assembleSingleOperand(Tokenizer *tokenizer, _8051Instructions *info) {
   }else
     throwException(ERR_INVALID_OPERAND, token,
     "An invalid operand of %s has been inputted", token->str);
-  
+
   freeToken(token);
   checkExtraToken(tokenizer);
-  return opcode;
+  len = writeCodeToCodeMemory(opcode, codePtr);
+  (*codePtrPtr) += len;
+  return len;
 }
 
 int assembleAWithOperands(Tokenizer *tokenizer, int opcode, int flags) {
@@ -452,7 +519,7 @@ void verifyIsOperatorTokenThenConsume(Tokenizer *tokenizer, char *Operator) {
 int isRegisterConsumeAndGetItsNumber(Tokenizer *tokenizer, int addrMode, int *number) {
   Token *token;
   token = getToken(tokenizer);
-  
+
   if(token->type != TOKEN_IDENTIFIER_TYPE || (!(tolower(token->str[0]) == 'r'))) {
     pushBackToken(tokenizer, token);
     return 0;

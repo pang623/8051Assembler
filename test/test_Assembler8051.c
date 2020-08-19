@@ -61,27 +61,36 @@ void test_assembleCWithOperands_given_CWithBarBit_expect_opcode_0xD0CA() {
   freeTokenizer(tokenizer);
 }
   
-void test_assembleAllInstruction_given_add_A_with_r7_expect_opcode_0x2f() {
+void test_assembleInstruction_given_add_A_with_r7_expect_opcode_0x2f() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
   Tokenizer* tokenizer;
-  int opcode;
   Try{
     tokenizer = createTokenizer("add A, R7");
-    opcode = assembleAllInstruction(tokenizer);
-    TEST_ASSERT_EQUAL(0x2F, opcode);
-    } Catch(e){
+    len = assembleInstruction(tokenizer, &codePtr);
+    TEST_ASSERT_EQUAL(1, len);
+    TEST_ASSERT_EQUAL(0x2f, codeMemory[0]);
+    TEST_ASSERT_EQUAL(1, getCurrentAbsoluteAddr());
+  } Catch(e){
     dumpTokenErrorMessage(e, 1);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
-    }
-    freeTokenizer(tokenizer);
+  }
+  freeTokenizer(tokenizer);
 }
 
-void test_assembleAllInstruction_given_add_A_with_direct_0xba_expect_opcode_0x25ba() {
+void test_assembleInstruction_given_add_A_with_direct_0xba_expect_opcode_0x25ba() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory + 100;
   Tokenizer* tokenizer;
-  int opcode;
   Try{
     tokenizer = createTokenizer("add A, 0xBA");
-    opcode = assembleAllInstruction(tokenizer);
-    TEST_ASSERT_EQUAL(0x25BA, opcode);
+    len = assembleInstruction(tokenizer, &codePtr);
+    TEST_ASSERT_EQUAL(2, len);
+    TEST_ASSERT_EQUAL(0x25, codeMemory[100]);
+    TEST_ASSERT_EQUAL(0xBA, codeMemory[101]);
+    TEST_ASSERT_EQUAL(102, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
@@ -89,12 +98,19 @@ void test_assembleAllInstruction_given_add_A_with_direct_0xba_expect_opcode_0x25
   freeTokenizer(tokenizer);
 }
 
-void test_assembleAllInstruction_given_add_A_with_indirect_R0_expect_opcode_0x26() {
+void test_assembleInstruction_given_mov_dir_with_imm_expect_opcode_0x75669A() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory + 250;
   Tokenizer* tokenizer;
-  int opcode;
-  Try{  tokenizer = createTokenizer("add A, @R0");
-    opcode = assembleAllInstruction(tokenizer);
-    TEST_ASSERT_EQUAL(0x26, opcode);
+  Try{  
+    tokenizer = createTokenizer("Mov 0x66, #0x9A");
+    len = assembleInstruction(tokenizer, &codePtr);
+    TEST_ASSERT_EQUAL(3, len);
+    TEST_ASSERT_EQUAL(0x75, codeMemory[250]);
+    TEST_ASSERT_EQUAL(0x66, codeMemory[251]);
+    TEST_ASSERT_EQUAL(0x9A, codeMemory[252]);
+    TEST_ASSERT_EQUAL(253, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
@@ -102,13 +118,17 @@ void test_assembleAllInstruction_given_add_A_with_indirect_R0_expect_opcode_0x26
   freeTokenizer(tokenizer);
 }
 
-void test_assembleAllInstruction_given_subb_A_with_immediate_in_hex_0xA8_expect_opcode_0x94A8() {
+void test_assembleInstruction_given_add_A_with_indirect_R0_expect_opcode_0x26() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory + 55;
   Tokenizer* tokenizer;
-  int opcode;
-  Try{
-    tokenizer = createTokenizer("subb A, #0xA8");
-    opcode = assembleAllInstruction(tokenizer);
-    TEST_ASSERT_EQUAL(0x94A8, opcode);
+  Try{  
+    tokenizer = createTokenizer("add A, @R0");
+    len = assembleInstruction(tokenizer, &codePtr);
+    TEST_ASSERT_EQUAL(1, len);
+    TEST_ASSERT_EQUAL(0x26, codeMemory[55]);
+    TEST_ASSERT_EQUAL(56, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
@@ -116,13 +136,17 @@ void test_assembleAllInstruction_given_subb_A_with_immediate_in_hex_0xA8_expect_
   freeTokenizer(tokenizer);
 }
 
-void test_assembleAllInstruction_given_movx_indirect_with_A_expect_opcode_0xf3() {
+void test_assembleInstruction_given_movx_indirect_with_A_expect_opcode_0xf3() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory + 123;
   Tokenizer* tokenizer;
-  int opcode;
   Try{
     tokenizer = createTokenizer("MovX @r1 ,a");
-    opcode = assembleAllInstruction(tokenizer);
-    TEST_ASSERT_EQUAL(0xf3, opcode);
+    len = assembleInstruction(tokenizer, &codePtr);
+    TEST_ASSERT_EQUAL(1, len);
+    TEST_ASSERT_EQUAL(0xf3, codeMemory[123]);
+    TEST_ASSERT_EQUAL(124, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
@@ -130,13 +154,17 @@ void test_assembleAllInstruction_given_movx_indirect_with_A_expect_opcode_0xf3()
   freeTokenizer(tokenizer);
 }
 
-void test_assembleAllInstruction_given_movc_a_with_aDPTR_expect_opcode_0x93() {
+void test_assembleInstruction_given_movc_a_with_aDPTR_expect_opcode_0x93() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory + 0x6A;
   Tokenizer* tokenizer;
-  int opcode;
   Try{
     tokenizer = createTokenizer("MOvc a , @A+dPtR");
-    opcode = assembleAllInstruction(tokenizer);
-    TEST_ASSERT_EQUAL(0x93, opcode);
+    len = assembleInstruction(tokenizer, &codePtr);
+    TEST_ASSERT_EQUAL(1, len);
+    TEST_ASSERT_EQUAL(0x93, codeMemory[0x6A]);
+    TEST_ASSERT_EQUAL(0x6B, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
@@ -144,27 +172,18 @@ void test_assembleAllInstruction_given_movc_a_with_aDPTR_expect_opcode_0x93() {
   freeTokenizer(tokenizer);
 }
 
-void test_assembleAllInstruction_given_mov_direct_with_immediate_expect_opcode_0x755abb() {
+void test_assembleInstruction_given_mov_c_with_bit_expect_opcode_0xA27B() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory + 0xBFCC;
   Tokenizer* tokenizer;
-  int opcode;
-  Try{
-    tokenizer = createTokenizer("MoV 0x5A ,#0xbB");
-    opcode = assembleAllInstruction(tokenizer);
-    TEST_ASSERT_EQUAL(0x755abb, opcode);
-  } Catch(e){
-    dumpTokenErrorMessage(e, 1);
-    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
-  }
-  freeTokenizer(tokenizer);
-}
-
-void test_assembleAllInstruction_given_mov_c_with_bit_expect_opcode_0xA27B() {
-  Tokenizer* tokenizer;
-  int opcode;
   Try{
     tokenizer = createTokenizer("mOv c, 0x7b");
-    opcode = assembleAllInstruction(tokenizer);
-    TEST_ASSERT_EQUAL(0xA27B, opcode);
+    len = assembleInstruction(tokenizer, &codePtr);
+    TEST_ASSERT_EQUAL(2, len);
+    TEST_ASSERT_EQUAL(0xA2, codeMemory[0xBFCC]);
+    TEST_ASSERT_EQUAL(0x7B, codeMemory[0xBFCD]);
+    TEST_ASSERT_EQUAL(0xBFCE, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
@@ -172,13 +191,18 @@ void test_assembleAllInstruction_given_mov_c_with_bit_expect_opcode_0xA27B() {
   freeTokenizer(tokenizer);
 }
 
-void test_assembleAllInstruction_given_mov_indirect_with_direct_expect_opcode_0x7713() {
+void test_assembleInstruction_given_mov_indirect_with_direct_expect_opcode_0xA7BA() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory + 0x65A;
   Tokenizer* tokenizer;
-  int opcode;
   Try{
-    tokenizer = createTokenizer("mOv @r1, a");
-    opcode = assembleAllInstruction(tokenizer);
-    TEST_ASSERT_EQUAL(0xf7, opcode);
+    tokenizer = createTokenizer("mOv @r1  , 0xBA");
+    len = assembleInstruction(tokenizer, &codePtr);
+    TEST_ASSERT_EQUAL(2, len);
+    TEST_ASSERT_EQUAL(0xA7, codeMemory[0x65A]);
+    TEST_ASSERT_EQUAL(0xBA, codeMemory[0x65B]);
+    TEST_ASSERT_EQUAL(0x65C, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
@@ -186,13 +210,18 @@ void test_assembleAllInstruction_given_mov_indirect_with_direct_expect_opcode_0x
   freeTokenizer(tokenizer);
 }
 
-void test_assembleAllInstruction_given_mov_reg_with_imm_expect_opcode_0x78dd() {
+void test_assembleInstruction_given_mov_reg_with_imm_expect_opcode_0x78dd() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory + 0xD3D;
   Tokenizer* tokenizer;
-  int opcode;
   Try{
-    tokenizer = createTokenizer("mOv r0, #0xdd");
-    opcode = assembleAllInstruction(tokenizer);
-    TEST_ASSERT_EQUAL(0x78dd, opcode);
+    tokenizer = createTokenizer("mOv r0  , #0xDD");
+    len = assembleInstruction(tokenizer, &codePtr);
+    TEST_ASSERT_EQUAL(2, len);
+    TEST_ASSERT_EQUAL(0x78, codeMemory[0xD3D]);
+    TEST_ASSERT_EQUAL(0xDD, codeMemory[0xD3E]);
+    TEST_ASSERT_EQUAL(0xD3F, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
@@ -200,13 +229,19 @@ void test_assembleAllInstruction_given_mov_reg_with_imm_expect_opcode_0x78dd() {
   freeTokenizer(tokenizer);
 }
 
-void test_assembleAllInstruction_given_mov_a_with_indirect_expect_opcode_0xe7() {
+void test_assembleInstruction_given_mov_dptr_with_imm_expect_opcode_0x90EEFF() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory + 0xFFE;
   Tokenizer* tokenizer;
-  int opcode;
   Try{
-    tokenizer = createTokenizer("mOv a, @r1");
-    opcode = assembleAllInstruction(tokenizer);
-    TEST_ASSERT_EQUAL(0xe7, opcode);
+    tokenizer = createTokenizer("mOv dPtR  , #0xEEFF");
+    len = assembleInstruction(tokenizer, &codePtr);
+    TEST_ASSERT_EQUAL(3, len);
+    TEST_ASSERT_EQUAL(0x90, codeMemory[0xFFE]);
+    TEST_ASSERT_EQUAL(0xEE, codeMemory[0xFFF]);
+    TEST_ASSERT_EQUAL(0xFF, codeMemory[0x1000]);
+    TEST_ASSERT_EQUAL(0x1001, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
@@ -214,13 +249,17 @@ void test_assembleAllInstruction_given_mov_a_with_indirect_expect_opcode_0xe7() 
   freeTokenizer(tokenizer);
 }
 
-void test_assembleAllInstruction_given_mov_dptr_with_imm_expect_opcode_0x90EEFF() {
+void test_assembleInstruction_given_xch_a_with_reg_expect_opcode_0xC9() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory + 0xFF;
   Tokenizer* tokenizer;
-  int opcode;
   Try{
-    tokenizer = createTokenizer("mOv dPtR , #0xEEFF");
-    opcode = assembleAllInstruction(tokenizer);
-    TEST_ASSERT_EQUAL(0x90EEFF, opcode);
+    tokenizer = createTokenizer("   xCh a ,r1");
+    len = assembleInstruction(tokenizer, &codePtr);
+    TEST_ASSERT_EQUAL(1, len);
+    TEST_ASSERT_EQUAL(0xC9, codeMemory[0xFF]);
+    TEST_ASSERT_EQUAL(0x100, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
@@ -228,13 +267,17 @@ void test_assembleAllInstruction_given_mov_dptr_with_imm_expect_opcode_0x90EEFF(
   freeTokenizer(tokenizer);
 }
 
-void test_assembleAllInstruction_given_xch_a_with_reg_expect_opcode_0xC9() {
+void test_assembleInstruction_given_xchd_a_with_indirect_reg_expect_opcode_0xD7() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory + 0xCD;
   Tokenizer* tokenizer;
-  int opcode;
   Try{
-    tokenizer = createTokenizer("xcH a , r1");
-    opcode = assembleAllInstruction(tokenizer);
-    TEST_ASSERT_EQUAL(0xC9, opcode);
+    tokenizer = createTokenizer("   xChD   a ,   @R1");
+    len = assembleInstruction(tokenizer, &codePtr);
+    TEST_ASSERT_EQUAL(1, len);
+    TEST_ASSERT_EQUAL(0xD7, codeMemory[0xCD]);
+    TEST_ASSERT_EQUAL(0xCE, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
@@ -242,13 +285,17 @@ void test_assembleAllInstruction_given_xch_a_with_reg_expect_opcode_0xC9() {
   freeTokenizer(tokenizer);
 }
 
-void test_assembleAllInstruction_given_xchd_a_with_indirect_reg_expect_opcode_0xD7() {
+void test_assembleInstruction_given_DIV_AB_expect_opcode_0x84() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory + 0x99;
   Tokenizer* tokenizer;
-  int opcode;
   Try{
-    tokenizer = createTokenizer("xChd A , @r1");
-    opcode = assembleAllInstruction(tokenizer);
-    TEST_ASSERT_EQUAL(0xD7, opcode);
+    tokenizer = createTokenizer("  dIv   aB");
+    len = assembleInstruction(tokenizer, &codePtr);
+    TEST_ASSERT_EQUAL(1, len);
+    TEST_ASSERT_EQUAL(0x84, codeMemory[0x99]);
+    TEST_ASSERT_EQUAL(0x9A, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
@@ -256,27 +303,17 @@ void test_assembleAllInstruction_given_xchd_a_with_indirect_reg_expect_opcode_0x
   freeTokenizer(tokenizer);
 }
 
-void test_assembleAllInstruction_given_DIV_AB_expect_opcode_0x84() {
+void test_assembleInstruction_given_ret_expect_opcode_0x22() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory + 8888;
   Tokenizer* tokenizer;
-  int opcode;
   Try{
-    tokenizer = createTokenizer("dIv aB");
-    opcode = assembleAllInstruction(tokenizer);
-    TEST_ASSERT_EQUAL(0x84, opcode);
-  } Catch(e){
-    dumpTokenErrorMessage(e, 1);
-    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
-  }
-  freeTokenizer(tokenizer);
-}
-
-void test_assembleAllInstruction_given_ret_expect_opcode_0x22() {
-  Tokenizer* tokenizer;
-  int opcode;
-  Try{
-    tokenizer = createTokenizer("rET  ");
-    opcode = assembleAllInstruction(tokenizer);
-    TEST_ASSERT_EQUAL(0x22, opcode);
+    tokenizer = createTokenizer("  ReT ");
+    len = assembleInstruction(tokenizer, &codePtr);
+    TEST_ASSERT_EQUAL(1, len);
+    TEST_ASSERT_EQUAL(0x22, codeMemory[8888]);
+    TEST_ASSERT_EQUAL(8889, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
