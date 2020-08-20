@@ -19,79 +19,34 @@ void tearDown(void)
 
 CEXCEPTION_T e;
 
-void test_isIntegerTokenThenConsume_given_is_integer_expect_ERR_INTEGER_OUT_OF_RANGE_exception_to_be_thrown() {
-  Tokenizer* tokenizer;
-  Token *token;
-  uint8_t value = 0xFF;
+void test_writeCodeToCodeMemory_given_opcode_0x7B_expect_opcode_stored_in_code_memory_and_return_the_size() {
+  int len;
+  uint8_t codeMemory[65535];
+  uint8_t *codePtr = codeMemory + 10;                     //codePtr is pointing at code memory with the abs address 10
   Try{
-    tokenizer = createTokenizer(" -50 hi ");
-    int isTrue = isIntegerTokenThenConsume(tokenizer, &value, -128, 127);
-    token = getToken(tokenizer);
-    TEST_ASSERT_EQUAL(1, isTrue);
-    TEST_ASSERT_EQUAL_STRING("hi", token->str);
-    TEST_ASSERT_EQUAL(0xCE, value);
+    len = writeCodeToCodeMemory(0x7B, codePtr);
+    TEST_ASSERT_EQUAL(1, len);                            //opcode is 1 byte
+    TEST_ASSERT_EQUAL(0x7B, codeMemory[10]);              //opcode is stored at address 10
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
-  freeTokenizer(tokenizer);
 }
 
-void test_isIntegerTokenThenConsume_given_is_integer_but_out_of_range_expect_ERR_INTEGER_OUT_OF_RANGE_exception_to_be_thrown() {
-  Tokenizer* tokenizer;
-  uint8_t value = 0xAA;
+void test_writeCodeToCodeMemory_given_opcode_0x9BA12C_expect_opcode_stored_in_code_memory_and_return_the_size() {
+  int len;
+  uint8_t codeMemory[65535];
+  uint8_t *codePtr = codeMemory + 200;                    //codePtr is pointing at code memory with the abs address 200
   Try{
-    tokenizer = createTokenizer(" -300 ");
-    int isTrue = isIntegerTokenThenConsume(tokenizer, &value, -128, 255);
-    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
-  } Catch(e){
-    dumpTokenErrorMessage(e, 1);
-    TEST_ASSERT_EQUAL(ERR_INTEGER_OUT_OF_RANGE, e->errorCode);
-  }
-  freeTokenizer(tokenizer);
-}
-  
-/*
-void test_assembleAWithOperands_given_AWithIndirect_expect_opcode_0x47() {
-  Tokenizer* tokenizer;
-  int opcode;
-  Try{
-    tokenizer = createTokenizer("a, @r1");
-    opcode = assembleAWithOperands(tokenizer, 0x40, A_IND);
-    TEST_ASSERT_EQUAL(0x47, opcode);
+    len = writeCodeToCodeMemory(0x9BA12C, codePtr);       //the opcode is encoded based on the sequence in the manual (LSB --> MSB)
+    TEST_ASSERT_EQUAL(3, len);                            //opcode is 3 bytes
+    TEST_ASSERT_EQUAL(0x9B, codeMemory[200]);             //opcode is stored at address 200 (little endian, LSB stored at lower address)
+    TEST_ASSERT_EQUAL(0xA1, codeMemory[201]);             //opcode is stored at address 201
+    TEST_ASSERT_EQUAL(0x2C, codeMemory[202]);             //opcode is stored at address 202
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
-  freeTokenizer(tokenizer);
-}
-
-void test_assembleDirectwithOperands_given_DirectWithImm_expect_opcode_0x93DEAA() {
-  Tokenizer* tokenizer;
-  int opcode;
-  Try{
-    tokenizer = createTokenizer("0xDE, #0xAA");
-    opcode = assembleDirectWithOperands(tokenizer, 0x90, DIR_IMM);
-    TEST_ASSERT_EQUAL(0x93DEAA, opcode);
-  } Catch(e){
-    dumpTokenErrorMessage(e, 1);
-    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
-  }
-  freeTokenizer(tokenizer);
-}
-
-void test_assembleCWithOperands_given_CWithBarBit_expect_opcode_0xD0CA() {
-  Tokenizer* tokenizer;
-  int opcode;
-  Try{
-    tokenizer = createTokenizer("C, /0xCA");
-    opcode = assembleCWithOperands(tokenizer, 0xA0, C_BARBIT);
-    TEST_ASSERT_EQUAL(0xD0CA, opcode);
-  } Catch(e){
-    dumpTokenErrorMessage(e, 1);
-    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
-  }
-  freeTokenizer(tokenizer);
 }
   
 void test_assembleInstruction_given_add_A_with_r7_expect_opcode_0x2f() {
@@ -282,6 +237,46 @@ void test_assembleInstruction_given_mov_dptr_with_imm_expect_opcode_0x90EEFF() {
   freeTokenizer(tokenizer);
 }
 
+void test_assembleInstruction_given_cjne_ind_with_imm_expect_opcode_stored_in_code_memory_is_0xB7179C() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory + 0x100;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer("CjNe @r1 ,  #23 , -100");
+    len = assembleInstruction(tokenizer, &codePtr);
+    TEST_ASSERT_EQUAL(3, len);
+    TEST_ASSERT_EQUAL(0xB7, codeMemory[0x100]);
+    TEST_ASSERT_EQUAL(0x17, codeMemory[0x101]);
+    TEST_ASSERT_EQUAL(0x9C, codeMemory[0x102]);
+    TEST_ASSERT_EQUAL(0x103, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleInstruction_given_cjne_reg_with_imm_expect_opcode_0x90EEFF() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory + 0xF00F;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer("cJnE R5 ,  #-98 , +200");
+    len = assembleInstruction(tokenizer, &codePtr);
+    TEST_ASSERT_EQUAL(3, len);
+    TEST_ASSERT_EQUAL(0xBD, codeMemory[0xF00F]);
+    TEST_ASSERT_EQUAL(0x9E, codeMemory[0xF010]);
+    TEST_ASSERT_EQUAL(0xC8, codeMemory[0xF011]);
+    TEST_ASSERT_EQUAL(0xF012, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
 void test_assembleInstruction_given_xch_a_with_reg_expect_opcode_0xC9() {
   int len;
   uint8_t codeMemory[65536];
@@ -436,16 +431,16 @@ void test_isIndRegisterThenGetItsNumberAndConsume_given_is_ind_but_not_register_
   freeTokenizer(tokenizer);
 }
 
-void test_isImmediateThenGetsItsValueAndConsume_given_imm0xFA_token_expect_value_extracted_is_0xFA_and_token_is_consumed() {
+void test_isImmediateThenGetsItsValueAndConsume_given_negative_imm8bit_expect_value_extracted_and_token_is_consumed() {
   Tokenizer* tokenizer;
   Token *token;
   int value = 0xAA;
   Try{
-    tokenizer = createTokenizer("   #0xFa@123");
-    //maximum range is set to 0xFF, 0xFA is in range
-    int isTrue = isImmediateThenGetsItsValueAndConsume(tokenizer, &value, 0xFF);
+    tokenizer = createTokenizer("   #-123@123");
+    //-123 is in range
+    int isTrue = isImmediateThenGetsItsValueAndConsume(tokenizer, &value, -128, 255);
     token = getToken(tokenizer);
-    TEST_ASSERT_EQUAL(0xFA, value);                         //token is immediate, so value is extracted
+    TEST_ASSERT_EQUAL(-123, value);                         //token is immediate, so value is extracted
     TEST_ASSERT_EQUAL_STRING("@" , token->str);             //token is immediate, so token is consumed
     TEST_ASSERT_EQUAL(1, isTrue);                           //token is immediate, so function returns true
   } Catch(e){
@@ -455,18 +450,56 @@ void test_isImmediateThenGetsItsValueAndConsume_given_imm0xFA_token_expect_value
   freeTokenizer(tokenizer);
 }
 
-void test_isImmediateThenGetsItsValueAndConsume_given_imm0xA5A5_token_expect_value_extracted_is_0xA5A5_and_token_is_consumed() {
+void test_isImmediateThenGetsItsValueAndConsume_given_imm16bit_expect_value_extracted_and_token_is_consumed() {
   Tokenizer* tokenizer;
   Token *token;
   int value = 0xB0;
   Try{
-    tokenizer = createTokenizer(" #0xa5A5 happy");
-    //maximum range is set to 0xFFFF, 0xA5A5 is in range
-    int isTrue = isImmediateThenGetsItsValueAndConsume(tokenizer, &value, 0xFFFF);
+    tokenizer = createTokenizer(" #50000 happy");
+    //50000 is in range
+    int isTrue = isImmediateThenGetsItsValueAndConsume(tokenizer, &value, -32768, 65535);
     token = getToken(tokenizer);
-    TEST_ASSERT_EQUAL(0xA5A5, value);                       //token is immediate, so value is extracted
-    TEST_ASSERT_EQUAL_STRING("happy" , token->str);         //token is immediate, so token is consumed
-    TEST_ASSERT_EQUAL(1, isTrue);                           //token is immediate, so function returns true
+    TEST_ASSERT_EQUAL(50000, value);                       //token is immediate, so value is extracted
+    TEST_ASSERT_EQUAL_STRING("happy" , token->str);        //token is immediate, so token is consumed
+    TEST_ASSERT_EQUAL(1, isTrue);                          //token is immediate, so function returns true
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_isImmediateThenGetsItsValueAndConsume_given_negative_imm16bit_expect_value_extracted_and_token_is_consumed() {
+  Tokenizer* tokenizer;
+  Token *token;
+  int value = 0xB1;
+  Try{
+    tokenizer = createTokenizer(" #-20000 sad");
+    //-20000 is in range
+    int isTrue = isImmediateThenGetsItsValueAndConsume(tokenizer, &value, -32768, 65535);
+    token = getToken(tokenizer);
+    TEST_ASSERT_EQUAL(-20000, value);
+    TEST_ASSERT_EQUAL_STRING("sad" , token->str);
+    TEST_ASSERT_EQUAL(1, isTrue);
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_isImmediateThenGetsItsValueAndConsume_given_imm8bit_with_plus_sign_expect_value_extracted_and_token_is_consumed() {
+  Tokenizer* tokenizer;
+  Token *token;
+  int value = 0x05;
+  Try{
+    tokenizer = createTokenizer(" #+200 bye");
+    //-20000 is in range
+    int isTrue = isImmediateThenGetsItsValueAndConsume(tokenizer, &value, -128, 255);
+    token = getToken(tokenizer);
+    TEST_ASSERT_EQUAL(200, value);
+    TEST_ASSERT_EQUAL_STRING("bye" , token->str);
+    TEST_ASSERT_EQUAL(1, isTrue);
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
@@ -480,7 +513,7 @@ void test_isImmediateThenGetsItsValueAndConsume_given_not_imm_expect_value_is_no
   int value = 0x88;
   Try{
     tokenizer = createTokenizer(" 0xA0 haha");
-    int isTrue = isImmediateThenGetsItsValueAndConsume(tokenizer, &value, 0xFF);
+    int isTrue = isImmediateThenGetsItsValueAndConsume(tokenizer, &value, 0, 255);
     token = getToken(tokenizer);
     TEST_ASSERT_EQUAL(0x88, value);                         //value is not extracted since token is not immediate
     TEST_ASSERT_EQUAL_STRING("0xA0", token->str);           //token is not consumed since its not immediate
@@ -497,7 +530,7 @@ void test_isImmediateThenGetsItsValueAndConsume_given_is_imm_but_outOfRange_expe
   int value;
   Try{
     tokenizer = createTokenizer("#0xFFA  ");
-    int isTrue = isImmediateThenGetsItsValueAndConsume(tokenizer, &value, 0xFF);      //maximum range is set to 0xFF
+    int isTrue = isImmediateThenGetsItsValueAndConsume(tokenizer, &value, 0, 255);      //maximum range is set to 0xFF
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
@@ -512,8 +545,8 @@ void test_isImmediateThenGetsItsValueAndConsume_given_is_imm_but_not_integer_exp
   Tokenizer* tokenizer;
   int value;
   Try{
-    tokenizer = createTokenizer("  #R7  ");
-    int isTrue = isImmediateThenGetsItsValueAndConsume(tokenizer, &value, 0xFF);
+    tokenizer = createTokenizer("  #r7  ");
+    int isTrue = isImmediateThenGetsItsValueAndConsume(tokenizer, &value, 0, 255);
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
@@ -527,10 +560,10 @@ void test_verifyIsImmediateThenGetsItsValueAndConsume_given_is_imm_expect_value_
   Token *token;
   int value = 0x70;
   Try{
-    tokenizer = createTokenizer("     #0x11A hehe");
-    verifyIsImmediateThenGetsItsValueAndConsume(tokenizer, &value, 0xFFFF);
+    tokenizer = createTokenizer("     #-85 hehe");
+    verifyIsImmediateThenGetsItsValueAndConsume(tokenizer, &value, -128, 255);
     token = getToken(tokenizer);
-    TEST_ASSERT_EQUAL(0x11A, value);
+    TEST_ASSERT_EQUAL(-85, value);
     TEST_ASSERT_EQUAL_STRING("hehe", token->str);
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
@@ -544,7 +577,7 @@ void test_verifyIsImmediateThenGetsItsValueAndConsume_given_not_imm_expect_excep
   int value;
   Try{
     tokenizer = createTokenizer(" @r0  ");
-    verifyIsImmediateThenGetsItsValueAndConsume(tokenizer, &value, 0xFF);
+    verifyIsImmediateThenGetsItsValueAndConsume(tokenizer, &value, 0, 255);
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
@@ -736,12 +769,12 @@ void test_isIntegerTokenThenConsume_given_is_integer_expect_token_is_consumed_va
   Token *token;
   int value = 0xAA;
   Try{
-    tokenizer = createTokenizer(" 0xBBAF 6699876 A");
-    int isTrue = isIntegerTokenThenConsume(tokenizer, &value, 0xFFFF);
+    tokenizer = createTokenizer(" -32678 6699876 A");
+    int isTrue = isIntegerTokenThenConsume(tokenizer, &value, -32768, 65535);
     token = getToken(tokenizer);
     TEST_ASSERT_EQUAL(1, isTrue);
     TEST_ASSERT_EQUAL_STRING("6699876", token->str);
-    TEST_ASSERT_EQUAL(0xBBAF, value);
+    TEST_ASSERT_EQUAL(-32678, value);
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
@@ -749,12 +782,76 @@ void test_isIntegerTokenThenConsume_given_is_integer_expect_token_is_consumed_va
   freeTokenizer(tokenizer);
 }
 
-void test_isIntegerTokenThenConsume_given_is_integer_but_out_of_range_expect_ERR_INTEGER_OUT_OF_RANGE_exception_to_be_thrown() {
+void test_isIntegerTokenThenConsume_given_is_integer_with_plus_sign_expect_token_is_consumed_value_is_extracted_and_return_1() {
+  Tokenizer* tokenizer;
+  Token *token;
+  int value = 0xAA;
+  Try{
+    tokenizer = createTokenizer(" +12345 6699876 A");
+    int isTrue = isIntegerTokenThenConsume(tokenizer, &value, -32768, 65535);
+    token = getToken(tokenizer);
+    TEST_ASSERT_EQUAL(1, isTrue);
+    TEST_ASSERT_EQUAL_STRING("6699876", token->str);
+    TEST_ASSERT_EQUAL(12345, value);
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_isIntegerTokenThenConsume_given_is_integer_without_plus_sign_expect_token_is_consumed_value_is_extracted_and_return_1() {
+  Tokenizer* tokenizer;
+  Token *token;
+  int value = 0xAA;
+  Try{
+    tokenizer = createTokenizer(" 120 !6699876 A");
+    int isTrue = isIntegerTokenThenConsume(tokenizer, &value, -128, 127);
+    token = getToken(tokenizer);
+    TEST_ASSERT_EQUAL(1, isTrue);
+    TEST_ASSERT_EQUAL_STRING("!", token->str);
+    TEST_ASSERT_EQUAL(120, value);
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_isIntegerTokenThenConsume_given_is_neg_integer_but_out_of_range_expect_ERR_INTEGER_OUT_OF_RANGE_exception_to_be_thrown() {
   Tokenizer* tokenizer;
   int value = 0xAA;
   Try{
-    tokenizer = createTokenizer(" 0xFFFF 666");
-    int isTrue = isIntegerTokenThenConsume(tokenizer, &value, 0xFF);
+    tokenizer = createTokenizer(" -129 666");
+    int isTrue = isIntegerTokenThenConsume(tokenizer, &value, -128, 255);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_INTEGER_OUT_OF_RANGE, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_isIntegerTokenThenConsume_given_is_pos_integer_but_out_of_range_expect_ERR_INTEGER_OUT_OF_RANGE_exception_to_be_thrown() {
+  Tokenizer* tokenizer;
+  int value = 0xAA;
+  Try{
+    tokenizer = createTokenizer(" +300 666");
+    int isTrue = isIntegerTokenThenConsume(tokenizer, &value, -128, 255);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_INTEGER_OUT_OF_RANGE, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_isIntegerTokenThenConsume_given_is_pos_integer_without_sign_but_out_of_range_expect_ERR_INTEGER_OUT_OF_RANGE_exception_to_be_thrown() {
+  Tokenizer* tokenizer;
+  int value = 0xAA;
+  Try{
+    tokenizer = createTokenizer(" 300 666");
+    int isTrue = isIntegerTokenThenConsume(tokenizer, &value, -128, 255);
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
@@ -768,11 +865,11 @@ void test_isIntegerTokenThenConsume_given_not_integer_expect_token_is_pushed_bac
   Token *token;
   int value = 0xAA;
   Try{
-    tokenizer = createTokenizer(" abcdef xyz  ");
-    int isTrue = isIntegerTokenThenConsume(tokenizer, &value, 0xFF);
+    tokenizer = createTokenizer(" +abcdef xyz  ");
+    int isTrue = isIntegerTokenThenConsume(tokenizer, &value, 0 ,255);
     token = getToken(tokenizer);
     TEST_ASSERT_EQUAL(0, isTrue);
-    TEST_ASSERT_EQUAL_STRING("abcdef", token->str);
+    TEST_ASSERT_EQUAL_STRING("+", token->str);
     TEST_ASSERT_EQUAL(0xAA, value);
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
@@ -787,7 +884,7 @@ void test_verifyIsIntegerTokenThenConsume_given_is_integer_expect_token_is_consu
   int value = 0xAA;
   Try{
     tokenizer = createTokenizer(" 0x789 muthu");
-    verifyIsIntegerTokenThenConsume(tokenizer, &value, 0xFFF);
+    verifyIsIntegerTokenThenConsume(tokenizer, &value, 0, 4095);
     token = getToken(tokenizer);
     TEST_ASSERT_EQUAL_STRING("muthu", token->str);
     TEST_ASSERT_EQUAL(0x789, value);
@@ -802,8 +899,8 @@ void test_verifyIsIntegerTokenThenConsume_given_not_integer_expect_exception_ERR
   Tokenizer* tokenizer;
   int value;
   Try{
-    tokenizer = createTokenizer("  beef  or chicken");
-    verifyIsIntegerTokenThenConsume(tokenizer, &value, 0xFF);
+    tokenizer = createTokenizer("  +beef  or chicken");
+    verifyIsIntegerTokenThenConsume(tokenizer, &value, 0, 255);
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
@@ -1132,7 +1229,35 @@ void test_assembleAWithOperands_given_extra_operand_expect_exception_ERR_EXTRA_P
   freeTokenizer(tokenizer);
 }
 
+void test_assembleDirectwithOperands_given_DirectWithImm_expect_opcode_0x93DEAA() {
+  Tokenizer* tokenizer;
+  int opcode;
+  Try{
+    tokenizer = createTokenizer("0xDE, #0xAA");
+    opcode = assembleDirectWithOperands(tokenizer, 0x90, DIR_IMM);
+    TEST_ASSERT_EQUAL(0x93DEAA, opcode);
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
 
+void test_assembleCWithOperands_given_CWithBarBit_expect_opcode_0xD0CA() {
+  Tokenizer* tokenizer;
+  int opcode;
+  Try{
+    tokenizer = createTokenizer("C, /0xCA");
+    opcode = assembleCWithOperands(tokenizer, 0xA0, C_BARBIT);
+    TEST_ASSERT_EQUAL(0xD0CA, opcode);
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+/*
 void test_assembleDirectWithOperands_given_0xCD_with_A_and_DIRECT_A_LOGICAL_flag_expect_opcode_0x42CD() {
   Tokenizer* tokenizer;
   int opcode;

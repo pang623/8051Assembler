@@ -10,7 +10,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
-/*
+
 _8051Instructions instructionsTable[] = {
   {"nop" , NULL                                        , {0x00, 0}},
   {"ret" , NULL                                        , {0x22, 0}},
@@ -35,7 +35,7 @@ _8051Instructions instructionsTable[] = {
   {"xrl" , assembleXRLinstruction                      , {0x60, A_DIR | A_IMM | A_IND | A_REG | DIR_A | DIR_IMM}},
   {"xch" , assembleInstructionWithOnlyAccAsFirstOperand, {0xC0, A_DIR | A_IND | A_REG}},
   {"xchd", assembleInstructionWithOnlyAccAsFirstOperand, {0xD0, A_IND}},
- // {"cjne", assembleCJNEInstruction                     , {0, 0}},
+  {"cjne", assembleCJNEInstruction                     , {0, 0}},
   {"movc", assembleMOVCInstruction                     , {0, 0}},
   {"movx", assembleMOVXInstruction                     , {0, 0}},
   {"mov" , assembleMOVInstruction                      , {0, 0}},
@@ -74,30 +74,30 @@ int assembleInstruction(Tokenizer *tokenizer, uint8_t **codePtrPtr) {
 }
 
 int assembleCJNEInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr) {
-  int opcode, direct = 0, relative = 0; immediate = 0;
+  int opcode, regNum = 0, direct = 0, relative = 0, immediate = 0;
   uint8_t *codePtr = *codePtrPtr;
   if(isIdentifierTokenThenConsume(tokenizer, "A")) {
     verifyIsOperatorTokenThenConsume(tokenizer, ",");
     if(isIntegerTokenThenConsume(tokenizer, &direct, 0, 255))
-      opcode = 0xB5 << 16 | direct << 8;
+      opcode = 0xB5 << 16 | ((uint8_t) direct) << 8;
     else if(isImmediateThenGetsItsValueAndConsume(tokenizer, &immediate, -128, 255))
-      opcode = 0xB4 << 16 | immediate << 8;
+      opcode = 0xB4 << 16 | ((uint8_t) immediate) << 8;
     else
       throwExpectingIntOrImmException(tokenizer);
   }else if(isRegisterConsumeAndGetItsNumber(tokenizer, REGISTER_ADDRESSING, &regNum)) {
     verifyIsOperatorTokenThenConsume(tokenizer, ",");
     verifyIsImmediateThenGetsItsValueAndConsume(tokenizer, &immediate, -128, 255);
-    opcode = (0xB8 + regNum) << 16 | immediate << 8;
+    opcode = (0xB8 + regNum) << 16 | ((uint8_t) immediate) << 8;
   }else if(isIndRegisterThenGetItsNumberAndConsume(tokenizer, &regNum)) {
     verifyIsOperatorTokenThenConsume(tokenizer, ",");
     verifyIsImmediateThenGetsItsValueAndConsume(tokenizer, &immediate, -128, 255);
-    opcode = (0xB6 + regNum) << 16 | immediate << 8;
+    opcode = (0xB6 + regNum) << 16 | ((uint8_t) immediate) << 8;
   }else
     throwInvalidCJNEFirstOperandException(tokenizer);
 
   verifyIsOperatorTokenThenConsume(tokenizer, ",");
-  verifyIsIntegerTokenThenConsume(tokenizer, &relative, -128, 127);
-  opcode |= relative;
+  verifyIsIntegerTokenThenConsume(tokenizer, &relative, -128, 255);
+  opcode |= ((uint8_t) relative);
   checkExtraToken(tokenizer);
   int len = writeCodeToCodeMemory(opcode, codePtr);
   (*codePtrPtr) += len;
@@ -113,58 +113,58 @@ int assembleMOVInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_
     verifyIsOperatorTokenThenConsume(tokenizer, ",");
     if(isRegisterConsumeAndGetItsNumber(tokenizer, REGISTER_ADDRESSING, &regNum))
       opcode = 0xE8 | regNum;
-    else if(isIntegerTokenThenConsume(tokenizer, &direct, 0xFF))
-      opcode = 0xE5 << 8 | direct;
+    else if(isIntegerTokenThenConsume(tokenizer, &direct, 0, 255))
+      opcode = 0xE5 << 8 | ((uint8_t) direct);
     else if(isIndRegisterThenGetItsNumberAndConsume(tokenizer, &regNum))
       opcode = 0xE6 | regNum;
-    else if(isImmediateThenGetsItsValueAndConsume(tokenizer, &immediate, 0xFF))
-      opcode = 0x74 | immediate;
+    else if(isImmediateThenGetsItsValueAndConsume(tokenizer, &immediate, -128, 255))
+      opcode = 0x74 | ((uint8_t) immediate);
     else
       throwAWithInvalidOperandException(tokenizer);
   }else if(isRegisterConsumeAndGetItsNumber(tokenizer, REGISTER_ADDRESSING, &regNum)) {
     verifyIsOperatorTokenThenConsume(tokenizer, ",");
     if(isIdentifierTokenThenConsume(tokenizer, "A"))
       opcode = 0xF8 + regNum;
-    else if(isIntegerTokenThenConsume(tokenizer, &direct, 0xFF))
-      opcode = ((0xA8 + regNum) << 8) | direct;
-    else if(isImmediateThenGetsItsValueAndConsume(tokenizer, &immediate, 0xFF))
-      opcode = ((0x78 + regNum) << 8) | immediate;
+    else if(isIntegerTokenThenConsume(tokenizer, &direct, 0, 255))
+      opcode = ((0xA8 + regNum) << 8) | ((uint8_t) direct);
+    else if(isImmediateThenGetsItsValueAndConsume(tokenizer, &immediate, -128, 255))
+      opcode = ((0x78 + regNum) << 8) | ((uint8_t) immediate);
     else
       throwRegWithInvalidOperandException(tokenizer);
   }else if(isIndRegisterThenGetItsNumberAndConsume(tokenizer, &regNum)) {
     verifyIsOperatorTokenThenConsume(tokenizer, ",");
     if(isIdentifierTokenThenConsume(tokenizer, "A"))
       opcode = 0xF6 + regNum;
-    else if(isIntegerTokenThenConsume(tokenizer, &direct, 0xFF))
-      opcode = ((0xA6 + regNum) << 8) | direct;
-    else if(isImmediateThenGetsItsValueAndConsume(tokenizer, &immediate, 0xFF))
-      opcode = ((0x76 + regNum) << 8) | immediate;
+    else if(isIntegerTokenThenConsume(tokenizer, &direct, 0, 255))
+      opcode = ((0xA6 + regNum) << 8) | ((uint8_t) direct);
+    else if(isImmediateThenGetsItsValueAndConsume(tokenizer, &immediate, -128, 255))
+      opcode = ((0x76 + regNum) << 8) | ((uint8_t) immediate);
     else
       throwRegWithInvalidOperandException(tokenizer);
-  }else if(isIntegerTokenThenConsume(tokenizer, &direct, 0xFF)) {
+  }else if(isIntegerTokenThenConsume(tokenizer, &direct, 0, 255)) {
     verifyIsOperatorTokenThenConsume(tokenizer, ",");
     if(isIdentifierTokenThenConsume(tokenizer, "A"))
-      opcode = (0xF5 << 8) | direct;
+      opcode = (0xF5 << 8) | ((uint8_t) direct);
     else if(isRegisterConsumeAndGetItsNumber(tokenizer, REGISTER_ADDRESSING, &regNum))
-      opcode = ((0x88 + regNum) << 8) | direct;
-    else if(isIntegerTokenThenConsume(tokenizer, &directSrc, 0xFF))
-      opcode = (0x85 << 16) | (directSrc << 8) | direct;
+      opcode = ((0x88 + regNum) << 8) | ((uint8_t) direct);
+    else if(isIntegerTokenThenConsume(tokenizer, &directSrc, 0, 255))
+      opcode = (0x85 << 16) | ((uint8_t) directSrc << 8) | ((uint8_t) direct);
     else if(isIndRegisterThenGetItsNumberAndConsume(tokenizer, &regNum))
-      opcode = ((0x86 + regNum) << 8) | direct;
-    else if(isImmediateThenGetsItsValueAndConsume(tokenizer, &immediate, 0xFF))
-      opcode = (0x75 << 16) | (direct << 8) | immediate;
+      opcode = ((0x86 + regNum) << 8) | ((uint8_t) direct);
+    else if(isImmediateThenGetsItsValueAndConsume(tokenizer, &immediate, -128, 255))
+      opcode = (0x75 << 16) | ((uint8_t) direct << 8) | ((uint8_t) immediate);
     else if(isIdentifierTokenThenConsume(tokenizer, "C"))
-      opcode = (0x92 << 8) | direct;
+      opcode = (0x92 << 8) | ((uint8_t) direct);
     else
       throwDirectWithInvalidOperandException(tokenizer);
   }else if(isIdentifierTokenThenConsume(tokenizer, "C")) {
     verifyIsOperatorTokenThenConsume(tokenizer, ",");
-    verifyIsIntegerTokenThenConsume(tokenizer, &bitAddr, 0xFF);
-    opcode = (0xA2 << 8) | bitAddr;
+    verifyIsIntegerTokenThenConsume(tokenizer, &bitAddr, 0, 255);
+    opcode = (0xA2 << 8) | ((uint8_t) bitAddr);
   }else if(isIdentifierTokenThenConsume(tokenizer, "DPTR")) {
     verifyIsOperatorTokenThenConsume(tokenizer, ",");
-    verifyIsImmediateThenGetsItsValueAndConsume(tokenizer, &immediate, 0xFFFF);
-    opcode = (0x90 << 16) | immediate;
+    verifyIsImmediateThenGetsItsValueAndConsume(tokenizer, &immediate, -32768, 65535);      //16 bits immediate
+    opcode = (0x90 << 16) | ((uint16_t) immediate);
   }else
     throwInvalidMovOperand(tokenizer);
 
@@ -250,7 +250,7 @@ int assembleLogicalInstructionWithoutXRL(Tokenizer *tokenizer, _8051Instructions
   }else if(isIdentifierTokenThenConsume(tokenizer, "C")) {
     pushBackToken(tokenizer, token);
     opcode = assembleCWithOperands(tokenizer, info->data[0] + 0x30, info->data[1]);
-  }else if(isIntegerTokenThenConsume(tokenizer, &value, 0xFF)) {
+  }else if(isIntegerTokenThenConsume(tokenizer, &value, 0, 255)) {
     pushBackToken(tokenizer, token);
     opcode = assembleDirectWithOperands(tokenizer, info->data[0], info->data[1]);
   }else
@@ -272,7 +272,7 @@ int assembleXRLinstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_
   if(isIdentifierTokenThenConsume(tokenizer, "A")) {
     pushBackToken(tokenizer, token);
     opcode = assembleAWithOperands(tokenizer, info->data[0], info->data[1]);
-  }else if(isIntegerTokenThenConsume(tokenizer, &value, 0xFF)) {
+  }else if(isIntegerTokenThenConsume(tokenizer, &value, 0, 255)) {
     pushBackToken(tokenizer, token);
     opcode = assembleDirectWithOperands(tokenizer, info->data[0], info->data[1]);
   }else
@@ -314,11 +314,11 @@ int assembleSingleOperand(Tokenizer *tokenizer, _8051Instructions *info, uint8_t
       opcode = (info->data[0] | 0x06) + regNum;
     else
       throwInvalidOperandException(token);
-  }else if(isIntegerTokenThenConsume(tokenizer, &direct, 0xFF)) {
+  }else if(isIntegerTokenThenConsume(tokenizer, &direct, 0, 255)) {
     if(info->data[1] & OPERAND_DIR_STACK)
-      opcode = (info->data[0] << 8) | direct;
+      opcode = (info->data[0] << 8) | ((uint8_t) direct);
     else if(info->data[1] & OPERAND_DIR)
-      opcode = ((info->data[0] | 0x05) << 8) | direct;
+      opcode = ((info->data[0] | 0x05) << 8) | ((uint8_t) direct);
     else
       throwInvalidOperandException(token);
   }else if(isIdentifierTokenThenConsume(tokenizer, "DPTR")) {
@@ -344,9 +344,9 @@ int assembleAWithOperands(Tokenizer *tokenizer, int opcode, int flags) {
   verifyIsOperatorTokenThenConsume(tokenizer, ",");
   token = getToken(tokenizer);
   pushBackToken(tokenizer, token);
-  if(isIntegerTokenThenConsume(tokenizer, &direct, 0xFF)) {
+  if(isIntegerTokenThenConsume(tokenizer, &direct, 0, 255)) {
     if(flags & A_DIR)
-      opcode = ((opcode | 0x05) << 8) | direct;
+      opcode = ((opcode | 0x05) << 8) | ((uint8_t) direct);
     else
       throwInvalidOperandException(token);
   }else if(isRegisterConsumeAndGetItsNumber(tokenizer, REGISTER_ADDRESSING, &regNum)) {
@@ -356,8 +356,8 @@ int assembleAWithOperands(Tokenizer *tokenizer, int opcode, int flags) {
       throwInvalidOperandException(token);
   }else if(isOperatorTokenThenConsume(tokenizer, "#")) {
     if(flags & A_IMM) {
-      verifyIsIntegerTokenThenConsume(tokenizer, &immediate, 0xFF);
-      opcode = ((opcode | 0x04) << 8) | immediate;
+      verifyIsIntegerTokenThenConsume(tokenizer, &immediate, -128, 255);
+      opcode = ((opcode | 0x04) << 8) | ((uint8_t) immediate);
     }else
       throwInvalidOperandException(token);
   }else if(isOperatorTokenThenConsume(tokenizer, "@")) {
@@ -379,19 +379,19 @@ int assembleAWithOperands(Tokenizer *tokenizer, int opcode, int flags) {
 int assembleDirectWithOperands(Tokenizer *tokenizer, int opcode, int flags) {
   Token *token;
   int direct = 0, immediate = 0;
-  verifyIsIntegerTokenThenConsume(tokenizer, &direct, 0xFF);
+  verifyIsIntegerTokenThenConsume(tokenizer, &direct, 0, 255);
   verifyIsOperatorTokenThenConsume(tokenizer, ",");
   token = getToken(tokenizer);
   pushBackToken(tokenizer, token);
   if(isIdentifierTokenThenConsume(tokenizer, "A")) {
     if(flags & DIR_A)
-      opcode = ((opcode | 0x02) << 8) | direct;
+      opcode = ((opcode | 0x02) << 8) | ((uint8_t) direct);
     else
       throwInvalidOperandException(token);
   }else if(isOperatorTokenThenConsume(tokenizer, "#")) {
     if(flags & DIR_IMM) {
-      verifyIsIntegerTokenThenConsume(tokenizer, &immediate, 0xFF);
-      opcode = ((opcode | 0x03) << 16) | direct << 8 | immediate;
+      verifyIsIntegerTokenThenConsume(tokenizer, &immediate, -128, 255);
+      opcode = ((opcode | 0x03) << 16) | ((uint8_t) direct) << 8 | ((uint8_t) immediate);
     }else
       throwInvalidOperandException(token);
   }else
@@ -410,15 +410,15 @@ int assembleCWithOperands(Tokenizer *tokenizer, int opcode, int flags) {
   verifyIsOperatorTokenThenConsume(tokenizer, ",");
   token = getToken(tokenizer);
   pushBackToken(tokenizer, token);
-  if(isIntegerTokenThenConsume(tokenizer, &bitAddr, 0xFF)) {
+  if(isIntegerTokenThenConsume(tokenizer, &bitAddr, 0, 255)) {
     if(flags & C_BIT)
-      opcode = ((opcode | 0x02) << 8) | bitAddr;
+      opcode = ((opcode | 0x02) << 8) | ((uint8_t) bitAddr);
     else
       throwInvalidOperandException(token);
   }else if(isOperatorTokenThenConsume(tokenizer, "/")) {
     if(flags & C_BARBIT) {
-      verifyIsIntegerTokenThenConsume(tokenizer, &bitAddr, 0xFF);
-      opcode = ((opcode + 0x30) << 8) | bitAddr;
+      verifyIsIntegerTokenThenConsume(tokenizer, &bitAddr, 0, 255);
+      opcode = ((opcode + 0x30) << 8) | ((uint8_t) bitAddr);
     }else
       throwInvalidOperandException(token);
   }else
@@ -429,9 +429,9 @@ int assembleCWithOperands(Tokenizer *tokenizer, int opcode, int flags) {
   checkExtraToken(tokenizer);
   return opcode;
 }
-*/
+
 //consume token if is integer token and in valid range, else pushBack the token
-int isIntegerTokenThenConsume(Tokenizer *tokenizer, uint8_t *value, int min, int max) {
+int isIntegerTokenThenConsume(Tokenizer *tokenizer, int *val, int min, int max) {
   Token *token, *token1;
   int number;
   token = getToken(tokenizer);
@@ -444,7 +444,7 @@ int isIntegerTokenThenConsume(Tokenizer *tokenizer, uint8_t *value, int min, int
         throwException(ERR_INTEGER_OUT_OF_RANGE, token1,
         "Expecting integer of range %d to %d, received %d instead", min, max, ((IntegerToken *)token1)->value);
       else {
-        *value = ((IntegerToken *)token1)->value;
+        *val = ((IntegerToken *)token1)->value;
         return 1;
       }
     }else {
@@ -460,7 +460,7 @@ int isIntegerTokenThenConsume(Tokenizer *tokenizer, uint8_t *value, int min, int
         throwException(ERR_INTEGER_OUT_OF_RANGE, token1,
         "Expecting integer of range %d to %d, received %d instead", min, max, number);
       else {
-        *value = number;
+        *val = number;
         return 1;
       }
     }else {
@@ -475,7 +475,7 @@ int isIntegerTokenThenConsume(Tokenizer *tokenizer, uint8_t *value, int min, int
         throwException(ERR_INTEGER_OUT_OF_RANGE, token,
         "Expecting integer of range %d to %d, received %d instead", min, max, ((IntegerToken *)token)->value);
       else {
-        *value = ((IntegerToken *)token)->value;
+        *val = ((IntegerToken *)token)->value;
         return 1;
       }
     }else {
@@ -484,12 +484,12 @@ int isIntegerTokenThenConsume(Tokenizer *tokenizer, uint8_t *value, int min, int
     }
   }
 }
-/*
+
 //consume token if is integer token and in valid range, else throwException
 void verifyIsIntegerTokenThenConsume(Tokenizer *tokenizer, int *value, int min, int max) {
   Token *token;
   int val = 0;
-  if(!isIntegerTokenThenConsume(tokenizer, &val, integerRange)) {
+  if(!isIntegerTokenThenConsume(tokenizer, &val, min, max)) {
     token = getToken(tokenizer);
     throwException(ERR_EXPECTING_INTEGER, token,
     "Expecting integer, but received %s instead", token->str);
@@ -522,7 +522,7 @@ void verifyIsIdentifierTokenThenConsume(Tokenizer *tokenizer, char *identifier) 
     "Expecting '%s' as identifier, but received %s instead", identifier, token->str);
   }
 }
-*/
+
 //consume token if is correct operator token, else pushBack the token
 int isOperatorTokenThenConsume(Tokenizer *tokenizer, char *Operator) {
   Token *token;
@@ -538,7 +538,7 @@ int isOperatorTokenThenConsume(Tokenizer *tokenizer, char *Operator) {
     return 0;
   }
 }
-/*
+
 //consume token if is correct operator token, else throwException
 void verifyIsOperatorTokenThenConsume(Tokenizer *tokenizer, char *Operator) {
   Token *token;
@@ -602,11 +602,11 @@ int isIndRegisterThenGetItsNumberAndConsume(Tokenizer *tokenizer, int *number) {
 
 //if # token is detected, it is consumed and the token next to it must be integer, else throw exception
 //if # is not detected, it will NOT throwException and token is pushed back
-int isImmediateThenGetsItsValueAndConsume(Tokenizer *tokenizer, int *value, int integerRange) {
+int isImmediateThenGetsItsValueAndConsume(Tokenizer *tokenizer, int *value, int min, int max) {
   int immediate = 0;
 
   if(isOperatorTokenThenConsume(tokenizer, "#")) {
-    verifyIsIntegerTokenThenConsume(tokenizer, &immediate, integerRange);
+    verifyIsIntegerTokenThenConsume(tokenizer, &immediate, min, max);
     *value = immediate;
     return 1;
   }else
@@ -614,10 +614,10 @@ int isImmediateThenGetsItsValueAndConsume(Tokenizer *tokenizer, int *value, int 
 }
 
 //throw exception if # is not detected
-void verifyIsImmediateThenGetsItsValueAndConsume(Tokenizer *tokenizer, int *value, int integerRange) {
+void verifyIsImmediateThenGetsItsValueAndConsume(Tokenizer *tokenizer, int *value, int min, int max) {
   int immediate = 0;
   Token *token;
-  if(!isImmediateThenGetsItsValueAndConsume(tokenizer, &immediate, integerRange)) {
+  if(!isImmediateThenGetsItsValueAndConsume(tokenizer, &immediate, min, max)) {
     token = getToken(tokenizer);
     throwException(ERR_EXPECTING_IMMEDIATE, token,
     "Expecting a '#', but received %s instead", token->str);
@@ -667,4 +667,4 @@ int writeCodeToCodeMemory(int opcode, uint8_t *codePtr) {
 void throwInvalidOperandException(Token *token) {
    throwException(ERR_INVALID_OPERAND, token,
    "Did not expect %s as an operand", token->str);
-}*/
+}
