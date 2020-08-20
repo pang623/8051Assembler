@@ -23,6 +23,13 @@ _8051Instructions instructionsTable[] = {
   {"rlc" , assembleSingleOperand                       , {0x30, OPERAND_A_ROT}},
   {"rr"  , assembleSingleOperand                       , {0x00, OPERAND_A_ROT}},
   {"rrc" , assembleSingleOperand                       , {0x10, OPERAND_A_ROT}},
+  {"ljmp", assembleSingleOperand                       , {0x00, OPERAND_DIR16}},
+  {"lcall",assembleSingleOperand                       , {0x10, OPERAND_DIR16}},
+  {"jc " , assembleSingleOperand                       , {0x40, OPERAND_REL}},
+  {"jnc" , assembleSingleOperand                       , {0x50, OPERAND_REL}},
+  {"jz"  , assembleSingleOperand                       , {0x60, OPERAND_REL}},
+  {"jnz" , assembleSingleOperand                       , {0x70, OPERAND_REL}},
+  {"sjmp", assembleSingleOperand                       , {0x80, OPERAND_REL}},
   {"push", assembleSingleOperand                       , {0xC0, OPERAND_DIR_STACK}},
   {"pop" , assembleSingleOperand                       , {0xD0, OPERAND_DIR_STACK}},
   {"inc" , assembleSingleOperand                       , {0x00, OPERAND_A | OPERAND_REG | OPERAND_DIR | OPERAND_IND}},
@@ -306,12 +313,17 @@ int assembleXRLinstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_
   return len;
 }
 
-//not yet implement operand C, BIT, REL
+//not yet implement operand C, BIT
 int assembleSingleOperand(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr) {
   Token *token;
-  int opcode, len, regNum = 0, direct = 0;
+  int opcode, len, min = 0, max = 255, regNum = 0, value = 0;
   uint8_t *codePtr = *codePtrPtr;
   
+  if(info->data[1] & OPERAND_REL)
+    min = -128;
+  else if(info->data[1] & OPERAND_DIR16)
+    max = 65535;
+
   token = getToken(tokenizer);
   pushBackToken(tokenizer, token);
   if(isIdentifierTokenThenConsume(tokenizer, "A")) {
@@ -336,11 +348,13 @@ int assembleSingleOperand(Tokenizer *tokenizer, _8051Instructions *info, uint8_t
       opcode = (info->data[0] | 0x06) + regNum;
     else
       throwInvalidOperandException(token);
-  }else if(isIntegerTokenThenConsume(tokenizer, &direct, 0, 255)) {
-    if(info->data[1] & OPERAND_DIR_STACK)
-      opcode = (info->data[0] << 8) | ((uint8_t) direct);
+  }else if(isIntegerTokenThenConsume(tokenizer, &value, min, max)) {
+    if(info->data[1] & OPERAND_DIR_STACK || info->data[1] & OPERAND_REL)
+      opcode = (info->data[0] << 8) | ((uint8_t) value);
     else if(info->data[1] & OPERAND_DIR)
-      opcode = ((info->data[0] | 0x05) << 8) | ((uint8_t) direct);
+      opcode = ((info->data[0] | 0x05) << 8) | ((uint8_t) value);
+    else if(info->data[1] & OPERAND_DIR16)
+      opcode = ((info->data[0] | 0x02) << 16) | ((uint16_t) value);
     else
       throwInvalidOperandException(token);
   }else if(isIdentifierTokenThenConsume(tokenizer, "DPTR")) {

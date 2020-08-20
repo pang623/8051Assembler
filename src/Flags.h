@@ -25,5 +25,7 @@
 #define     OPERAND_DIR_STACK     (1 << 14)
 #define     OPERAND_C             (1 << 15)
 #define     OPERAND_DPTR          (1 << 16)
+#define     OPERAND_REL           (1 << 17)
+#define     OPERAND_DIR16         (1 << 18)
 
 #endif // FLAGS_H
