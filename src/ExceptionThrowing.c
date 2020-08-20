@@ -67,3 +67,10 @@ void throwInvalidCJNEFirstOperandException(Tokenizer *tokenizer) {
   throwException(ERR_INVALID_OPERAND, token,
   "Expecting 'A', '@' or register, but received %s instead", token->str);
 }
+
+void throwInvalidDJNZFirstOperandException(Tokenizer *tokenizer) {
+  Token *token;
+  token = getToken(tokenizer);
+  throwException(ERR_INVALID_OPERAND, token,
+  "Expecting integer or register, but received %s instead", token->str);
+}

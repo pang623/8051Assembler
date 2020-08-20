@@ -36,16 +36,17 @@ _8051Instructions instructionsTable[] = {
   {"xch" , assembleInstructionWithOnlyAccAsFirstOperand, {0xC0, A_DIR | A_IND | A_REG}},
   {"xchd", assembleInstructionWithOnlyAccAsFirstOperand, {0xD0, A_IND}},
   {"cjne", assembleCJNEInstruction                     , {0, 0}},
+  {"djnz", assembleDJNZInstruction                     , {0, 0}},
   {"movc", assembleMOVCInstruction                     , {0, 0}},
   {"movx", assembleMOVXInstruction                     , {0, 0}},
   {"mov" , assembleMOVInstruction                      , {0, 0}},
-  {NULL  , NULL, {0, 0}},
+  {NULL  , NULL                                        , {0, 0}},
 };
 
 int assembleInstruction(Tokenizer *tokenizer, uint8_t **codePtrPtr) {
   Token* token;
-  int opcode;
-  int i = 0, len = 0;
+  int opcode, len;
+  int i = 0;
   _8051Instructions *instructionPtr;
 
   token = getToken(tokenizer);
@@ -73,9 +74,30 @@ int assembleInstruction(Tokenizer *tokenizer, uint8_t **codePtrPtr) {
   return len;
 }
 
-int assembleCJNEInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr) {
-  int opcode, regNum = 0, direct = 0, relative = 0, immediate = 0;
+int assembleDJNZInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr) {
+  int opcode, len, regNum = 0, relative = 0, direct = 0;
   uint8_t *codePtr = *codePtrPtr;
+  
+  if(isRegisterConsumeAndGetItsNumber(tokenizer, REGISTER_ADDRESSING, &regNum))
+    opcode = (0xD8 + regNum) << 8;
+  else if(isIntegerTokenThenConsume(tokenizer, &direct, 0, 255))
+    opcode = 0xD5 << 16 | ((uint8_t) direct) << 8;
+  else
+    throwInvalidDJNZFirstOperandException(tokenizer);
+  
+  verifyIsOperatorTokenThenConsume(tokenizer, ",");
+  verifyIsIntegerTokenThenConsume(tokenizer, &relative, -128, 255);
+  opcode |= (uint8_t) relative;
+  checkExtraToken(tokenizer);
+  len = writeCodeToCodeMemory(opcode, codePtr);
+  (*codePtrPtr) += len;
+  return len;
+}
+
+int assembleCJNEInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr) {
+  int opcode, len, regNum = 0, direct = 0, relative = 0, immediate = 0;
+  uint8_t *codePtr = *codePtrPtr;
+  
   if(isIdentifierTokenThenConsume(tokenizer, "A")) {
     verifyIsOperatorTokenThenConsume(tokenizer, ",");
     if(isIntegerTokenThenConsume(tokenizer, &direct, 0, 255))
@@ -99,14 +121,14 @@ int assembleCJNEInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8
   verifyIsIntegerTokenThenConsume(tokenizer, &relative, -128, 255);
   opcode |= ((uint8_t) relative);
   checkExtraToken(tokenizer);
-  int len = writeCodeToCodeMemory(opcode, codePtr);
+  len = writeCodeToCodeMemory(opcode, codePtr);
   (*codePtrPtr) += len;
   return len;
 }
 
 //only MOV uses this function
 int assembleMOVInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr) {
-  int opcode, regNum = 0, direct = 0, directSrc = 0, immediate = 0, bitAddr = 0;
+  int opcode, len, regNum = 0, direct = 0, directSrc = 0, immediate = 0, bitAddr = 0;
   uint8_t *codePtr = *codePtrPtr;
 
   if(isIdentifierTokenThenConsume(tokenizer, "A")) {
@@ -169,13 +191,13 @@ int assembleMOVInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_
     throwInvalidMovOperand(tokenizer);
 
   checkExtraToken(tokenizer);
-  int len = writeCodeToCodeMemory(opcode, codePtr);
+  len = writeCodeToCodeMemory(opcode, codePtr);
   (*codePtrPtr) += len;
   return len;
 }
 
 int assembleMOVXInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr) {
-  int opcode, regNum = 0;
+  int opcode, len, regNum = 0;
   uint8_t *codePtr = *codePtrPtr;
 
   if(isIdentifierTokenThenConsume(tokenizer, "A")) {
@@ -200,13 +222,13 @@ int assembleMOVXInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8
     throwExpectingAOrIndException(tokenizer);
 
   checkExtraToken(tokenizer);
-  int len = writeCodeToCodeMemory(opcode, codePtr);
+  len = writeCodeToCodeMemory(opcode, codePtr);
   (*codePtrPtr) += len;
   return len;
 }
 
 int assembleMOVCInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr) {
-  int opcode;
+  int opcode, len;
   uint8_t *codePtr = *codePtrPtr;
 
   verifyIsIdentifierTokenThenConsume(tokenizer, "A");
@@ -222,7 +244,7 @@ int assembleMOVCInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8
     throwExpectingPCorDPTRexception(tokenizer);
 
   checkExtraToken(tokenizer);
-  int len = writeCodeToCodeMemory(opcode, codePtr);
+  len = writeCodeToCodeMemory(opcode, codePtr);
   (*codePtrPtr) += len;
   return len;
 }
@@ -375,7 +397,6 @@ int assembleAWithOperands(Tokenizer *tokenizer, int opcode, int flags) {
   return opcode;
 }
 
-//yet to implement direct, rel    bit, rel
 int assembleDirectWithOperands(Tokenizer *tokenizer, int opcode, int flags) {
   Token *token;
   int direct = 0, immediate = 0;
