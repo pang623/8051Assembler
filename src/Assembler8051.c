@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-_8051Instructions instructionsTable[] = {
+_8051Instructions instructionsTable[45] = {
   {"nop" , NULL                                        , {0x00, 0}},
   {"ret" , NULL                                        , {0x22, 0}},
   {"reti", NULL                                        , {0x32, 0}},

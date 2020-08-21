@@ -33,6 +33,21 @@ void test_writeCodeToCodeMemory_given_opcode_0x7B_expect_opcode_stored_in_code_m
   }
 }
 
+void test_writeCodeToCodeMemory_given_opcode_0xABCD_expect_opcode_stored_in_code_memory_and_return_the_size() {
+  int len;
+  uint8_t codeMemory[65535];
+  uint8_t *codePtr = codeMemory + 0xAB;                   //codePtr is pointing at code memory with the abs address 0xAB
+  Try{
+    len = writeCodeToCodeMemory(0xABCD, codePtr);
+    TEST_ASSERT_EQUAL(2, len);                            //opcode is 2 bytes
+    TEST_ASSERT_EQUAL(0xAB, codeMemory[0xAB]);            //opcode is stored at address 0xAB
+    TEST_ASSERT_EQUAL(0xCD, codeMemory[0xAC]);            //opcode is stored at address 0xAC
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+}
+
 void test_writeCodeToCodeMemory_given_opcode_0x9BA12C_expect_opcode_stored_in_code_memory_and_return_the_size() {
   int len;
   uint8_t codeMemory[65535];
@@ -48,7 +63,7 @@ void test_writeCodeToCodeMemory_given_opcode_0x9BA12C_expect_opcode_stored_in_co
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
 }
-  
+
 void test_assembleInstruction_given_add_A_with_r7_expect_opcode_0x2f() {
   int len;
   uint8_t codeMemory[65536];
@@ -91,7 +106,7 @@ void test_assembleInstruction_given_mov_dir_with_imm_expect_opcode_0x75669A() {
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 250;
   Tokenizer* tokenizer;
-  Try{  
+  Try{
     tokenizer = createTokenizer("Mov 0x66, #0x9A");
     len = assembleInstruction(tokenizer, &codePtr);
     TEST_ASSERT_EQUAL(3, len);
@@ -111,7 +126,7 @@ void test_assembleInstruction_given_add_A_with_indirect_R0_expect_opcode_0x26() 
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 55;
   Tokenizer* tokenizer;
-  Try{  
+  Try{
     tokenizer = createTokenizer("add A, @R0");
     len = assembleInstruction(tokenizer, &codePtr);
     TEST_ASSERT_EQUAL(1, len);
@@ -395,7 +410,7 @@ void test_assembleInstruction_given_acall_addr11_expect_opcode_0xC1AB() {
   uint8_t *codePtr = codeMemory + 0x765;
   Tokenizer* tokenizer;
   Try{
-    tokenizer = createTokenizer("  aCAll 0x79A  ");
+    tokenizer = createTokenizer("  aCAll 0x79a  ");
     len = assembleInstruction(tokenizer, &codePtr);
     TEST_ASSERT_EQUAL(2, len);
     TEST_ASSERT_EQUAL(0xF1, codeMemory[0x765]);
@@ -532,7 +547,7 @@ void test_isIndRegisterThenGetItsNumberAndConsume_given_is_indReg_but_outOfRange
 
 //@A+DPTR, @A+PC and @DPTR operands are only found in MOVX and MOVC instructions,
 //all other instructions have only @Ri as operands, which also means when @ token is detected,
-//automatically the token next to it must be a register, 
+//automatically the token next to it must be a register,
 //this function is not used in assembling MOVX and MOVC instruction (@Ri is not checked using this function for MOVX and MOVC)
 void test_isIndRegisterThenGetItsNumberAndConsume_given_is_ind_but_not_register_expect_exception_ERR_EXPECTING_REGISTER_to_be_thrown() {
   Tokenizer* tokenizer;
@@ -611,7 +626,7 @@ void test_isImmediateThenGetsItsValueAndConsume_given_imm8bit_with_plus_sign_exp
   int value = 0x05;
   Try{
     tokenizer = createTokenizer(" #+200 bye");
-    //-20000 is in range
+    //200 is in range
     int isTrue = isImmediateThenGetsItsValueAndConsume(tokenizer, &value, -128, 255);
     token = getToken(tokenizer);
     TEST_ASSERT_EQUAL(200, value);
@@ -881,7 +896,7 @@ void test_verifyIsIdentifierTokenThenConsume_given_not_identifier_expect_excepti
   freeTokenizer(tokenizer);
 }
 
-void test_isIntegerTokenThenConsume_given_is_integer_expect_token_is_consumed_value_is_extracted_and_return_1() {
+void test_isIntegerTokenThenConsume_given_is_neg_integer_expect_token_is_consumed_value_is_extracted_and_return_1() {
   Tokenizer* tokenizer;
   Token *token;
   int value = 0xAA;
@@ -905,7 +920,7 @@ void test_isIntegerTokenThenConsume_given_is_integer_with_plus_sign_expect_token
   int value = 0xAA;
   Try{
     tokenizer = createTokenizer(" +12345 6699876 A");
-    int isTrue = isIntegerTokenThenConsume(tokenizer, &value, -32768, 65535);
+    int isTrue = isIntegerTokenThenConsume(tokenizer, &value, 0, 65535);
     token = getToken(tokenizer);
     TEST_ASSERT_EQUAL(1, isTrue);
     TEST_ASSERT_EQUAL_STRING("6699876", token->str);
@@ -1062,16 +1077,32 @@ void test_isRegisterConsumeAndGetItsNumber_given_not_register_expect_token_is_pu
   freeTokenizer(tokenizer);
 }
 
-void test_isRegisterConsumeAndGetItsNumber_given_is_register_but_of_of_range_expect_exception_ERR_INDIRECT_OUT_OF_RANGE_to_be_thrown() {
+void test_isRegisterConsumeAndGetItsNumber_given_is_register_with_indirect_addressing_mode_but_out_of_range_expect_exception_ERR_INDIRECT_OUT_OF_RANGE_to_be_thrown() {
   Tokenizer* tokenizer;
   int regNum;
   Try{
     tokenizer = createTokenizer(" r5 bb");
+    //Addressing mode is indirect addressing, only can receive register R0 and R1
     int isTrue = isRegisterConsumeAndGetItsNumber(tokenizer, INDIRECT_ADDRESSING, &regNum);
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
     TEST_ASSERT_EQUAL(ERR_INDIRECT_OUT_OF_RANGE, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_isRegisterConsumeAndGetItsNumber_given_is_register_with_register_addressing_mode_but_out_of_range_expect_exception_ERR_REG_OUT_OF_RANGE_to_be_thrown() {
+  Tokenizer* tokenizer;
+  int regNum;
+  Try{
+    tokenizer = createTokenizer(" r21 bb");
+    //Addressing mode is register addressing, only can receive register from R0 to R7
+    int isTrue = isRegisterConsumeAndGetItsNumber(tokenizer, REGISTER_ADDRESSING, &regNum);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_REG_OUT_OF_RANGE, e->errorCode);
   }
   freeTokenizer(tokenizer);
 }
@@ -1132,8 +1163,32 @@ void test_checkExtraToken_given_null_token_expect_no_exception_is_thrown() {
   }
   freeTokenizer(tokenizer);
 }
-  
-void test_checkExtraToken_given_not_null_token_expect_exception_ERR_EXTRA_PARAMETER_is_thrown() {
+
+void test_checkExtraToken_given_newline_token_expect_no_exception_is_thrown() {
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer("  \n   ");
+    checkExtraToken(tokenizer);
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_checkExtraToken_given_tab_token_expect_no_exception_is_thrown() {
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer("  \t   ");
+    checkExtraToken(tokenizer);
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_checkExtraToken_given_not_whitespace_expect_exception_ERR_EXTRA_PARAMETER_is_thrown() {
   Tokenizer* tokenizer;
   Try{
     tokenizer = createTokenizer(" A");
@@ -1211,6 +1266,7 @@ void test_assembleAWithOperands_given_AWithIndirect_expect_opcode_0x46() {
   int opcode;
   Try{
     tokenizer = createTokenizer("    A, @r0");
+    //0x40 is the first nibble of the opcode which is passed into the function from the table
     opcode = assembleAWithOperands(tokenizer, 0x40, A_IND);
     TEST_ASSERT_EQUAL(0x46, opcode);
   } Catch(e){
@@ -1332,6 +1388,25 @@ void test_assembleAWithOperands_given_invalid_second_operand_expect_exception_ER
   freeTokenizer(tokenizer);
 }
 
+void test_assembleAWithOperands_given_ind_aPlusDPTR_expect_exception_ERR_EXPECTING_REGISTER_is_thrown() {
+  Tokenizer* tokenizer;
+  int opcode;
+  Try{
+    //although @a+dptr as second operand is valid, but it is not assembled using this function
+    //@a+dptr, @a+pc, and @dptr as second operand all are assembled in another function(as they are only found in movx, movc instructions)
+    //this function is only used to assemble instruction (add, subb, orl, ...)
+    //with common operands (Rn, @Ri, imm, dir)
+    //so this function just allows @Ri, if it sees '@'
+    tokenizer = createTokenizer(" a     , @A+dptr ");
+    opcode = assembleAWithOperands(tokenizer, 0x40, A_IND);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_EXPECTING_REGISTER, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
 void test_assembleAWithOperands_given_extra_operand_expect_exception_ERR_EXTRA_PARAMETER_is_thrown() {
   Tokenizer* tokenizer;
   int opcode;
@@ -1346,7 +1421,7 @@ void test_assembleAWithOperands_given_extra_operand_expect_exception_ERR_EXTRA_P
   freeTokenizer(tokenizer);
 }
 
-void test_assembleDirectwithOperands_given_DirectWithImm_expect_opcode_0x93DEAA() {
+void test_assembleDirectWithOperands_given_DirectWithImm_expect_opcode_0x93DEAA() {
   Tokenizer* tokenizer;
   int opcode;
   Try{
@@ -1356,6 +1431,80 @@ void test_assembleDirectwithOperands_given_DirectWithImm_expect_opcode_0x93DEAA(
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleDirectWithOperands_given_DirectWithA_expect_opcode_0x7294() {
+  Tokenizer* tokenizer;
+  int opcode;
+  Try{
+    tokenizer = createTokenizer("0x94 , a");
+    opcode = assembleDirectWithOperands(tokenizer, 0x70, DIR_A);
+    TEST_ASSERT_EQUAL(0x7294, opcode);
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleDirectWithOperands_given_correct_operand_combi_but_flag_not_set_expect_exception_ERR_INVALID_OPERAND_is_thrown() {
+  Tokenizer* tokenizer;
+  int opcode;
+  Try{
+    tokenizer = createTokenizer(" 0xD2, #98 ");
+    opcode = assembleDirectWithOperands(tokenizer, 0x40, DIR_A);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleDirectWithOperands_given_first_operand_not_direct_expect_exception_ERR_EXPECTING_INTEGER_is_thrown() {
+  Tokenizer* tokenizer;
+  int opcode;
+  Try{
+    tokenizer = createTokenizer(" A, #98 ");
+    opcode = assembleDirectWithOperands(tokenizer, 0x40, DIR_IMM);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_EXPECTING_INTEGER, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleDirectWithOperands_given_correct_operands_but_missing_comma_expect_exception_ERR_INVALID_OPERAND_is_thrown() {
+  Tokenizer* tokenizer;
+  int opcode;
+  Try{
+    tokenizer = createTokenizer(" 0x88 #98 ");
+    opcode = assembleDirectWithOperands(tokenizer, 0x40, DIR_IMM);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleDirectWithOperands_given_dir_with_dir_expect_exception_ERR_INVALID_OPERAND_is_thrown() {
+  Tokenizer* tokenizer;
+  int opcode;
+  Try{
+    //although dir with dir is valid, but it is not assembled in this function,
+    //it is the same case as the assembleAWithOperands function
+    //this function is used just for assembling common operands (dir, A; dir, Imm)
+    //and are used by instruction such as (anl, xrl, subb, ...)
+    tokenizer = createTokenizer(" 0xD2, 0xB3 ");
+    opcode = assembleDirectWithOperands(tokenizer, 0x40, DIR_A);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
   }
   freeTokenizer(tokenizer);
 }
@@ -1374,14 +1523,13 @@ void test_assembleCWithOperands_given_CWithBarBit_expect_opcode_0xD0CA() {
   freeTokenizer(tokenizer);
 }
 
-/*
-void test_assembleDirectWithOperands_given_0xCD_with_A_and_DIRECT_A_LOGICAL_flag_expect_opcode_0x42CD() {
+void test_assembleCWithOperands_given_CWithBit_expect_opcode_0x829B() {
   Tokenizer* tokenizer;
   int opcode;
   Try{
-    tokenizer = createTokenizer("0xCD, A");
-    opcode = assembleDirectWithOperands(tokenizer, 0x40, DIRECT_A_LOGICAL);
-    TEST_ASSERT_EQUAL(0x42CD, opcode);
+    tokenizer = createTokenizer("C, 0x9B");
+    opcode = assembleCWithOperands(tokenizer, 0x80, C_BIT);
+    TEST_ASSERT_EQUAL(0x829B, opcode);
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
@@ -1389,40 +1537,12 @@ void test_assembleDirectWithOperands_given_0xCD_with_A_and_DIRECT_A_LOGICAL_flag
   freeTokenizer(tokenizer);
 }
 
-void test_assembleDirectWithOperands_given_0x03_with_imm_0xBA_and_DIRECT_IMM_LOGICAL_flag_expect_opcode_0x6303BA() {
+void test_assembleCWithOperands_given_correct_operand_combi_but_flag_not_set_expect_exception_ERR_INVALID_OPERAND_is_thrown() {
   Tokenizer* tokenizer;
   int opcode;
   Try{
-    tokenizer = createTokenizer("0x03, #0xBA");
-    opcode = assembleDirectWithOperands(tokenizer, 0x60, DIRECT_IMM_LOGICAL);
-    TEST_ASSERT_EQUAL(0x6303BA, opcode);
-  } Catch(e){
-    dumpTokenErrorMessage(e, 1);
-    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
-  }
-  freeTokenizer(tokenizer);
-}
-
-void test_assembleInstruction_given_mov_operator_not_comma_expect_exception_ERR_MISSING_COMMA_to_be_thrown() {
-  Tokenizer* tokenizer;
-  int opcode;
-  Try{
-    tokenizer = createTokenizer("mov A$#23");
-    opcode = assembleInstruction(tokenizer);
-    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
-  } Catch(e){
-    dumpTokenErrorMessage(e, 1);
-    TEST_ASSERT_EQUAL(ERR_MISSING_COMMA, e->errorCode);
-  }
-  freeTokenizer(tokenizer);
-}
-
-void test_assembleInstruction_given_mov_operator_not_comma_expect_exception_ERR_INVALID_OPERAND_to_be_thrown() {
-  Tokenizer* tokenizer;
-  int opcode;
-  Try{
-    tokenizer = createTokenizer("mov c, /0x55");
-    opcode = assembleInstruction(tokenizer);
+    tokenizer = createTokenizer(" C, /0xBB ");
+    opcode = assembleCWithOperands(tokenizer, 0x40, C_BIT);
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
@@ -1431,12 +1551,12 @@ void test_assembleInstruction_given_mov_operator_not_comma_expect_exception_ERR_
   freeTokenizer(tokenizer);
 }
 
-void test_assembleInstruction_given_xrl_c_expect_exception_ERR_INVALID_OPERAND_to_be_thrown() {
+void test_assembleCWithOperands_given_first_operand_not_C_expect_exception_ERR_INVALID_OPERAND_is_thrown() {
   Tokenizer* tokenizer;
   int opcode;
   Try{
-    tokenizer = createTokenizer("xrl c, 0x23");
-    opcode = assembleInstruction(tokenizer);
+    tokenizer = createTokenizer(" R1, /0xBB ");
+    opcode = assembleCWithOperands(tokenizer, 0x40, C_BARBIT);
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
@@ -1445,12 +1565,12 @@ void test_assembleInstruction_given_xrl_c_expect_exception_ERR_INVALID_OPERAND_t
   freeTokenizer(tokenizer);
 }
 
-void test_assembleInstruction_given_anl_register_expect_exception_ERR_INVALID_OPERAND_to_be_thrown() {
+void test_assembleCWithOperands_given_correct_operands_but_missing_comma_expect_exception_ERR_INVALID_OPERAND_is_thrown() {
   Tokenizer* tokenizer;
   int opcode;
   Try{
-    tokenizer = createTokenizer("anl r5, #0xBB");
-    opcode = assembleInstruction(tokenizer);
+    tokenizer = createTokenizer(" C  0x30 ");
+    opcode = assembleCWithOperands(tokenizer, 0x40, C_BIT);
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
@@ -1458,4 +1578,17 @@ void test_assembleInstruction_given_anl_register_expect_exception_ERR_INVALID_OP
   }
   freeTokenizer(tokenizer);
 }
-*/
+
+void test_assembleCWithOperands_given_invalid_second_operand_expect_exception_ERR_INVALID_OPERAND_is_thrown() {
+  Tokenizer* tokenizer;
+  int opcode;
+  Try{
+    tokenizer = createTokenizer(" C, @R0 ");
+    opcode = assembleCWithOperands(tokenizer, 0x40, C_BIT);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
