@@ -27,5 +27,6 @@
 #define     OPERAND_DPTR          (1 << 16)
 #define     OPERAND_REL           (1 << 17)
 #define     OPERAND_DIR16         (1 << 18)
+#define     OPERAND_DIR11         (1 << 19)
 
 #endif // FLAGS_H

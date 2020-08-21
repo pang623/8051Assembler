@@ -370,7 +370,45 @@ void test_assembleInstruction_given_DIV_AB_expect_opcode_0x84() {
   freeTokenizer(tokenizer);
 }
 
-void test_assembleInstruction_given_jnb_bit_rel_expect_opcode_0x84() {
+void test_assembleInstruction_given_ajmp_addr11_expect_opcode_0xC1AB() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory + 0xBFF;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer("  aJMp 0x6AB  ");
+    len = assembleInstruction(tokenizer, &codePtr);
+    TEST_ASSERT_EQUAL(2, len);
+    TEST_ASSERT_EQUAL(0xC1, codeMemory[0xBFF]);
+    TEST_ASSERT_EQUAL(0xAB, codeMemory[0xC00]);
+    TEST_ASSERT_EQUAL(0xC01, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleInstruction_given_acall_addr11_expect_opcode_0xC1AB() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory + 0x765;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer("  aCAll 0x79A  ");
+    len = assembleInstruction(tokenizer, &codePtr);
+    TEST_ASSERT_EQUAL(2, len);
+    TEST_ASSERT_EQUAL(0xF1, codeMemory[0x765]);
+    TEST_ASSERT_EQUAL(0x9A, codeMemory[0x766]);
+    TEST_ASSERT_EQUAL(0x767, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleInstruction_given_jnb_bit_rel_expect_opcode_0x305A95() {
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 365;
@@ -390,7 +428,7 @@ void test_assembleInstruction_given_jnb_bit_rel_expect_opcode_0x84() {
   freeTokenizer(tokenizer);
 }
 
-void test_assembleInstruction_given_LCALL_addr16_expect_opcode_0x84() {
+void test_assembleInstruction_given_LCALL_addr16_expect_opcode_0x12CD0A() {
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 800;

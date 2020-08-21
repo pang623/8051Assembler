@@ -28,6 +28,8 @@ _8051Instructions instructionsTable[] = {
   {"rrc" , assembleSingleOperand                       , {0x10, OPERAND_A_ROT}},
   {"ljmp", assembleSingleOperand                       , {0x00, OPERAND_DIR16}},
   {"lcall",assembleSingleOperand                       , {0x10, OPERAND_DIR16}},
+  {"ajmp", assembleSingleOperand                       , {0x01, OPERAND_DIR11}},
+  {"acall",assembleSingleOperand                       , {0x11, OPERAND_DIR11}},
   {"jc " , assembleSingleOperand                       , {0x40, OPERAND_REL}},
   {"jnc" , assembleSingleOperand                       , {0x50, OPERAND_REL}},
   {"jz"  , assembleSingleOperand                       , {0x60, OPERAND_REL}},
@@ -340,6 +342,8 @@ int assembleSingleOperand(Tokenizer *tokenizer, _8051Instructions *info, uint8_t
     min = -128;
   else if(info->data[1] & OPERAND_DIR16)
     max = 65535;
+  else if(info->data[1] & OPERAND_DIR11)
+    max = 2047;
 
   token = getToken(tokenizer);
   pushBackToken(tokenizer, token);
@@ -372,6 +376,8 @@ int assembleSingleOperand(Tokenizer *tokenizer, _8051Instructions *info, uint8_t
       opcode = ((info->data[0] | 0x05) << 8) | ((uint8_t) value);
     else if(info->data[1] & OPERAND_DIR16)
       opcode = ((info->data[0] | 0x02) << 16) | ((uint16_t) value);
+    else if(info->data[1] & OPERAND_DIR11)
+      opcode = (((value & 0xF00) >> 3 | info->data[0]) << 8) | (value & 0xFF);
     else
       throwInvalidOperandException(token);
   }else if(isIdentifierTokenThenConsume(tokenizer, "DPTR")) {
