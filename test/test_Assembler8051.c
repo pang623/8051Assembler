@@ -370,6 +370,26 @@ void test_assembleInstruction_given_DIV_AB_expect_opcode_0x84() {
   freeTokenizer(tokenizer);
 }
 
+void test_assembleInstruction_given_jnb_bit_rel_expect_opcode_0x84() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory + 365;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer("  jNb 0x5A   , -107  ");
+    len = assembleInstruction(tokenizer, &codePtr);
+    TEST_ASSERT_EQUAL(3, len);
+    TEST_ASSERT_EQUAL(0x30, codeMemory[365]);
+    TEST_ASSERT_EQUAL(0x5A, codeMemory[366]);
+    TEST_ASSERT_EQUAL(0x95, codeMemory[367]);
+    TEST_ASSERT_EQUAL(368, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
 void test_assembleInstruction_given_LCALL_addr16_expect_opcode_0x84() {
   int len;
   uint8_t codeMemory[65536];

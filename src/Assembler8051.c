@@ -15,6 +15,9 @@ _8051Instructions instructionsTable[] = {
   {"nop" , NULL                                        , {0x00, 0}},
   {"ret" , NULL                                        , {0x22, 0}},
   {"reti", NULL                                        , {0x32, 0}},
+  {"jbc" , assembleBitWithRel                          , {0x10, 0}},
+  {"jb"  , assembleBitWithRel                          , {0x20, 0}},
+  {"jnb" , assembleBitWithRel                          , {0x30, 0}},
   {"div" , assembleSingleOperand                       , {0x80, OPERAND_AB}},
   {"mul" , assembleSingleOperand                       , {0xA0, OPERAND_AB}},
   {"swap", assembleSingleOperand                       , {0xC0, OPERAND_A}},
@@ -70,7 +73,7 @@ int assembleInstruction(Tokenizer *tokenizer, uint8_t **codePtrPtr) {
   if(instructionPtr->function) {
     funcPtr instructionToOpcode = instructionPtr->function;
     len = instructionToOpcode(tokenizer, instructionPtr, codePtrPtr);
-  }else {                                            //when the instruction is with no operand (RET)
+  }else {                                            //handling instructions with no operand (eg: RET)
     uint8_t *codePtr = *codePtrPtr;
     checkExtraToken(tokenizer);
     len = writeCodeToCodeMemory(instructionPtr->data[0], codePtr);
@@ -127,6 +130,20 @@ int assembleCJNEInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8
   verifyIsOperatorTokenThenConsume(tokenizer, ",");
   verifyIsIntegerTokenThenConsume(tokenizer, &relative, -128, 255);
   opcode |= ((uint8_t) relative);
+  checkExtraToken(tokenizer);
+  len = writeCodeToCodeMemory(opcode, codePtr);
+  (*codePtrPtr) += len;
+  return len;
+}
+
+int assembleBitWithRel(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr) {
+  int opcode, len, bitAddr = 0, relative = 0;
+  uint8_t *codePtr = *codePtrPtr;
+  
+  verifyIsIntegerTokenThenConsume(tokenizer, &bitAddr, 0, 255);
+  verifyIsOperatorTokenThenConsume(tokenizer, ",");
+  verifyIsIntegerTokenThenConsume(tokenizer, &relative, -128, 255);
+  opcode = (info->data[0] << 16) | ((uint8_t) bitAddr << 8) | (uint8_t) relative;
   checkExtraToken(tokenizer);
   len = writeCodeToCodeMemory(opcode, codePtr);
   (*codePtrPtr) += len;
