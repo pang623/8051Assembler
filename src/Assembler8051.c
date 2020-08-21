@@ -35,6 +35,9 @@ _8051Instructions instructionsTable[45] = {
   {"jz"  , assembleSingleOperand                       , {0x60, OPERAND_REL}},
   {"jnz" , assembleSingleOperand                       , {0x70, OPERAND_REL}},
   {"sjmp", assembleSingleOperand                       , {0x80, OPERAND_REL}},
+  {"setb", assembleSingleOperand                       , {0x90, OPERAND_C}},
+  {"clr" , assembleSingleOperand                       , {0xE0, OPERAND_C | OPERAND_A}},
+  {"cpl" , assembleSingleOperand                       , {0xF0, OPERAND_C | OPERAND_A}},
   {"push", assembleSingleOperand                       , {0xC0, OPERAND_DIR_STACK}},
   {"pop" , assembleSingleOperand                       , {0xD0, OPERAND_DIR_STACK}},
   {"inc" , assembleSingleOperand                       , {0x00, OPERAND_A | OPERAND_REG | OPERAND_DIR | OPERAND_IND}},
@@ -332,7 +335,7 @@ int assembleXRLinstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_
   return len;
 }
 
-//not yet implement operand C, BIT
+//not yet implement operand BIT
 int assembleSingleOperand(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr) {
   Token *token;
   int opcode, len, min = 0, max = 255, regNum = 0, value = 0;
@@ -383,6 +386,12 @@ int assembleSingleOperand(Tokenizer *tokenizer, _8051Instructions *info, uint8_t
   }else if(isIdentifierTokenThenConsume(tokenizer, "DPTR")) {
     if(info->data[1] & OPERAND_DPTR)
       opcode = 0xA3;
+    else
+      throwInvalidOperandException(token);
+  }else if(isIdentifierTokenThenConsume(tokenizer, "C")) {
+    if(info->data[1] & OPERAND_C)
+      opcode = (((info->data[0] ^ 0x40) | (((info->data[0] ^ 0x10) & 0x10) << 2))
+               & (((info->data[0] & 0x10) << 1) | 0xDF)) | 0x03;
     else
       throwInvalidOperandException(token);
   }else

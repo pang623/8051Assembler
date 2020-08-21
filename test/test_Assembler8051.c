@@ -385,6 +385,60 @@ void test_assembleInstruction_given_DIV_AB_expect_opcode_0x84() {
   freeTokenizer(tokenizer);
 }
 
+void test_assembleInstruction_given_setb_C_expect_opcode_0xD3() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory + 21;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer("  sEtb c  ");
+    len = assembleInstruction(tokenizer, &codePtr);
+    TEST_ASSERT_EQUAL(1, len);
+    TEST_ASSERT_EQUAL(0xD3, codeMemory[21]);
+    TEST_ASSERT_EQUAL(22, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleInstruction_given_clr_C_expect_opcode_0xC3() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory + 1000;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer("  clr c  ");
+    len = assembleInstruction(tokenizer, &codePtr);
+    TEST_ASSERT_EQUAL(1, len);
+    TEST_ASSERT_EQUAL(0xC3, codeMemory[1000]);
+    TEST_ASSERT_EQUAL(1001, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleInstruction_given_cpl_C_expect_opcode_0x84() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory + 4321;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer("  cpl c  ");
+    len = assembleInstruction(tokenizer, &codePtr);
+    TEST_ASSERT_EQUAL(1, len);
+    TEST_ASSERT_EQUAL(0xB3, codeMemory[4321]);
+    TEST_ASSERT_EQUAL(4322, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
 void test_assembleInstruction_given_ajmp_addr11_expect_opcode_0xC1AB() {
   int len;
   uint8_t codeMemory[65536];
