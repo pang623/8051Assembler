@@ -8,6 +8,7 @@
 #include "CException.h"
 #include "Exception.h"
 #include "ExceptionThrowing.h"
+#include "ReadLine.h"
 
 void setUp(void)
 {
@@ -19,9 +20,40 @@ void tearDown(void)
 
 CEXCEPTION_T e;
 
+extern uint8_t codeMemory[];
+
+void test_assembleInstructions_given_file_containing_instructions_expect_correct_opcode_written_in_code_memory() {
+  int totalBytes;
+  char *filename = "./test/data/Assembly Code.txt";
+  Try{
+    totalBytes = assembleInstructions(filename);
+    TEST_ASSERT_EQUAL(17, totalBytes);
+    TEST_ASSERT_EQUAL(0x74, codeMemory[0]);
+    TEST_ASSERT_EQUAL(0x8A, codeMemory[1]);
+    TEST_ASSERT_EQUAL(0x75, codeMemory[2]);
+    TEST_ASSERT_EQUAL(0x83, codeMemory[3]);
+    TEST_ASSERT_EQUAL(0x12, codeMemory[4]);
+    TEST_ASSERT_EQUAL(0x85, codeMemory[5]);
+    TEST_ASSERT_EQUAL(0x83, codeMemory[6]);
+    TEST_ASSERT_EQUAL(0xF4, codeMemory[7]);
+    TEST_ASSERT_EQUAL(0x95, codeMemory[8]);
+    TEST_ASSERT_EQUAL(0xF4, codeMemory[9]);
+    TEST_ASSERT_EQUAL(0x62, codeMemory[10]);
+    TEST_ASSERT_EQUAL(0x83, codeMemory[11]);
+    TEST_ASSERT_EQUAL(0xC3, codeMemory[12]);
+    TEST_ASSERT_EQUAL(0xF4, codeMemory[13]);
+    TEST_ASSERT_EQUAL(0xD3, codeMemory[14]);
+    TEST_ASSERT_EQUAL(0xDB, codeMemory[15]);
+    TEST_ASSERT_EQUAL(0xF8, codeMemory[16]);
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+}
+
 void test_writeCodeToCodeMemory_given_opcode_0x7B_expect_opcode_stored_in_code_memory_and_return_the_size() {
   int len;
-  uint8_t codeMemory[65535];
+  uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 10;                     //codePtr is pointing at code memory with the abs address 10
   Try{
     len = writeCodeToCodeMemory(0x7B, codePtr);
@@ -35,7 +67,7 @@ void test_writeCodeToCodeMemory_given_opcode_0x7B_expect_opcode_stored_in_code_m
 
 void test_writeCodeToCodeMemory_given_opcode_0xABCD_expect_opcode_stored_in_code_memory_and_return_the_size() {
   int len;
-  uint8_t codeMemory[65535];
+  uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 0xAB;                   //codePtr is pointing at code memory with the abs address 0xAB
   Try{
     len = writeCodeToCodeMemory(0xABCD, codePtr);
@@ -50,7 +82,7 @@ void test_writeCodeToCodeMemory_given_opcode_0xABCD_expect_opcode_stored_in_code
 
 void test_writeCodeToCodeMemory_given_opcode_0x9BA12C_expect_opcode_stored_in_code_memory_and_return_the_size() {
   int len;
-  uint8_t codeMemory[65535];
+  uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 200;                    //codePtr is pointing at code memory with the abs address 200
   Try{
     len = writeCodeToCodeMemory(0x9BA12C, codePtr);       //the opcode is encoded based on the sequence in the manual (LSB --> MSB)
@@ -1323,6 +1355,18 @@ void test_checkExtraToken_given_tab_token_expect_no_exception_is_thrown() {
   Tokenizer* tokenizer;
   Try{
     tokenizer = createTokenizer("  \t   ");
+    checkExtraToken(tokenizer);
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_checkExtraToken_given_semicolon_token_expect_no_exception_is_thrown() {
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer("  ;this is a comment   ");
     checkExtraToken(tokenizer);
   } Catch(e){
     dumpTokenErrorMessage(e, 1);

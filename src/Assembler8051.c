@@ -5,6 +5,7 @@
 #include "Flags.h"
 #include "Token.h"
 #include "Tokenizer.h"
+#include "ReadLine.h"
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
@@ -50,6 +51,7 @@ _8051Instructions instructionsTable[45] = {
   {"xrl" , assembleXRLinstruction                      , {0x60, A_DIR | A_IMM | A_IND | A_REG | DIR_A | DIR_IMM}},
   {"xch" , assembleInstructionWithOnlyAccAsFirstOperand, {0xC0, A_DIR | A_IND | A_REG}},
   {"xchd", assembleInstructionWithOnlyAccAsFirstOperand, {0xD0, A_IND}},
+  {"jmp" , assembleJMPInstruction                      , {0, 0}},
   {"cjne", assembleCJNEInstruction                     , {0, 0}},
   {"djnz", assembleDJNZInstruction                     , {0, 0}},
   {"movc", assembleMOVCInstruction                     , {0, 0}},
@@ -57,6 +59,24 @@ _8051Instructions instructionsTable[45] = {
   {"mov" , assembleMOVInstruction                      , {0, 0}},
   {NULL  , NULL                                        , {0, 0}},
 };
+
+uint8_t codeMemory[65536];
+
+int assembleInstructions(char *filename) {
+  Tokenizer *tokenizer;
+  uint8_t *codePtr = codeMemory;
+  uint8_t **codePtrPtr = &codePtr;
+  int totalLen = 0;
+  char **lines = readLines(filename);
+  
+  for(int i = 0; lines[i] != NULL; i++) {
+    tokenizer = createTokenizer(lines[i]);
+    totalLen += assembleInstruction(tokenizer, codePtrPtr);
+  }
+  
+  free(lines);
+  return totalLen;
+}
 
 int assembleInstruction(Tokenizer *tokenizer, uint8_t **codePtrPtr) {
   Token* token;
@@ -155,6 +175,21 @@ int assembleBitWithRel(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **
   return len;
 }
 
+int assembleJMPInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr) {
+  int opcode, len;
+  uint8_t *codePtr = *codePtrPtr;
+  
+  verifyIsOperatorTokenThenConsume(tokenizer, "@");
+  verifyIsIdentifierTokenThenConsume(tokenizer, "A");
+  verifyIsOperatorTokenThenConsume(tokenizer, "+");
+  verifyIsIdentifierTokenThenConsume(tokenizer, "DPTR");
+  opcode = 0x73;
+  checkExtraToken(tokenizer);
+  len = writeCodeToCodeMemory(opcode, codePtr);
+  (*codePtrPtr) += len;
+  return len;
+}
+
 //only MOV uses this function
 int assembleMOVInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr) {
   int opcode, len, regNum = 0, direct = 0, directSrc = 0, immediate = 0, bitAddr = 0;
@@ -163,13 +198,13 @@ int assembleMOVInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_
   if(isIdentifierTokenThenConsume(tokenizer, "A")) {
     verifyIsOperatorTokenThenConsume(tokenizer, ",");
     if(isRegisterConsumeAndGetItsNumber(tokenizer, REGISTER_ADDRESSING, &regNum))
-      opcode = 0xE8 | regNum;
+      opcode = 0xE8 + regNum;
     else if(isIntegerTokenThenConsume(tokenizer, &direct, 0, 255))
       opcode = 0xE5 << 8 | ((uint8_t) direct);
     else if(isIndRegisterThenGetItsNumberAndConsume(tokenizer, &regNum))
-      opcode = 0xE6 | regNum;
+      opcode = 0xE6 + regNum;
     else if(isImmediateThenGetsItsValueAndConsume(tokenizer, &immediate, -128, 255))
-      opcode = 0x74 | ((uint8_t) immediate);
+      opcode = 0x74 << 8 | ((uint8_t) immediate);
     else
       throwAWithInvalidOperandException(tokenizer);
   }else if(isRegisterConsumeAndGetItsNumber(tokenizer, REGISTER_ADDRESSING, &regNum)) {
@@ -705,7 +740,7 @@ int extractNum(char *start, Token *token) {
 void checkExtraToken(Tokenizer *tokenizer) {
   Token *token;
   token = getToken(tokenizer);
-  if(token->type != TOKEN_NULL_TYPE && token->type != TOKEN_NEWLINE_TYPE)
+  if(token->type != TOKEN_NULL_TYPE && token->type != TOKEN_NEWLINE_TYPE && (strcmp(token->str, ";")))
     throwException(ERR_EXTRA_PARAMETER, token,
     "Does not expect an extra parameter '%s'", token->str);
   else
