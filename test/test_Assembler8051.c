@@ -1139,20 +1139,16 @@ void test_isIntegerTokenThenConsume_given_is_pos_integer_without_sign_but_out_of
   freeTokenizer(tokenizer);
 }
 
-void test_isIntegerTokenThenConsume_given_not_integer_expect_token_is_pushed_back_and_return_0() {
+void test_isIntegerTokenThenConsume_given_not_integer_expect_ERR_EXPECTING_INTEGER_to_be_thrown() {
   Tokenizer* tokenizer;
-  Token *token;
   int value = 0xAA;
   Try{
-    tokenizer = createTokenizer(" +abcdef xyz  ");
-    int isTrue = isIntegerTokenThenConsume(tokenizer, &value, 0 ,255);
-    token = getToken(tokenizer);
-    TEST_ASSERT_EQUAL(0, isTrue);
-    TEST_ASSERT_EQUAL_STRING("+", token->str);
-    TEST_ASSERT_EQUAL(0xAA, value);
+    tokenizer = createTokenizer(" -abcdef xyz  ");
+    int isTrue = isIntegerTokenThenConsume(tokenizer, &value, -128, 255);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
-    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+    TEST_ASSERT_EQUAL(ERR_EXPECTING_INTEGER, e->errorCode);
   }
   freeTokenizer(tokenizer);
 }

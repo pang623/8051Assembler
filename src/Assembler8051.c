@@ -92,14 +92,14 @@ int assembleInstruction(Tokenizer *tokenizer, uint8_t **codePtrPtr) {
 int assembleDJNZInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr) {
   int opcode, len, regNum = 0, relative = 0, direct = 0;
   uint8_t *codePtr = *codePtrPtr;
-  
+
   if(isRegisterConsumeAndGetItsNumber(tokenizer, REGISTER_ADDRESSING, &regNum))
     opcode = (0xD8 + regNum) << 8;
   else if(isIntegerTokenThenConsume(tokenizer, &direct, 0, 255))
     opcode = 0xD5 << 16 | ((uint8_t) direct) << 8;
   else
     throwInvalidDJNZFirstOperandException(tokenizer);
-  
+
   verifyIsOperatorTokenThenConsume(tokenizer, ",");
   verifyIsIntegerTokenThenConsume(tokenizer, &relative, -128, 255);
   opcode |= (uint8_t) relative;
@@ -112,7 +112,7 @@ int assembleDJNZInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8
 int assembleCJNEInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr) {
   int opcode, len, regNum = 0, direct = 0, relative = 0, immediate = 0;
   uint8_t *codePtr = *codePtrPtr;
-  
+
   if(isIdentifierTokenThenConsume(tokenizer, "A")) {
     verifyIsOperatorTokenThenConsume(tokenizer, ",");
     if(isIntegerTokenThenConsume(tokenizer, &direct, 0, 255))
@@ -144,7 +144,7 @@ int assembleCJNEInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8
 int assembleBitWithRel(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr) {
   int opcode, len, bitAddr = 0, relative = 0;
   uint8_t *codePtr = *codePtrPtr;
-  
+
   verifyIsIntegerTokenThenConsume(tokenizer, &bitAddr, 0, 255);
   verifyIsOperatorTokenThenConsume(tokenizer, ",");
   verifyIsIntegerTokenThenConsume(tokenizer, &relative, -128, 255);
@@ -280,7 +280,7 @@ int assembleMOVCInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8
 
 int assembleInstructionWithOnlyAccAsFirstOperand(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr) {
   uint8_t *codePtr = *codePtrPtr;
-  
+
   int opcode = assembleAWithOperands(tokenizer, info->data[0], info->data[1]);
   int len = writeCodeToCodeMemory(opcode, codePtr);
   (*codePtrPtr) += len;
@@ -292,7 +292,7 @@ int assembleLogicalInstructionWithoutXRL(Tokenizer *tokenizer, _8051Instructions
   Token *token;
   int value, opcode, len;
   uint8_t *codePtr = *codePtrPtr;
-  
+
   token = getToken(tokenizer);
   pushBackToken(tokenizer, token);
   if(isIdentifierTokenThenConsume(tokenizer, "A")) {
@@ -307,7 +307,7 @@ int assembleLogicalInstructionWithoutXRL(Tokenizer *tokenizer, _8051Instructions
   }else
     throwException(ERR_INVALID_OPERAND, token,
     "Expecting an 'A', 'C' or integer, received %s instead", token->str);
-    
+
   len = writeCodeToCodeMemory(opcode, codePtr);
   (*codePtrPtr) += len;
   return len;
@@ -317,7 +317,7 @@ int assembleXRLinstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_
   Token *token;
   int value, opcode, len;
   uint8_t *codePtr = *codePtrPtr;
-  
+
   token = getToken(tokenizer);
   pushBackToken(tokenizer, token);
   if(isIdentifierTokenThenConsume(tokenizer, "A")) {
@@ -329,18 +329,17 @@ int assembleXRLinstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_
   }else
     throwException(ERR_INVALID_OPERAND, token,
     "Expecting an 'A' or integer, received %s instead", token->str);
-    
+
   len = writeCodeToCodeMemory(opcode, codePtr);
   (*codePtrPtr) += len;
   return len;
 }
 
-//not yet implement operand BIT
 int assembleSingleOperand(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr) {
   Token *token;
   int opcode, len, min = 0, max = 255, regNum = 0, value = 0;
   uint8_t *codePtr = *codePtrPtr;
-  
+
   if(info->data[1] & OPERAND_REL)
     min = -128;
   else if(info->data[1] & OPERAND_DIR16)
@@ -500,48 +499,45 @@ int assembleCWithOperands(Tokenizer *tokenizer, int opcode, int flags) {
   return opcode;
 }
 
-//consume token if is integer token and in valid range, else pushBack the token
+//consume token if is integer token and in valid range
+//if token is not +, -, or integer, pushback the token
+//throw exception if token next to '+' and '-' is not integer
+//throw exception if integer token is out of range
 int isIntegerTokenThenConsume(Tokenizer *tokenizer, int *val, int min, int max) {
   Token *token, *token1;
   int number;
-  token = getToken(tokenizer);
-  pushBackToken(tokenizer, token);
-  
+
   if(isOperatorTokenThenConsume(tokenizer, "+")) {
-    token1 = getToken(tokenizer);
-    if(token1->type == TOKEN_INTEGER_TYPE) {
-      if(((IntegerToken* )token1)->value > max || ((IntegerToken* )token1)->value < min)
-        throwException(ERR_INTEGER_OUT_OF_RANGE, token1,
-        "Expecting integer of range %d to %d, received %d instead", min, max, ((IntegerToken *)token1)->value);
+    token = getToken(tokenizer);
+    if(token->type == TOKEN_INTEGER_TYPE) {
+      if(((IntegerToken* )token)->value < min || ((IntegerToken* )token)->value > max)
+        throwException(ERR_INTEGER_OUT_OF_RANGE, token,
+        "Expecting integer of range %d to %d, received %d instead", min, max, ((IntegerToken *)token)->value);
       else {
-        *val = ((IntegerToken *)token1)->value;
+        *val = ((IntegerToken *)token)->value;
         return 1;
       }
-    }else {
-      pushBackToken(tokenizer, token1);
-      pushBackToken(tokenizer, token);
-      return 0;
-    }
+    }else
+      throwException(ERR_EXPECTING_INTEGER, token,
+      "Expecting integer, but received %s instead", token->str);
   }else if(isOperatorTokenThenConsume(tokenizer, "-")) {
-    token1 = getToken(tokenizer);
-    if(token1->type == TOKEN_INTEGER_TYPE) {
-      number = (~(((IntegerToken* )token1)->value)) + 1;
+    token = getToken(tokenizer);
+    if(token->type == TOKEN_INTEGER_TYPE) {
+      number = (~(((IntegerToken* )token)->value)) + 1;
       if(number < min || number > max)
-        throwException(ERR_INTEGER_OUT_OF_RANGE, token1,
+        throwException(ERR_INTEGER_OUT_OF_RANGE, token,
         "Expecting integer of range %d to %d, received %d instead", min, max, number);
       else {
         *val = number;
         return 1;
       }
-    }else {
-      pushBackToken(tokenizer, token1);
-      pushBackToken(tokenizer, token);
-      return 0;
-    }
+    }else
+      throwException(ERR_EXPECTING_INTEGER, token,
+      "Expecting integer, but received %s instead", token->str);
   }else {
     token = getToken(tokenizer);
     if(token->type == TOKEN_INTEGER_TYPE) {
-      if(((IntegerToken* )token)->value > max || ((IntegerToken* )token)->value < min)
+      if(((IntegerToken* )token)->value < min || ((IntegerToken* )token)->value > max)
         throwException(ERR_INTEGER_OUT_OF_RANGE, token,
         "Expecting integer of range %d to %d, received %d instead", min, max, ((IntegerToken *)token)->value);
       else {
@@ -724,9 +720,9 @@ int writeCodeToCodeMemory(int opcode, uint8_t *codePtr) {
     bytes = 2;
   else if(opcode < 0xFFFFFF)
     bytes = 3;
-  
+
   int pos = bytes;
-  
+
   for(int i = 0; i < bytes; i++) {
     codePtr[i] = (opcode >> ((pos - 1) * 8)) & 0xFF;
     pos--;
