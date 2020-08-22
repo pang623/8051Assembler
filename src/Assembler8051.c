@@ -35,9 +35,9 @@ _8051Instructions instructionsTable[45] = {
   {"jz"  , assembleSingleOperand                       , {0x60, OPERAND_REL}},
   {"jnz" , assembleSingleOperand                       , {0x70, OPERAND_REL}},
   {"sjmp", assembleSingleOperand                       , {0x80, OPERAND_REL}},
-  {"setb", assembleSingleOperand                       , {0x90, OPERAND_C}},
-  {"clr" , assembleSingleOperand                       , {0xE0, OPERAND_C | OPERAND_A}},
-  {"cpl" , assembleSingleOperand                       , {0xF0, OPERAND_C | OPERAND_A}},
+  {"setb", assembleSingleOperand                       , {0x90, OPERAND_C | OPERAND_BIT}},
+  {"clr" , assembleSingleOperand                       , {0xE0, OPERAND_C | OPERAND_BIT | OPERAND_A}},
+  {"cpl" , assembleSingleOperand                       , {0xF0, OPERAND_C | OPERAND_BIT | OPERAND_A}},
   {"push", assembleSingleOperand                       , {0xC0, OPERAND_DIR_STACK}},
   {"pop" , assembleSingleOperand                       , {0xD0, OPERAND_DIR_STACK}},
   {"inc" , assembleSingleOperand                       , {0x00, OPERAND_A | OPERAND_REG | OPERAND_DIR | OPERAND_IND}},
@@ -377,6 +377,9 @@ int assembleSingleOperand(Tokenizer *tokenizer, _8051Instructions *info, uint8_t
       opcode = (info->data[0] << 8) | ((uint8_t) value);
     else if(info->data[1] & OPERAND_DIR)
       opcode = ((info->data[0] | 0x05) << 8) | ((uint8_t) value);
+    else if(info->data[1] & OPERAND_BIT)
+      opcode = ((((info->data[0] ^ 0x40) | (((info->data[0] ^ 0x10) & 0x10) << 2))
+               & (((info->data[0] & 0x10) << 1) | 0xDF)) | 0x02) << 8 | ((uint8_t) value);
     else if(info->data[1] & OPERAND_DIR16)
       opcode = ((info->data[0] | 0x02) << 16) | ((uint16_t) value);
     else if(info->data[1] & OPERAND_DIR11)
