@@ -72,9 +72,8 @@ int assembleFile(char *filename) {
     printf("Error opening file!\n");
     exit(1);
   }
-
   int totalBytes = assembleInstructions(getNextInstructionLine);
-  
+
   fclose(fileHandler);
   return totalBytes;
 }
