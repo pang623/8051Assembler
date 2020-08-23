@@ -13,6 +13,7 @@
 //returning integer
 typedef struct _8051Instructions _8051Instructions;
 typedef int (*funcPtr)(Tokenizer *tokenizer, _8051Instructions *instructionPtr, uint8_t **codePtrPtr);
+typedef char *(*InstructionLineReader)();
 
 struct _8051Instructions {
   char *instruction;
@@ -20,7 +21,11 @@ struct _8051Instructions {
   int data[3];
 };
 
-int assembleInstructions(char *filename);
+void assembleInFileAndWriteToOutFile(char *inFile, char *outFile);
+int assembleFile(char *filename);
+int assembleInstructions(InstructionLineReader lineReader);
+char *getNextInstructionLine();
+void saveCodeMemoryToFile(char *filename, uint8_t *codeMemory, int length);
 int assembleInstruction(Tokenizer *tokenizer, uint8_t **codePtrPtr);
 int assembleMOVInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);
 int assembleMOVCInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);

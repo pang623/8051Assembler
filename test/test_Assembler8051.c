@@ -3,12 +3,12 @@
 #include "Tokenizer.h"
 #include "Assembler8051.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include "Error.h"
 #include "Flags.h"
 #include "CException.h"
 #include "Exception.h"
 #include "ExceptionThrowing.h"
-#include "ReadLine.h"
 
 void setUp(void)
 {
@@ -22,6 +22,14 @@ CEXCEPTION_T e;
 
 extern uint8_t codeMemory[];
 
+void test_assembleInFileAndWriteToOutFile_given_file_containing_instructions_expect_opcode_written_to_bin_file() {
+  char *inFile = "./test/data/Assembly Code.txt";
+  char *outFile = "./test/data/binary.bin";
+  
+  assembleInFileAndWriteToOutFile(inFile, outFile);
+}
+
+/*
 void test_assembleInstructions_given_file_containing_instructions_expect_correct_opcode_written_in_code_memory() {
   int totalBytes;
   char *filename = "./test/data/Assembly Code.txt";
@@ -45,11 +53,29 @@ void test_assembleInstructions_given_file_containing_instructions_expect_correct
     TEST_ASSERT_EQUAL(0xD3, codeMemory[14]);
     TEST_ASSERT_EQUAL(0xDB, codeMemory[15]);
     TEST_ASSERT_EQUAL(0xF8, codeMemory[16]);
+    for(int i = 17; i < 65536; i++)
+      TEST_ASSERT_EQUAL(0, codeMemory[i]);
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
 }
+
+void test_assembleInstructions_given_file_containing_instruction_expect_correct_opcode_written_in_code_memory() {
+  int totalBytes;
+  char *filename = "./test/data/test.txt";
+  Try{
+    totalBytes = assembleInstructions(filename);
+    TEST_ASSERT_EQUAL(2, totalBytes);
+    TEST_ASSERT_EQUAL(0x95, codeMemory[0]);
+    TEST_ASSERT_EQUAL(0xf4, codeMemory[1]);
+    for(int i = 2; i < 65536; i++)
+      TEST_ASSERT_EQUAL(0, codeMemory[i]);
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+}*/
 
 void test_writeCodeToCodeMemory_given_opcode_0x7B_expect_opcode_stored_in_code_memory_and_return_the_size() {
   int len;
@@ -232,7 +258,7 @@ void test_assembleInstruction_given_mov_indirect_with_direct_expect_opcode_0xA7B
   uint8_t *codePtr = codeMemory + 0x65A;
   Tokenizer* tokenizer;
   Try{
-    tokenizer = createTokenizer("mOv @r1  , 0xBA");
+    tokenizer = createTokenizer("mOv @r1  , 0xBA  ;this will be seen as comment");
     len = assembleInstruction(tokenizer, &codePtr);
     TEST_ASSERT_EQUAL(2, len);
     TEST_ASSERT_EQUAL(0xA7, codeMemory[0x65A]);

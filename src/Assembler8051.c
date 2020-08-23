@@ -5,7 +5,6 @@
 #include "Flags.h"
 #include "Token.h"
 #include "Tokenizer.h"
-#include "ReadLine.h"
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
@@ -61,21 +60,63 @@ _8051Instructions instructionsTable[45] = {
 };
 
 uint8_t codeMemory[65536];
+FILE *fileHandler;
 
-int assembleInstructions(char *filename) {
+void assembleInFileAndWriteToOutFile(char *inFile, char *outFile) {
+  int totalBytes = assembleFile(inFile);
+  saveCodeMemoryToFile(outFile, codeMemory, totalBytes);
+}
+
+int assembleFile(char *filename) {
+  if((fileHandler = fopen(filename, "r")) == NULL) {
+    printf("Error opening file!\n");
+    exit(1);
+  }
+
+  int totalBytes = assembleInstructions(getNextInstructionLine);
+  
+  fclose(fileHandler);
+  return totalBytes;
+}
+
+int assembleInstructions(InstructionLineReader lineReader) {
   Tokenizer *tokenizer;
+  char *line;
   uint8_t *codePtr = codeMemory;
   uint8_t **codePtrPtr = &codePtr;
   int totalLen = 0;
-  char **lines = readLines(filename);
   
-  for(int i = 0; lines[i] != NULL; i++) {
-    tokenizer = createTokenizer(lines[i]);
+  for(int i = 0; i < 65536; i++)
+    codeMemory[i] = 0;
+  
+  while((line = lineReader()) != NULL) {
+    tokenizer = createTokenizer(line);
     totalLen += assembleInstruction(tokenizer, codePtrPtr);
   }
-  
-  free(lines);
   return totalLen;
+}
+
+char *getNextInstructionLine() {
+  char buffer[1024];
+  char *line;
+  
+  if(fgets(buffer, 1024, fileHandler) != NULL) {
+    line = strdup(buffer);
+    return line;
+  }else
+    return NULL;
+}
+
+void saveCodeMemoryToFile(char *filename, uint8_t *codeMemory, int length) {
+  FILE *fptr;
+  
+  if((fptr = fopen(filename, "wb")) == NULL) {
+    printf("Error opening file!\n");
+    exit(1);
+  }
+  
+  fwrite(codeMemory, sizeof(uint8_t), length, fptr);
+  fclose(fptr);
 }
 
 int assembleInstruction(Tokenizer *tokenizer, uint8_t **codePtrPtr) {

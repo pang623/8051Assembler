@@ -7,3 +7,5 @@ CLR C		 ;0xC3
 CPL A		 ;0xF4
 SETB C		 ;0xD3
 DJNZ R3, -8	 ;0xDBF8
+ADD A, R3
+CJNE @R0, #-23, -8
