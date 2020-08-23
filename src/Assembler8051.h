@@ -21,11 +21,11 @@ struct _8051Instructions {
   int data[3];
 };
 
-void assembleInFileAndWriteToOutFile(char *inFile, char *outFile);
+void assembleInFileAndWriteToOutFile(char *inFile, char *outFile);            //yet to test
 int assembleFile(char *filename);
 int assembleInstructions(InstructionLineReader lineReader);
 char *getNextInstructionLine();
-void saveCodeMemoryToFile(char *filename, uint8_t *codeMemory, int length);
+void saveCodeMemoryToFile(char *filename, uint8_t *codeMemory, int length);   //yet to test
 int assembleInstruction(Tokenizer *tokenizer, uint8_t **codePtrPtr);
 int assembleMOVInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);
 int assembleMOVCInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);

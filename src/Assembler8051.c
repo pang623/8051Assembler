@@ -40,7 +40,7 @@ _8051Instructions instructionsTable[45] = {
   {"cpl" , assembleSingleOperand                       , {0xF0, OPERAND_C | OPERAND_BIT | OPERAND_A}},
   {"push", assembleSingleOperand                       , {0xC0, OPERAND_DIR_STACK}},
   {"pop" , assembleSingleOperand                       , {0xD0, OPERAND_DIR_STACK}},
-  {"inc" , assembleSingleOperand                       , {0x00, OPERAND_A | OPERAND_REG | OPERAND_DIR | OPERAND_IND}},
+  {"inc" , assembleSingleOperand                       , {0x00, OPERAND_A | OPERAND_REG | OPERAND_DIR | OPERAND_IND | OPERAND_DPTR}},
   {"dec" , assembleSingleOperand                       , {0x10, OPERAND_A | OPERAND_REG | OPERAND_DIR | OPERAND_IND}},
   {"add" , assembleInstructionWithOnlyAccAsFirstOperand, {0x20, A_DIR | A_IMM | A_IND | A_REG}},
   {"addc", assembleInstructionWithOnlyAccAsFirstOperand, {0x30, A_DIR | A_IMM | A_IND | A_REG}},
@@ -113,7 +113,6 @@ void saveCodeMemoryToFile(char *filename, uint8_t *codeMemory, int length) {
     printf("Error opening file!\n");
     exit(1);
   }
-  
   fwrite(codeMemory, sizeof(uint8_t), length, fptr);
   fclose(fptr);
 }
@@ -807,5 +806,5 @@ int writeCodeToCodeMemory(int opcode, uint8_t *codePtr) {
 
 void throwInvalidOperandException(Token *token) {
    throwException(ERR_INVALID_OPERAND, token,
-   "Did not expect %s as an operand", token->str);
+   "Did not expect %s as an operand here", token->str);
 }
