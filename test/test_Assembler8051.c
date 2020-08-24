@@ -260,7 +260,7 @@ void test_isIndRegisterThenGetItsNumberAndConsume_given_is_indReg_but_invalidReg
   Tokenizer* tokenizer;
   int number;
   Try{
-    tokenizer = createTokenizer("    @ratatouille ");
+    tokenizer = createTokenizer("    @ratatouille ");     //token is indirect but register is invalid
     int isTrue = isIndRegisterThenGetItsNumberAndConsume(tokenizer, &number);
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
@@ -274,7 +274,7 @@ void test_isIndRegisterThenGetItsNumberAndConsume_given_is_indReg_but_outOfRange
   Tokenizer* tokenizer;
   int number;
   Try{
-    tokenizer = createTokenizer("  @r3 ");
+    tokenizer = createTokenizer("  @r3 ");                //token is indirect but register is out of range
     int isTrue = isIndRegisterThenGetItsNumberAndConsume(tokenizer, &number);
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
@@ -1238,6 +1238,34 @@ void test_assembleDirectWithOperands_given_correct_operands_but_missing_comma_ex
   freeTokenizer(tokenizer);
 }
 
+void test_assembleDirectWithOperands_given_invalid_second_operand_expect_exception_ERR_INVALID_OPERAND_is_thrown() {
+  Tokenizer* tokenizer;
+  int opcode;
+  Try{
+    tokenizer = createTokenizer(" 0x88, ferrari789 ");
+    opcode = assembleDirectWithOperands(tokenizer, 0x40, DIR_IMM);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleDirectWithOperands_correct_operands_but_with_extra_parameter_expect_exception_ERR_EXTRA_PARAMETER_is_thrown() {
+  Tokenizer* tokenizer;
+  int opcode;
+  Try{
+    tokenizer = createTokenizer(" 0x88, A   R3");
+    opcode = assembleDirectWithOperands(tokenizer, 0x40, DIR_A);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_EXTRA_PARAMETER, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
 void test_assembleDirectWithOperands_given_dir_with_dir_expect_exception_ERR_INVALID_OPERAND_is_thrown() {
   Tokenizer* tokenizer;
   int opcode;
@@ -1336,6 +1364,20 @@ void test_assembleCWithOperands_given_invalid_second_operand_expect_exception_ER
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleCWithOperands_given_correct_operands_but_with_extra_parameter_expect_exception_ERR_EXTRA_PARAMETER_is_thrown() {
+  Tokenizer* tokenizer;
+  int opcode;
+  Try{
+    tokenizer = createTokenizer(" C, 0x30 r3");
+    opcode = assembleCWithOperands(tokenizer, 0x40, C_BIT);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_EXTRA_PARAMETER, e->errorCode);
   }
   freeTokenizer(tokenizer);
 }
@@ -1643,6 +1685,60 @@ void test_assembleInstruction_given_xchd_a_with_indirect_reg_expect_opcode_0xD7(
   freeTokenizer(tokenizer);
 }
 
+void test_assembleInstruction_given_swap_a_expect_opcode_0xC4() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory + 5321;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer("  sWAp A ");
+    len = assembleInstruction(tokenizer, &codePtr);
+    TEST_ASSERT_EQUAL(1, len);
+    TEST_ASSERT_EQUAL_HEX8(0xC4, codeMemory[5321]);
+    TEST_ASSERT_EQUAL(5322, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleInstruction_given_DA_a_expect_opcode_0xD4() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer("  da a ");
+    len = assembleInstruction(tokenizer, &codePtr);
+    TEST_ASSERT_EQUAL(1, len);
+    TEST_ASSERT_EQUAL_HEX8(0xD4, codeMemory[0]);
+    TEST_ASSERT_EQUAL(1, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleInstruction_given_MUL_AB_expect_opcode_0xA4() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory + 0xAA;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer("  mUL   Ab  ;multiply a with b ");
+    len = assembleInstruction(tokenizer, &codePtr);
+    TEST_ASSERT_EQUAL(1, len);
+    TEST_ASSERT_EQUAL_HEX8(0xA4, codeMemory[0xAA]);
+    TEST_ASSERT_EQUAL(0xAB, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
 void test_assembleInstruction_given_DIV_AB_expect_opcode_0x84() {
   int len;
   uint8_t codeMemory[65536];
@@ -1846,26 +1942,6 @@ void test_assembleInstruction_given_acall_addr11_expect_opcode_0xC1AB() {
   freeTokenizer(tokenizer);
 }
 
-void test_assembleInstruction_given_jnb_bit_rel_expect_opcode_0x305A95() {
-  int len;
-  uint8_t codeMemory[65536];
-  uint8_t *codePtr = codeMemory + 365;
-  Tokenizer* tokenizer;
-  Try{
-    tokenizer = createTokenizer("  jNb 0x5A   , -107  ");
-    len = assembleInstruction(tokenizer, &codePtr);
-    TEST_ASSERT_EQUAL(3, len);
-    TEST_ASSERT_EQUAL_HEX8(0x30, codeMemory[365]);
-    TEST_ASSERT_EQUAL_HEX8(0x5A, codeMemory[366]);
-    TEST_ASSERT_EQUAL_HEX8(0x95, codeMemory[367]);
-    TEST_ASSERT_EQUAL(368, getCurrentAbsoluteAddr());
-  } Catch(e){
-    dumpTokenErrorMessage(e, 1);
-    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
-  }
-  freeTokenizer(tokenizer);
-}
-
 void test_assembleInstruction_given_LCALL_addr16_expect_opcode_0x12CD0A() {
   int len;
   uint8_t codeMemory[65536];
@@ -1886,7 +1962,87 @@ void test_assembleInstruction_given_LCALL_addr16_expect_opcode_0x12CD0A() {
   freeTokenizer(tokenizer);
 }
 
-void test_assembleInstruction_given_ret_expect_opcode_0x22() {
+void test_assembleInstruction_given_LJMP_addr16_expect_opcode_0x02ABCD() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory + 1000;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer("  LjmP   0xABcd ");
+    len = assembleInstruction(tokenizer, &codePtr);
+    TEST_ASSERT_EQUAL(3, len);
+    TEST_ASSERT_EQUAL_HEX8(0x02, codeMemory[1000]);
+    TEST_ASSERT_EQUAL_HEX8(0xAB, codeMemory[1001]);
+    TEST_ASSERT_EQUAL_HEX8(0xCD, codeMemory[1002]);
+    TEST_ASSERT_EQUAL(1003, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleInstruction_given_jb_bit_rel_expect_opcode_0x20A0F0() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory + 0x1221;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer("  JB  0xA0   , +240  ");
+    len = assembleInstruction(tokenizer, &codePtr);
+    TEST_ASSERT_EQUAL(3, len);
+    TEST_ASSERT_EQUAL_HEX8(0x20, codeMemory[0x1221]);
+    TEST_ASSERT_EQUAL_HEX8(0xA0, codeMemory[0x1222]);
+    TEST_ASSERT_EQUAL_HEX8(0xF0, codeMemory[0x1223]);
+    TEST_ASSERT_EQUAL(0x1224, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleInstruction_given_jnb_bit_rel_expect_opcode_0x305A95() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory + 365;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer("  jNb 0x5A   , -107  ");
+    len = assembleInstruction(tokenizer, &codePtr);
+    TEST_ASSERT_EQUAL(3, len);
+    TEST_ASSERT_EQUAL_HEX8(0x30, codeMemory[365]);
+    TEST_ASSERT_EQUAL_HEX8(0x5A, codeMemory[366]);
+    TEST_ASSERT_EQUAL_HEX8(0x95, codeMemory[367]);
+    TEST_ASSERT_EQUAL(368, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleInstruction_given_jbc_bit_rel_expect_opcode_0x10EECE() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory + 0x55;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer("  JBc  0xeE   , -50  ;comment  ");
+    len = assembleInstruction(tokenizer, &codePtr);
+    TEST_ASSERT_EQUAL(3, len);
+    TEST_ASSERT_EQUAL_HEX8(0x10, codeMemory[0x55]);
+    TEST_ASSERT_EQUAL_HEX8(0xEE, codeMemory[0x56]);
+    TEST_ASSERT_EQUAL_HEX8(0xCE, codeMemory[0x57]);
+    TEST_ASSERT_EQUAL(0x58, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleInstruction_given_ret_expect_opcode_0x22_written_in_code_memory() {
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 8888;
@@ -1897,6 +2053,42 @@ void test_assembleInstruction_given_ret_expect_opcode_0x22() {
     TEST_ASSERT_EQUAL(1, len);
     TEST_ASSERT_EQUAL_HEX8(0x22, codeMemory[8888]);
     TEST_ASSERT_EQUAL(8889, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleInstruction_given_nop_expect_opcode_0x00_written_in_code_memory() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer("  nOp ");
+    len = assembleInstruction(tokenizer, &codePtr);
+    TEST_ASSERT_EQUAL(1, len);
+    TEST_ASSERT_EQUAL_HEX8(0x00, codeMemory[0]);
+    TEST_ASSERT_EQUAL(0x01, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleInstruction_given_reti_expect_opcode_0x32_written_in_code_memory() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer("  rETi    ");
+    len = assembleInstruction(tokenizer, &codePtr);
+    TEST_ASSERT_EQUAL(1, len);
+    TEST_ASSERT_EQUAL_HEX8(0x32, codeMemory[0]);
+    TEST_ASSERT_EQUAL(1, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
