@@ -89,8 +89,12 @@ int assembleInstructions(InstructionLineReader lineReader) {
     codeMemory[i] = 0;
   
   while((line = lineReader()) != NULL) {
-    tokenizer = createTokenizer(line);
-    totalLen += assembleInstruction(tokenizer, codePtrPtr);
+    if(isspace(*line))
+      continue;
+    else {
+      tokenizer = createTokenizer(line);
+      totalLen += assembleInstruction(tokenizer, codePtrPtr);
+    }
   }
   return totalLen;
 }
@@ -578,7 +582,7 @@ int assembleCWithOperands(Tokenizer *tokenizer, int opcode, int flags) {
 //throw exception if token next to '+' and '-' is not integer
 //throw exception if integer token is out of range
 int isIntegerTokenThenConsume(Tokenizer *tokenizer, int *val, int min, int max) {
-  Token *token, *token1;
+  Token *token;
   int number;
 
   if(isOperatorTokenThenConsume(tokenizer, "+")) {
@@ -753,7 +757,7 @@ int isImmediateThenGetsItsValueAndConsume(Tokenizer *tokenizer, int *value, int 
     return 0;
 }
 
-//throw exception if # is not detected
+//throw exception if # is not detected, which means it is not immediate
 void verifyIsImmediateThenGetsItsValueAndConsume(Tokenizer *tokenizer, int *value, int min, int max) {
   int immediate = 0;
   Token *token;

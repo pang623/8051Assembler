@@ -145,6 +145,9 @@ void test_getNextInstructionLine_expect_next_instruction_line_is_returned_everyt
     TEST_ASSERT_EQUAL_STRING("SUBB A, 0xF4	 ;0x95F4\n", instructionLine);
     
     instructionLine = getNextInstructionLine();
+    TEST_ASSERT_EQUAL_STRING("\n", instructionLine);
+    
+    instructionLine = getNextInstructionLine();
     TEST_ASSERT_EQUAL_STRING("XRL 0x83, A	 ;0x6283\n", instructionLine);
     
     instructionLine = getNextInstructionLine();
@@ -161,6 +164,9 @@ void test_getNextInstructionLine_expect_next_instruction_line_is_returned_everyt
     
     instructionLine = getNextInstructionLine();
     TEST_ASSERT_EQUAL_STRING("ADD A, R3\n", instructionLine);
+    
+    instructionLine = getNextInstructionLine();
+    TEST_ASSERT_EQUAL_STRING("\n", instructionLine);
     
     instructionLine = getNextInstructionLine();
     TEST_ASSERT_EQUAL_STRING("CJNE @R0, #-23, -8\n", instructionLine);
