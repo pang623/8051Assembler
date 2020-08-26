@@ -9,8 +9,6 @@
 #define     REGISTER_ADDRESSING         100
 #define     INDIRECT_ADDRESSING         200
 
-//funcPtr is a pointer to function taking in (Tokenizer *tokenizer, _8051Instructions *instructionPtr, uint8_t **codePtrPtr)
-//returning integer
 typedef struct _8051Instructions _8051Instructions;
 typedef int (*funcPtr)(Tokenizer *tokenizer, _8051Instructions *instructionPtr, uint8_t **codePtrPtr);
 typedef char *(*InstructionLineReader)();
@@ -25,7 +23,6 @@ void assembleInFileAndWriteToOutFile(char *inFile, char *outFile);            //
 int assembleFile(char *filename);
 int assembleInstructions(InstructionLineReader lineReader);
 char *getNextInstructionLine();
-void saveCodeMemoryToFile(char *filename, uint8_t *codeMemory, int length);   //yet to test
 int assembleInstruction(Tokenizer *tokenizer, uint8_t **codePtrPtr);
 int assembleMOVInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);
 int assembleMOVCInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);

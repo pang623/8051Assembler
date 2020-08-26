@@ -2,6 +2,7 @@
 #include "Token.h"
 #include "Tokenizer.h"
 #include "Assembler8051.h"
+#include "saveCodeToBin.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include "Error.h"
@@ -145,7 +146,7 @@ void test_getNextInstructionLine_expect_next_instruction_line_is_returned_everyt
     TEST_ASSERT_EQUAL_STRING("SUBB A, 0xF4	 ;0x95F4\n", instructionLine);
     
     instructionLine = getNextInstructionLine();
-    TEST_ASSERT_EQUAL_STRING("\n", instructionLine);
+    TEST_ASSERT_EQUAL_STRING("\t\n", instructionLine);
     
     instructionLine = getNextInstructionLine();
     TEST_ASSERT_EQUAL_STRING("XRL 0x83, A	 ;0x6283\n", instructionLine);
@@ -1010,6 +1011,22 @@ void test_extractNum_given_string_null_expect_exception_ERR_INVALID_REGISTER_is_
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
     TEST_ASSERT_EQUAL(ERR_INVALID_REGISTER, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+//just to test exception throwing
+void test_throwInvalidOperandException_given_token_expect_ERR_INVALID_OPERAND_is_thrown() {
+  Tokenizer* tokenizer;
+  Token *token;
+  Try{
+    tokenizer = createTokenizer(" hi");
+    token = getToken(tokenizer);
+    throwInvalidOperandException(token);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  }Catch(e) {
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
   }
   freeTokenizer(tokenizer);
 }

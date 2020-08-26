@@ -1,6 +1,7 @@
 #include "Assembler8051.h"
 #include "Exception.h"
 #include "ExceptionThrowing.h"
+#include "saveCodeToBin.h"
 #include "Error.h"
 #include "Flags.h"
 #include "Token.h"
@@ -64,7 +65,7 @@ FILE *fileHandler;
 
 void assembleInFileAndWriteToOutFile(char *inFile, char *outFile) {
   int totalBytes = assembleFile(inFile);
-  saveCodeMemoryToFile(outFile, codeMemory, totalBytes);
+  saveCodeToBin(outFile, codeMemory, totalBytes);
 }
 
 int assembleFile(char *filename) {
@@ -108,17 +109,6 @@ char *getNextInstructionLine() {
     return line;
   }else
     return NULL;
-}
-
-void saveCodeMemoryToFile(char *filename, uint8_t *codeMemory, int length) {
-  FILE *fptr;
-  
-  if((fptr = fopen(filename, "wb")) == NULL) {
-    printf("Error opening file!\n");
-    exit(1);
-  }
-  fwrite(codeMemory, sizeof(uint8_t), length, fptr);
-  fclose(fptr);
 }
 
 int assembleInstruction(Tokenizer *tokenizer, uint8_t **codePtrPtr) {
@@ -476,7 +466,7 @@ int assembleSingleOperand(Tokenizer *tokenizer, _8051Instructions *info, uint8_t
       throwInvalidOperandException(token);
   }else
     throwException(ERR_INVALID_OPERAND, token,
-    "An invalid operand of %s has been inputted", token->str);
+    "The operand '%s' entered is invalid", token->str);
 
   freeToken(token);
   checkExtraToken(tokenizer);
@@ -516,7 +506,7 @@ int assembleAWithOperands(Tokenizer *tokenizer, int opcode, int flags) {
         throwInvalidOperandException(token);
   }else
     throwException(ERR_INVALID_OPERAND, token,
-    "Expecting register, integer, '#' or '@', received %s instead", token->str);
+    "The operand '%s' inputted is not a valid operand", token->str);
 
   freeToken(token);
   checkExtraToken(tokenizer);
@@ -543,7 +533,7 @@ int assembleDirectWithOperands(Tokenizer *tokenizer, int opcode, int flags) {
       throwInvalidOperandException(token);
   }else
     throwException(ERR_INVALID_OPERAND, token,
-    "Expecting A or '#', received %s instead", token->str);
+    "The operand '%s' inputted is not a valid operand", token->str);
 
   freeToken(token);
   checkExtraToken(tokenizer);
@@ -570,7 +560,7 @@ int assembleCWithOperands(Tokenizer *tokenizer, int opcode, int flags) {
       throwInvalidOperandException(token);
   }else
     throwException(ERR_INVALID_OPERAND, token,
-    "Expecting integer or '/', but received %s instead", token->str);
+    "The operand '%s' inputted is not a valid operand", token->str);
 
   freeToken(token);
   checkExtraToken(tokenizer);
@@ -808,6 +798,10 @@ int writeCodeToCodeMemory(int opcode, uint8_t *codePtr) {
   return bytes;
 }
 
+//this exception is thrown when a set of valid operands is entered,
+//but the flags for this operand is not set for that certain instruction
+//eg : xchd has only A, @Ri set of operands, if A, Rn or others is inputted,
+//this exception will be thrown
 void throwInvalidOperandException(Token *token) {
    throwException(ERR_INVALID_OPERAND, token,
    "Did not expect %s as an operand here", token->str);
