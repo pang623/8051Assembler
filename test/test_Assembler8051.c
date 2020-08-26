@@ -2,7 +2,6 @@
 #include "Token.h"
 #include "Tokenizer.h"
 #include "Assembler8051.h"
-#include "saveCodeToBin.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include "Error.h"
@@ -10,6 +9,7 @@
 #include "CException.h"
 #include "Exception.h"
 #include "ExceptionThrowing.h"
+#include "saveCodeToBin.h"
 
 void setUp(void)
 {
@@ -20,7 +20,7 @@ void tearDown(void)
 }
 
 CEXCEPTION_T e;
-
+/*
 extern uint8_t codeMemory[];
 extern FILE *fileHandler;
 
@@ -181,7 +181,7 @@ void test_getNextInstructionLine_expect_next_instruction_line_is_returned_everyt
   }
   fclose(fileHandler);
 }
-
+*/
 void test_writeCodeToCodeMemory_given_opcode_0x7B_expect_opcode_stored_in_code_memory_and_return_the_size() {
   int len;
   uint8_t codeMemory[65536];
@@ -1401,6 +1401,459 @@ void test_assembleCWithOperands_given_correct_operands_but_with_extra_parameter_
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
     TEST_ASSERT_EQUAL(ERR_EXTRA_PARAMETER, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleMOVInstruction_given_A_with_R3_expect_opcode_0xEB_stored_in_code_memory() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer("A  , r3");
+    len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
+    TEST_ASSERT_EQUAL(1, len);
+    TEST_ASSERT_EQUAL_HEX8(0xEB, codeMemory[0]);
+    TEST_ASSERT_EQUAL(1, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleMOVInstruction_given_A_with_0x56_expect_opcode_0xE556_stored_in_code_memory() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer("  a  , 0x56");
+    len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
+    TEST_ASSERT_EQUAL(2, len);
+    TEST_ASSERT_EQUAL_HEX8(0xE5, codeMemory[0]);
+    TEST_ASSERT_EQUAL_HEX8(0x56, codeMemory[1]);
+    TEST_ASSERT_EQUAL(2, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleMOVInstruction_given_A_with_indR0_expect_opcode_0xE6_stored_in_code_memory() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer("  a  , @R0 ;this is a comment ");
+    len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
+    TEST_ASSERT_EQUAL(1, len);
+    TEST_ASSERT_EQUAL_HEX8(0xE6, codeMemory[0]);
+    TEST_ASSERT_EQUAL(1, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleMOVInstruction_given_A_with_imm0xAB_expect_opcode_0x74AB_stored_in_code_memory() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer("  a  , #0xAB");
+    len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
+    TEST_ASSERT_EQUAL(2, len);
+    TEST_ASSERT_EQUAL_HEX8(0x74, codeMemory[0]);
+    TEST_ASSERT_EQUAL_HEX8(0xAB, codeMemory[1]);
+    TEST_ASSERT_EQUAL(2, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleMOVInstruction_given_R7_with_A_expect_opcode_0xFF_stored_in_code_memory() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer("  r7 , a ");
+    len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
+    TEST_ASSERT_EQUAL(1, len);
+    TEST_ASSERT_EQUAL_HEX8(0xFF, codeMemory[0]);
+    TEST_ASSERT_EQUAL(1, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleMOVInstruction_given_R0_with_0xBA_expect_opcode_0xA8BA_stored_in_code_memory() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer("  r0 , 0xbA   ;COMMENT! ");
+    len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
+    TEST_ASSERT_EQUAL(2, len);
+    TEST_ASSERT_EQUAL_HEX8(0xA8, codeMemory[0]);
+    TEST_ASSERT_EQUAL_HEX8(0xBA, codeMemory[1]);
+    TEST_ASSERT_EQUAL(2, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleMOVInstruction_given_R6_with_immMINUS120_expect_opcode_0xA8BA_stored_in_code_memory() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer("  R6   , #-120 ");
+    len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
+    TEST_ASSERT_EQUAL(2, len);
+    TEST_ASSERT_EQUAL_HEX8(0x7E, codeMemory[0]);
+    TEST_ASSERT_EQUAL_HEX8(0x88, codeMemory[1]);
+    TEST_ASSERT_EQUAL(2, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleMOVInstruction_given_0xFA_with_A_expect_opcode_0xF5FA_stored_in_code_memory() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer("  0xFA   , a; comment here ");
+    len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
+    TEST_ASSERT_EQUAL(2, len);
+    TEST_ASSERT_EQUAL_HEX8(0xF5, codeMemory[0]);
+    TEST_ASSERT_EQUAL_HEX8(0xFA, codeMemory[1]);
+    TEST_ASSERT_EQUAL(2, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleMOVInstruction_given_0x5B_with_R7_expect_opcode_0x8F5B_stored_in_code_memory() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer("  0x5B   , r7; comment here ");
+    len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
+    TEST_ASSERT_EQUAL(2, len);
+    TEST_ASSERT_EQUAL_HEX8(0x8F, codeMemory[0]);
+    TEST_ASSERT_EQUAL_HEX8(0x5B, codeMemory[1]);
+    TEST_ASSERT_EQUAL(2, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleMOVInstruction_given_0x90_with_0xB1_expect_opcode_0x85B190_stored_in_code_memory() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer("  0x90   , 0xB1");
+    len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
+    TEST_ASSERT_EQUAL(3, len);
+    TEST_ASSERT_EQUAL_HEX8(0x85, codeMemory[0]);
+    TEST_ASSERT_EQUAL_HEX8(0xB1, codeMemory[1]);
+    TEST_ASSERT_EQUAL_HEX8(0x90, codeMemory[2]);
+    TEST_ASSERT_EQUAL(3, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleMOVInstruction_given_0xA0_with_indR1_expect_opcode_0x87A0_stored_in_code_memory() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer("  0xA0   , @r1  ");
+    len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
+    TEST_ASSERT_EQUAL(2, len);
+    TEST_ASSERT_EQUAL_HEX8(0x87, codeMemory[0]);
+    TEST_ASSERT_EQUAL_HEX8(0xA0, codeMemory[1]);
+    TEST_ASSERT_EQUAL(2, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleMOVInstruction_given_0x12_with_imm156_expect_opcode_0x75129C_stored_in_code_memory() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer("  0x12   , #156  ");
+    len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
+    TEST_ASSERT_EQUAL(3, len);
+    TEST_ASSERT_EQUAL_HEX8(0x75, codeMemory[0]);
+    TEST_ASSERT_EQUAL_HEX8(0x12, codeMemory[1]);
+    TEST_ASSERT_EQUAL_HEX8(0x9C, codeMemory[2]);
+    TEST_ASSERT_EQUAL(3, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleMOVInstruction_given_indR0_with_a_expect_opcode_0xF6_stored_in_code_memory() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer("  @r0   , a  ");
+    len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
+    TEST_ASSERT_EQUAL(1, len);
+    TEST_ASSERT_EQUAL_HEX8(0xF6, codeMemory[0]);
+    TEST_ASSERT_EQUAL(1, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleMOVInstruction_given_indR1_with_0xBB_expect_opcode_0xA7BB_stored_in_code_memory() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer("  @R1   , 0xBb  ");
+    len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
+    TEST_ASSERT_EQUAL(2, len);
+    TEST_ASSERT_EQUAL_HEX8(0xA7, codeMemory[0]);
+    TEST_ASSERT_EQUAL_HEX8(0xBB, codeMemory[1]);
+    TEST_ASSERT_EQUAL(2, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleMOVInstruction_given_indR1_with_immPLUS100_expect_opcode_0x7764_stored_in_code_memory() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer("  @r1   , #+100 ;  ");
+    len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
+    TEST_ASSERT_EQUAL(2, len);
+    TEST_ASSERT_EQUAL_HEX8(0x77, codeMemory[0]);
+    TEST_ASSERT_EQUAL_HEX8(0x64, codeMemory[1]);
+    TEST_ASSERT_EQUAL(2, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleMOVInstruction_given_C_with_directBitAddr_expect_opcode_0xA22F_stored_in_code_memory() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer("  c   , 0x2F ;  ");
+    len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
+    TEST_ASSERT_EQUAL(2, len);
+    TEST_ASSERT_EQUAL_HEX8(0xA2, codeMemory[0]);
+    TEST_ASSERT_EQUAL_HEX8(0x2F, codeMemory[1]);
+    TEST_ASSERT_EQUAL(2, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleMOVInstruction_given_directBitAddr_with_C_expect_opcode_0x922F_stored_in_code_memory() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer("  0x2F  , C  ");
+    len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
+    TEST_ASSERT_EQUAL(2, len);
+    TEST_ASSERT_EQUAL_HEX8(0x92, codeMemory[0]);
+    TEST_ASSERT_EQUAL_HEX8(0x2F, codeMemory[1]);
+    TEST_ASSERT_EQUAL(2, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleMOVInstruction_given_DPTR_with_imm16bit_expect_opcode_0x90DCBA_stored_in_code_memory() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer("  dPtr  , #0xDCBA  ");
+    len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
+    TEST_ASSERT_EQUAL(3, len);
+    TEST_ASSERT_EQUAL_HEX8(0x90, codeMemory[0]);
+    TEST_ASSERT_EQUAL_HEX8(0xDC, codeMemory[1]);
+    TEST_ASSERT_EQUAL_HEX8(0xBA, codeMemory[2]);
+    TEST_ASSERT_EQUAL(3, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleMOVInstruction_given_A_with_invalid_operand_expect_exception_ERR_INVALID_OPERAND_to_be_thrown() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer("  A, Abu");
+    len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleMOVInstruction_given_reg_with_invalid_operand_expect_exception_ERR_INVALID_OPERAND_to_be_thrown() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer("  R6 , DPTR");
+    len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleMOVInstruction_given_dir_with_invalid_operand_expect_exception_ERR_INVALID_OPERAND_to_be_thrown() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer("  0x66 , AB");
+    len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleMOVInstruction_given_ind_with_invalid_operand_expect_exception_ERR_INVALID_OPERAND_to_be_thrown() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer("  @r1 , R5");
+    len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleMOVInstruction_given_c_with_invalid_operand_expect_exception_ERR_INVALID_OPERAND_to_be_thrown() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer("  c , A");
+    len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_EXPECTING_INTEGER, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleMOVInstruction_given_DPTR_with_invalid_operand_expect_exception_ERR_INVALID_OPERAND_to_be_thrown() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer("  DPTR , @r1");
+    len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_EXPECTING_IMMEDIATE, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleMOVInstruction_given_invalid_first_operand_expect_exception_ERR_INVALID_OPERAND_to_be_thrown() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer("  hi, r3");
+    len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
   }
   freeTokenizer(tokenizer);
 }

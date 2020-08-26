@@ -59,7 +59,7 @@ _8051Instructions instructionsTable[45] = {
   {"mov" , assembleMOVInstruction                      , {0, 0}},
   {NULL  , NULL                                        , {0, 0}},
 };
-
+/*
 uint8_t codeMemory[65536];
 FILE *fileHandler;
 
@@ -110,7 +110,7 @@ char *getNextInstructionLine() {
   }else
     return NULL;
 }
-
+*/
 int assembleInstruction(Tokenizer *tokenizer, uint8_t **codePtrPtr) {
   Token* token;
   int opcode, len;
@@ -754,7 +754,7 @@ void verifyIsImmediateThenGetsItsValueAndConsume(Tokenizer *tokenizer, int *valu
   if(!isImmediateThenGetsItsValueAndConsume(tokenizer, &immediate, min, max)) {
     token = getToken(tokenizer);
     throwException(ERR_EXPECTING_IMMEDIATE, token,
-    "Expecting a '#', but received %s instead", token->str);
+    "Expecting immediate, but received %s instead", token->str);
   }else
     *value = immediate;
 }
@@ -782,11 +782,11 @@ void checkExtraToken(Tokenizer *tokenizer) {
 
 int writeCodeToCodeMemory(int opcode, uint8_t *codePtr) {
   int bytes;
-  if(opcode < 0xFF)
+  if(opcode <= 0xFF)
     bytes = 1;
-  else if(opcode < 0xFFFF)
+  else if(opcode <= 0xFFFF)
     bytes = 2;
-  else if(opcode < 0xFFFFFF)
+  else if(opcode <= 0xFFFFFF)
     bytes = 3;
 
   int pos = bytes;
