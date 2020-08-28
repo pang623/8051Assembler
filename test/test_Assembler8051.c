@@ -2046,6 +2046,145 @@ void test_assembleMOVCInstruction_given_invalid_first_operand_expect_exception_E
   freeTokenizer(tokenizer);
 }
 
+void test_assembleInstructionWithOnlyAccAsFirstOperand_given_instruction_xchd_expect_it_is_assembled_correctly() {
+  _8051Instructions table = {"xchd", assembleInstructionWithOnlyAccAsFirstOperand, {0xD0, A_IND}};
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory + 23;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer("A  , @r1");
+    len = assembleInstructionWithOnlyAccAsFirstOperand(tokenizer, &table, &codePtr);
+    TEST_ASSERT_EQUAL(1, len);
+    TEST_ASSERT_EQUAL_HEX8(0xD7, codeMemory[23]);
+    TEST_ASSERT_EQUAL(24, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleInstructionWithOnlyAccAsFirstOperand_given_instruction_subb_expect_it_is_assembled_correctly() {
+  _8051Instructions table = {"subb", assembleInstructionWithOnlyAccAsFirstOperand, 
+  {0x90, A_DIR | A_IMM | A_IND | A_REG}};
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory + 5656;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer(" a  , 0x86 ;comment");
+    len = assembleInstructionWithOnlyAccAsFirstOperand(tokenizer, &table, &codePtr);
+    TEST_ASSERT_EQUAL(2, len);
+    TEST_ASSERT_EQUAL_HEX8(0x95, codeMemory[5656]);
+    TEST_ASSERT_EQUAL_HEX8(0x86, codeMemory[5657]);
+    TEST_ASSERT_EQUAL(5658, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleLogicalInstructionWithoutXRL_given_instruction_orl_expect_it_is_assembled_correctly() {
+  _8051Instructions table = {"orl", assembleLogicalInstructionWithoutXRL, 
+  {0x40, A_DIR | A_IMM | A_IND | A_REG | DIR_A | DIR_IMM | C_BIT | C_BARBIT}};
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer(" C , /0x43  ");
+    len = assembleLogicalInstructionWithoutXRL(tokenizer, &table, &codePtr);
+    TEST_ASSERT_EQUAL(2, len);
+    TEST_ASSERT_EQUAL_HEX8(0xA0, codeMemory[0]);
+    TEST_ASSERT_EQUAL_HEX8(0x43, codeMemory[1]);
+    TEST_ASSERT_EQUAL(2, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleLogicalInstructionWithoutXRL_given_invalid_first_operand_expect_ERR_INVALID_OPERAND_is_thrown() {
+  _8051Instructions table = {"anl", assembleLogicalInstructionWithoutXRL, 
+  {0x50, A_DIR | A_IMM | A_IND | A_REG | DIR_A | DIR_IMM | C_BIT | C_BARBIT}};
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer(" R3 , #-109  ");
+    len = assembleLogicalInstructionWithoutXRL(tokenizer, &table, &codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleXRLinstruction_given_instruction_xrl_expect_it_is_assembled_correctly() {
+  _8051Instructions table = {"xrl", assembleXRLinstruction, 
+  {0x60, A_DIR | A_IMM | A_IND | A_REG | DIR_A | DIR_IMM}};
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory + 2000;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer(" 0xBA , #-120  ");
+    len = assembleXRLinstruction(tokenizer, &table, &codePtr);
+    TEST_ASSERT_EQUAL(3, len);
+    TEST_ASSERT_EQUAL_HEX8(0x63, codeMemory[2000]);
+    TEST_ASSERT_EQUAL_HEX8(0xBA, codeMemory[2001]);
+    TEST_ASSERT_EQUAL_HEX8(0x88, codeMemory[2002]);
+    TEST_ASSERT_EQUAL(2003, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleXRLinstruction_given_invalid_first_operand_expect_ERR_INVALID_OPERAND_is_thrown() {
+  _8051Instructions table = {"xrl", assembleXRLinstruction, 
+  {0x60, A_DIR | A_IMM | A_IND | A_REG | DIR_A | DIR_IMM}};
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer(" C , 0x88  ");
+    len = assembleXRLinstruction(tokenizer, &table, &codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleSingleOperand_given_inc_expect_it_is_assembled_correctly() {
+  _8051Instructions table = {"inc", assembleSingleOperand, 
+  {0x00, OPERAND_A | OPERAND_REG | OPERAND_DIR | OPERAND_IND | OPERAND_DPTR}};
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory + 2123;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer(" @r1 ; comment ");
+    len = assembleSingleOperand(tokenizer, &table, &codePtr);
+    TEST_ASSERT_EQUAL(1, len);
+    TEST_ASSERT_EQUAL_HEX8(0x07, codeMemory[2123]);
+    TEST_ASSERT_EQUAL(2124, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
 void test_assembleInstruction_given_add_A_with_r7_expect_opcode_0x2f() {
   int len;
   uint8_t codeMemory[65536];
