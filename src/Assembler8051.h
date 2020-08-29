@@ -19,7 +19,23 @@ struct _8051Instructions {
   int data[3];
 };
 
-void assembleInFileAndWriteToOutFile(char *inFile, char *outFile);            //yet to test
+/*
+functions yet to be tested
+  void assembleInFileAndWriteToOutFile(char *inFile, char *outFile);
+  int assembleFile(char *filename);
+  int assembleInstructions(InstructionLineReader lineReader);
+  char *getNextInstructionLine();
+  
+  int assembleDJNZInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);
+  int assembleCJNEInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);
+  int assembleJMPInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);
+  int assembleBitWithRel(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);
+  
+  (tested partially, haven't test instructions with rel (LABEL) because not yet implement)
+  int assembleSingleOperand(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);
+*/
+
+void assembleInFileAndWriteToOutFile(char *inFile, char *outFile);
 int assembleFile(char *filename);
 int assembleInstructions(InstructionLineReader lineReader);
 char *getNextInstructionLine();

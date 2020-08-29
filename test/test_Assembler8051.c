@@ -27,14 +27,14 @@ extern FILE *fileHandler;
 void test_assembleInFileAndWriteToOutFile_given_asm_testCode_as_input_file_expect_opcode_written_to_bin_file() {
   char *inFile = "./test/data/asm_testCode.txt";
   char *outFile = "./test/data/asm_testCode.bin";
-  
+
   assembleInFileAndWriteToOutFile(inFile, outFile);
 }
 
 void test_assembleInFileAndWriteToOutFile_given_test_as_input_file_expect_opcode_written_to_bin_file() {
   char *inFile = "./test/data/test.txt";
   char *outFile = "./test/data/test.bin";
-  
+
   assembleInFileAndWriteToOutFile(inFile, outFile);
 }
 
@@ -135,43 +135,43 @@ void test_getNextInstructionLine_expect_next_instruction_line_is_returned_everyt
   Try{
     instructionLine = getNextInstructionLine();
     TEST_ASSERT_EQUAL_STRING("MOV A, #0x8A	 ;0x748A\n", instructionLine);
-    
+
     instructionLine = getNextInstructionLine();
     TEST_ASSERT_EQUAL_STRING("MOV 0x83, #0x12	 ;0x758312\n", instructionLine);
-    
+
     instructionLine = getNextInstructionLine();
     TEST_ASSERT_EQUAL_STRING("MOV 0xF4, 0x83	 ;0x8583F4\n", instructionLine);
-    
+
     instructionLine = getNextInstructionLine();
     TEST_ASSERT_EQUAL_STRING("SUBB A, 0xF4	 ;0x95F4\n", instructionLine);
-    
+
     instructionLine = getNextInstructionLine();
     TEST_ASSERT_EQUAL_STRING("\t\n", instructionLine);
-    
+
     instructionLine = getNextInstructionLine();
     TEST_ASSERT_EQUAL_STRING("XRL 0x83, A	 ;0x6283\n", instructionLine);
-    
+
     instructionLine = getNextInstructionLine();
     TEST_ASSERT_EQUAL_STRING("CLR C		 ;0xC3\n", instructionLine);
-    
+
     instructionLine = getNextInstructionLine();
     TEST_ASSERT_EQUAL_STRING("CPL A		 ;0xF4\n", instructionLine);
-    
+
     instructionLine = getNextInstructionLine();
     TEST_ASSERT_EQUAL_STRING("SETB C		 ;0xD3\n", instructionLine);
-    
+
     instructionLine = getNextInstructionLine();
     TEST_ASSERT_EQUAL_STRING("DJNZ R3, -8	 ;0xDBF8\n", instructionLine);
-    
+
     instructionLine = getNextInstructionLine();
     TEST_ASSERT_EQUAL_STRING("ADD A, R3\n", instructionLine);
-    
+
     instructionLine = getNextInstructionLine();
     TEST_ASSERT_EQUAL_STRING("\n", instructionLine);
-    
+
     instructionLine = getNextInstructionLine();
     TEST_ASSERT_EQUAL_STRING("CJNE @R0, #-23, -8\n", instructionLine);
-    
+
     //no more lines left
     instructionLine = getNextInstructionLine();
     TEST_ASSERT_EQUAL_STRING(NULL, instructionLine);
@@ -2066,7 +2066,7 @@ void test_assembleInstructionWithOnlyAccAsFirstOperand_given_instruction_xchd_ex
 }
 
 void test_assembleInstructionWithOnlyAccAsFirstOperand_given_instruction_subb_expect_it_is_assembled_correctly() {
-  _8051Instructions table = {"subb", assembleInstructionWithOnlyAccAsFirstOperand, 
+  _8051Instructions table = {"subb", assembleInstructionWithOnlyAccAsFirstOperand,
   {0x90, A_DIR | A_IMM | A_IND | A_REG}};
   int len;
   uint8_t codeMemory[65536];
@@ -2087,7 +2087,7 @@ void test_assembleInstructionWithOnlyAccAsFirstOperand_given_instruction_subb_ex
 }
 
 void test_assembleLogicalInstructionWithoutXRL_given_instruction_orl_expect_it_is_assembled_correctly() {
-  _8051Instructions table = {"orl", assembleLogicalInstructionWithoutXRL, 
+  _8051Instructions table = {"orl", assembleLogicalInstructionWithoutXRL,
   {0x40, A_DIR | A_IMM | A_IND | A_REG | DIR_A | DIR_IMM | C_BIT | C_BARBIT}};
   int len;
   uint8_t codeMemory[65536];
@@ -2108,7 +2108,7 @@ void test_assembleLogicalInstructionWithoutXRL_given_instruction_orl_expect_it_i
 }
 
 void test_assembleLogicalInstructionWithoutXRL_given_invalid_first_operand_expect_ERR_INVALID_OPERAND_is_thrown() {
-  _8051Instructions table = {"anl", assembleLogicalInstructionWithoutXRL, 
+  _8051Instructions table = {"anl", assembleLogicalInstructionWithoutXRL,
   {0x50, A_DIR | A_IMM | A_IND | A_REG | DIR_A | DIR_IMM | C_BIT | C_BARBIT}};
   int len;
   uint8_t codeMemory[65536];
@@ -2126,7 +2126,7 @@ void test_assembleLogicalInstructionWithoutXRL_given_invalid_first_operand_expec
 }
 
 void test_assembleXRLinstruction_given_instruction_xrl_expect_it_is_assembled_correctly() {
-  _8051Instructions table = {"xrl", assembleXRLinstruction, 
+  _8051Instructions table = {"xrl", assembleXRLinstruction,
   {0x60, A_DIR | A_IMM | A_IND | A_REG | DIR_A | DIR_IMM}};
   int len;
   uint8_t codeMemory[65536];
@@ -2148,7 +2148,7 @@ void test_assembleXRLinstruction_given_instruction_xrl_expect_it_is_assembled_co
 }
 
 void test_assembleXRLinstruction_given_invalid_first_operand_expect_ERR_INVALID_OPERAND_is_thrown() {
-  _8051Instructions table = {"xrl", assembleXRLinstruction, 
+  _8051Instructions table = {"xrl", assembleXRLinstruction,
   {0x60, A_DIR | A_IMM | A_IND | A_REG | DIR_A | DIR_IMM}};
   int len;
   uint8_t codeMemory[65536];
@@ -2166,7 +2166,7 @@ void test_assembleXRLinstruction_given_invalid_first_operand_expect_ERR_INVALID_
 }
 
 void test_assembleSingleOperand_given_operand_ind_expect_it_is_assembled_correctly() {
-  _8051Instructions table = {"inc", assembleSingleOperand, 
+  _8051Instructions table = {"inc", assembleSingleOperand,
   {0x00, OPERAND_A | OPERAND_REG | OPERAND_DIR | OPERAND_IND | OPERAND_DPTR}};
   int len;
   uint8_t codeMemory[65536];
@@ -2203,7 +2203,7 @@ void test_assembleSingleOperand_given_operand_ind_but_flag_not_set_expect_ERR_IN
 }
 
 void test_assembleSingleOperand_given_operand_reg_expect_it_is_assembled_correctly() {
-  _8051Instructions table = {"dec", assembleSingleOperand, 
+  _8051Instructions table = {"dec", assembleSingleOperand,
   {0x10, OPERAND_A | OPERAND_REG | OPERAND_DIR | OPERAND_IND}};
   int len;
   uint8_t codeMemory[65536];
@@ -2240,7 +2240,7 @@ void test_assembleSingleOperand_given_operand_reg_but_flag_not_set_expect_ERR_IN
 }
 
 void test_assembleSingleOperand_given_operand_A_expect_it_is_assembled_correctly() {
-  _8051Instructions table = {"swap", assembleSingleOperand, 
+  _8051Instructions table = {"swap", assembleSingleOperand,
   {0xC0, OPERAND_A}};
   int len;
   uint8_t codeMemory[65536];
@@ -2260,7 +2260,7 @@ void test_assembleSingleOperand_given_operand_A_expect_it_is_assembled_correctly
 }
 
 void test_assembleSingleOperand_given_operand_A_for_rotate_instructions_expect_it_is_assembled_correctly() {
-  _8051Instructions table = {"rrc", assembleSingleOperand, 
+  _8051Instructions table = {"rrc", assembleSingleOperand,
   {0x10, OPERAND_A_ROT}};
   int len;
   uint8_t codeMemory[65536];
@@ -2297,7 +2297,7 @@ void test_assembleSingleOperand_given_operand_A_but_flag_not_set_expect_ERR_INVA
 }
 
 void test_assembleSingleOperand_given_operand_AB_expect_it_is_assembled_correctly() {
-  _8051Instructions table = {"mul", assembleSingleOperand, 
+  _8051Instructions table = {"mul", assembleSingleOperand,
   {0xA0, OPERAND_AB}};
   int len;
   uint8_t codeMemory[65536];
@@ -2333,15 +2333,202 @@ void test_assembleSingleOperand_given_operand_AB_but_flag_not_set_expect_ERR_INV
   freeTokenizer(tokenizer);
 }
 
+void test_assembleSingleOperand_given_operand_C_expect_it_is_assembled_correctly() {
+  _8051Instructions table = {"clr", assembleSingleOperand, {0xE0, OPERAND_C | OPERAND_BIT | OPERAND_A}};
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory + 1;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer(" c  ;comment  ");
+    len = assembleSingleOperand(tokenizer, &table, &codePtr);
+    TEST_ASSERT_EQUAL(1, len);
+    TEST_ASSERT_EQUAL_HEX8(0xC3, codeMemory[1]);
+    TEST_ASSERT_EQUAL(2, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
 void test_assembleSingleOperand_given_operand_C_but_flag_not_set_expect_ERR_INVALID_OPERAND_is_thrown() {
-  _8051Instructions table = {"inc", assembleSingleOperand, 
-  {0x00, OPERAND_A | OPERAND_REG | OPERAND_DIR | OPERAND_IND | OPERAND_DPTR}};
+  _8051Instructions table = {"push", assembleSingleOperand, {0xC0, OPERAND_DIR_STACK}};
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
   Tokenizer* tokenizer;
   Try{
     tokenizer = createTokenizer(" C ");
+    len = assembleSingleOperand(tokenizer, &table, &codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleSingleOperand_given_operand_DPTR_expect_it_is_assembled_correctly() {
+  _8051Instructions table = {"inc", assembleSingleOperand,
+  {0x00, OPERAND_A | OPERAND_REG | OPERAND_DIR | OPERAND_IND | OPERAND_DPTR}};
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory + 2;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer(" dPtr  ");
+    len = assembleSingleOperand(tokenizer, &table, &codePtr);
+    TEST_ASSERT_EQUAL(1, len);
+    TEST_ASSERT_EQUAL_HEX8(0xA3, codeMemory[2]);
+    TEST_ASSERT_EQUAL(3, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleSingleOperand_given_operand_DPTR_but_flag_not_set_expect_ERR_INVALID_OPERAND_is_thrown() {
+  _8051Instructions table = {"da", assembleSingleOperand, {0xD0, OPERAND_A}};
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer(" DPTR ");
+    len = assembleSingleOperand(tokenizer, &table, &codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleSingleOperand_given_operand_direct_expect_it_is_assembled_correctly() {
+  _8051Instructions table = {"dec", assembleSingleOperand,
+  {0x10, OPERAND_A | OPERAND_REG | OPERAND_DIR | OPERAND_IND}};
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer(" 0xAB  ");
+    len = assembleSingleOperand(tokenizer, &table, &codePtr);
+    TEST_ASSERT_EQUAL(2, len);
+    TEST_ASSERT_EQUAL_HEX8(0x15, codeMemory[0]);
+    TEST_ASSERT_EQUAL_HEX8(0xAB, codeMemory[1]);
+    TEST_ASSERT_EQUAL(2, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleSingleOperand_given_operand_direct_but_out_of_range_expect_ERR_INTEGER_OUT_OF_RANGE_to_be_thrown() {
+  _8051Instructions table = {"dec", assembleSingleOperand,
+  {0x10, OPERAND_A | OPERAND_REG | OPERAND_DIR | OPERAND_IND}};
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer(" 0xABC  ");
+    len = assembleSingleOperand(tokenizer, &table, &codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_INTEGER_OUT_OF_RANGE, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleSingleOperand_given_operand_bit_expect_it_is_assembled_correctly() {
+  _8051Instructions table = {"setb", assembleSingleOperand,
+  {0x90, OPERAND_C | OPERAND_BIT}};
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory + 200;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer(" 0x2F  ");
+    len = assembleSingleOperand(tokenizer, &table, &codePtr);
+    TEST_ASSERT_EQUAL(2, len);
+    TEST_ASSERT_EQUAL_HEX8(0xD2, codeMemory[200]);
+    TEST_ASSERT_EQUAL_HEX8(0x2F, codeMemory[201]);
+    TEST_ASSERT_EQUAL(202, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleSingleOperand_given_operand_bit_but_out_of_range_expect_ERR_INTEGER_OUT_OF_RANGE_to_be_thrown() {
+  _8051Instructions table = {"setb", assembleSingleOperand,
+  {0x90, OPERAND_C | OPERAND_BIT}};
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer(" 0xDEF  ");
+    len = assembleSingleOperand(tokenizer, &table, &codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_INTEGER_OUT_OF_RANGE, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleSingleOperand_given_operand_dir_for_stack_instructions_expect_it_is_assembled_correctly() {
+  _8051Instructions table = {"pop", assembleSingleOperand, {0xD0, OPERAND_DIR_STACK}};
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory + 1979;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer(" 0xC0  ");
+    len = assembleSingleOperand(tokenizer, &table, &codePtr);
+    TEST_ASSERT_EQUAL(2, len);
+    TEST_ASSERT_EQUAL_HEX8(0xD0, codeMemory[1979]);
+    TEST_ASSERT_EQUAL_HEX8(0xC0, codeMemory[1980]);
+    TEST_ASSERT_EQUAL(1981, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleSingleOperand_given_operand_dir_for_stack_instructions_but_out_of_range_expect_ERR_INTEGER_OUT_OF_RANGE_to_be_thrown() {
+  _8051Instructions table = {"pop", assembleSingleOperand, {0xD0, OPERAND_DIR_STACK}};
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer(" 0x100  ");
+    len = assembleSingleOperand(tokenizer, &table, &codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_INTEGER_OUT_OF_RANGE, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleSingleOperand_given_invalid_single_operand_expect_ERR_INVALID_OPERAND_to_be_thrown() {
+  _8051Instructions table = {"pop", assembleSingleOperand, {0xD0, OPERAND_DIR_STACK}};
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer* tokenizer;
+  Try{
+    tokenizer = createTokenizer(" zzzSleeping  ");
     len = assembleSingleOperand(tokenizer, &table, &codePtr);
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
