@@ -81,5 +81,6 @@ void recordLabel(char *label, int index, int lineNo);
 int getIndexNumber(char *label);
 int getInstructionBytes(int opcode);
 LabelInfo *createLabelInfo(char *label, int index, int lineNo);
+void freeLabelInfo(void *info);
 
 #endif // ASSEMBLER8051_H

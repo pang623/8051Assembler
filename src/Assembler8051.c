@@ -86,6 +86,7 @@ int assembleFile(char *filename) {
     totalBytes = assembleInstructions(getNextInstructionLine);
     fclose(fileHandler);
   }
+  doubleLinkedListFreeList(listPtr, freeLabelInfo);
   return totalBytes;
 }
 
@@ -173,6 +174,11 @@ LabelInfo *createLabelInfo(char *label, int index, int lineNo) {
   infoPtr->indexNo = index;
   infoPtr->lineNo = lineNo;
   return infoPtr;
+}
+
+void freeLabelInfo(void *info) {
+  if((LabelInfo *)info)
+    free((LabelInfo *)info);
 }
 
 void recordLabel(char *label, int index, int lineNo) {
