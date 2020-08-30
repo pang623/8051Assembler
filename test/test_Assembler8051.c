@@ -26,14 +26,6 @@ CEXCEPTION_T e;
 extern uint8_t codeMemory[];
 extern FILE *fileHandler;
 
-void test_assembleInFileAndWriteToOutFile_given_asm_testCode_as_input_file_expect_opcode_written_to_bin_file() {
-  char *inFile = "./test/data/asm_testCode.txt";
-  char *outFile = "./test/data/asm_testCode.bin";
-
-  assembleInFileAndWriteToOutFile(inFile, outFile);
-}
-
-
 void test_recordLabel() {
   int index;
   Token *token;
@@ -51,12 +43,31 @@ void test_recordLabel() {
   TEST_ASSERT_EQUAL(-1, index);
 }
 */
+void test_assembleInFileAndWriteToOutFile_given_asm_testCode_as_input_file_expect_opcode_written_to_bin_file() {
+  char *inFile = "./test/data/asm_testCode.txt";
+  char *outFile = "./test/data/asm_testCode.bin";
+
+  Try{
+    assembleInFileAndWriteToOutFile(inFile, outFile);
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+}
+
 void test_assembleInFileAndWriteToOutFile_given_test_as_input_file_expect_opcode_written_to_bin_file() {
   char *inFile = "./test/data/test.txt";
   char *outFile = "./test/data/test.bin";
-
-  assembleInFileAndWriteToOutFile(inFile, outFile);
+  
+  Try{
+    assembleInFileAndWriteToOutFile(inFile, outFile);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_DUPLICATE_LABEL, e->errorCode);
+  }
 }
+
 /*
 void test_assembleFile_given_filename_expect_instructions_in_file_are_read_and_written_into_code_memory() {
   int totalBytes;
@@ -2745,7 +2756,7 @@ void test_assembleInstruction_given_mov_dptr_with_imm_expect_opcode_0x90EEFF() {
   }
   freeTokenizer(tokenizer);
 }
-
+/*
 void test_assembleInstruction_given_cjne_ind_with_imm_expect_opcode_stored_in_code_memory_is_0xB7179C() {
   int len;
   uint8_t codeMemory[65536];
@@ -2824,7 +2835,7 @@ void test_assembleInstruction_given_djnz_reg_with_rel_expect_opcode_0xDEFF() {
   }
   freeTokenizer(tokenizer);
 }
-
+*/
 void test_assembleInstruction_given_xch_a_with_reg_expect_opcode_0xC9() {
   int len;
   uint8_t codeMemory[65536];

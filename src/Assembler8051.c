@@ -77,6 +77,7 @@ int assembleFile(char *filename) {
   int totalBytes;
   listPtr = doubleLinkedListCreateList();
   for(int pass = 1; pass < 3; pass++) {
+    lineNumber = 0;
     if((fileHandler = fopen(filename, "r")) == NULL) {
       printf("Error opening file!\n");
       exit(1);
@@ -175,21 +176,21 @@ LabelInfo *createLabelInfo(char *label, int index, int lineNo) {
 }
 
 void recordLabel(char *label, int index, int lineNo) {
+  int count;
   LabelInfo *info = createLabelInfo(label, index, lineNo);
   LabelInfo *infoPtr;
-  int count;
   ListItem *itemPtr = doubleLinkedListCreateListItem(info);
-  ListItem *nextItem;
-  if(listPtr->head == NULL)
+  ListItem *nextItem = listPtr->head;
+  if(nextItem == NULL)
     count = doubleLinkedListAddItemToHead(listPtr, itemPtr);
   else {
     while(nextItem) {
-      infoPtr = listPtr->head->data;
+      infoPtr = nextItem->data;
       if(stricmp(label, infoPtr->name))
-        nextItem = listPtr->head->next;
+        nextItem = nextItem->next;
       else
         throwException(ERR_DUPLICATE_LABEL, NULL,
-        "Label '%s' is used at line %d", label, infoPtr->lineNo);
+        "Label '%s' appeared before at line %d", label, infoPtr->lineNo);
     }
     count = doubleLinkedListAddItemToHead(listPtr, itemPtr);
   }
@@ -197,13 +198,14 @@ void recordLabel(char *label, int index, int lineNo) {
 
 int getIndexNumber(char *label) {
   LabelInfo *infoPtr;
-  if(listPtr->head == NULL)
+  ListItem *nextItem = listPtr->head;
+  if(nextItem == NULL)
     return -1;
   else {
-    while(listPtr->head) {
-      infoPtr = listPtr->head->data;
+    while(nextItem) {
+      infoPtr = nextItem->data;
       if(stricmp(label, infoPtr->name))
-        listPtr->head = listPtr->head->next;
+        nextItem = nextItem->next;
       else
         return infoPtr->indexNo;
     }
@@ -228,6 +230,7 @@ int assembleDJNZInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8
     token = getToken(tokenizer);
     pushBackToken(tokenizer, token);
     if(token->type == TOKEN_IDENTIFIER_TYPE) {
+      token = getToken(tokenizer);
       int index = getIndexNumber(token->str);
       if(index < 0)
         throwException(ERR_INVALID_LABEL, token,
