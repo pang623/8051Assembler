@@ -1,1 +1,2 @@
-subb a , 0xf4
+HERE: reti
+djnz r1, HERE

@@ -6,6 +6,7 @@
 #include "Flags.h"
 #include "Token.h"
 #include "Tokenizer.h"
+#include "DoubleLinkedList.h"
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
@@ -59,9 +60,13 @@ _8051Instructions instructionsTable[45] = {
   {"mov" , assembleMOVInstruction                      , {0, 0}},
   {NULL  , NULL                                        , {0, 0}},
 };
-/*
+
+int muteOnNoLabel = 0;
+int lineNumber = 0;
+
 uint8_t codeMemory[65536];
 FILE *fileHandler;
+DoubleLinkedList *listPtr;
 
 void assembleInFileAndWriteToOutFile(char *inFile, char *outFile) {
   int totalBytes = assembleFile(inFile);
@@ -69,13 +74,17 @@ void assembleInFileAndWriteToOutFile(char *inFile, char *outFile) {
 }
 
 int assembleFile(char *filename) {
-  if((fileHandler = fopen(filename, "r")) == NULL) {
-    printf("Error opening file!\n");
-    exit(1);
+  int totalBytes;
+  listPtr = doubleLinkedListCreateList();
+  for(int pass = 1; pass < 3; pass++) {
+    if((fileHandler = fopen(filename, "r")) == NULL) {
+      printf("Error opening file!\n");
+      exit(1);
+    }
+    muteOnNoLabel = !(pass - 1);
+    totalBytes = assembleInstructions(getNextInstructionLine);
+    fclose(fileHandler);
   }
-  int totalBytes = assembleInstructions(getNextInstructionLine);
-
-  fclose(fileHandler);
   return totalBytes;
 }
 
@@ -85,7 +94,7 @@ int assembleInstructions(InstructionLineReader lineReader) {
   uint8_t *codePtr = codeMemory;
   uint8_t **codePtrPtr = &codePtr;
   int totalLen = 0;
-  
+
   for(int i = 0; i < 65536; i++)
     codeMemory[i] = 0;
   
@@ -106,12 +115,14 @@ char *getNextInstructionLine() {
   
   if(fgets(buffer, 1024, fileHandler) != NULL) {
     line = strdup(buffer);
+    lineNumber += 1;
     return line;
   }else
     return NULL;
 }
-*/
+
 int assembleInstruction(Tokenizer *tokenizer, uint8_t **codePtrPtr) {
+  LabelInfo *infoPTR;
   Token* token;
   int opcode, len;
   int i = 0;
@@ -123,28 +134,87 @@ int assembleInstruction(Tokenizer *tokenizer, uint8_t **codePtrPtr) {
     "Expecting an identifier, received %s instead", token->str);
 
   while(stricmp(token->str, instructionsTable[i].instruction)) {
-    if(instructionsTable[i++].instruction == NULL)
-      throwException(ERR_INVALID_INSTRUCTION, token,
-      "An invalid instruction '%s' is inputted", token->str);
+    if(instructionsTable[i].instruction == NULL) {
+      if(isOperatorTokenThenConsume(tokenizer, ":")) {
+        if(muteOnNoLabel)
+          recordLabel(token->str, (*codePtrPtr) - codeMemory, lineNumber);
+        token = getToken(tokenizer);
+        i = 0;
+      }else
+        throwException(ERR_INVALID_INSTRUCTION, token,
+        "An invalid instruction '%s' is inputted", token->str);
+    }else
+      i++;
   }
-  instructionPtr = &instructionsTable[i];
-  if(instructionPtr->function) {
-    funcPtr instructionToOpcode = instructionPtr->function;
-    len = instructionToOpcode(tokenizer, instructionPtr, codePtrPtr);
-  }else {                                            //handling instructions with no operand (eg: RET)
-    uint8_t *codePtr = *codePtrPtr;
-    checkExtraToken(tokenizer);
-    len = writeCodeToCodeMemory(instructionPtr->data[0], codePtr);
-    (*codePtrPtr) += len;
-    return len;
+  if(isOperatorTokenThenConsume(tokenizer, ":")) {
+    throwException(ERR_INVALID_LABEL, token,
+    "Instruction mnemonic '%s' cannot be used as a label", token->str);
+  }else {
+    instructionPtr = &instructionsTable[i];
+    if(instructionPtr->function) {
+      funcPtr instructionToOpcode = instructionPtr->function;
+      len = instructionToOpcode(tokenizer, instructionPtr, codePtrPtr);
+    }else {                                            //handling instructions with no operand (eg: RET)
+      uint8_t *codePtr = *codePtrPtr;
+      checkExtraToken(tokenizer);
+      len = writeCodeToCodeMemory(instructionPtr->data[0], codePtr);
+      (*codePtrPtr) += len;
+      return len;
+    }
   }
   freeToken(token);
   return len;
 }
 
+LabelInfo *createLabelInfo(char *label, int index, int lineNo) {
+  LabelInfo *infoPtr = malloc(sizeof(LabelInfo));
+  infoPtr->name = label;
+  infoPtr->indexNo = index;
+  infoPtr->lineNo = lineNo;
+  return infoPtr;
+}
+
+void recordLabel(char *label, int index, int lineNo) {
+  LabelInfo *info = createLabelInfo(label, index, lineNo);
+  LabelInfo *infoPtr;
+  int count;
+  ListItem *itemPtr = doubleLinkedListCreateListItem(info);
+  ListItem *nextItem;
+  if(listPtr->head == NULL)
+    count = doubleLinkedListAddItemToHead(listPtr, itemPtr);
+  else {
+    while(nextItem) {
+      infoPtr = listPtr->head->data;
+      if(stricmp(label, infoPtr->name))
+        nextItem = listPtr->head->next;
+      else
+        throwException(ERR_DUPLICATE_LABEL, NULL,
+        "Label '%s' is used at line %d", label, infoPtr->lineNo);
+    }
+    count = doubleLinkedListAddItemToHead(listPtr, itemPtr);
+  }
+}
+
+int getIndexNumber(char *label) {
+  LabelInfo *infoPtr;
+  if(listPtr->head == NULL)
+    return -1;
+  else {
+    while(listPtr->head) {
+      infoPtr = listPtr->head->data;
+      if(stricmp(label, infoPtr->name))
+        listPtr->head = listPtr->head->next;
+      else
+        return infoPtr->indexNo;
+    }
+    return -1;
+  }
+}
+
 int assembleDJNZInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr) {
   int opcode, len, regNum = 0, relative = 0, direct = 0;
   uint8_t *codePtr = *codePtrPtr;
+  Token *token;
 
   if(isRegisterConsumeAndGetItsNumber(tokenizer, REGISTER_ADDRESSING, &regNum))
     opcode = (0xD8 + regNum) << 8;
@@ -154,9 +224,25 @@ int assembleDJNZInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8
     throwInvalidDJNZFirstOperandException(tokenizer);
 
   verifyIsOperatorTokenThenConsume(tokenizer, ",");
-  verifyIsIntegerTokenThenConsume(tokenizer, &relative, -128, 255);
-  opcode |= (uint8_t) relative;
-  checkExtraToken(tokenizer);
+  if(!muteOnNoLabel) {
+    token = getToken(tokenizer);
+    pushBackToken(tokenizer, token);
+    if(token->type == TOKEN_IDENTIFIER_TYPE) {
+      int index = getIndexNumber(token->str);
+      if(index < 0)
+        throwException(ERR_INVALID_LABEL, token,
+        "Label '%s' is not found in this program", token->str);
+      else {
+        relative = index - ((*codePtrPtr - codeMemory) + getInstructionBytes(opcode));
+        if(relative < -128 || relative > 255)
+          throwException(ERR_INTEGER_OUT_OF_RANGE, token,
+          "Label '%s' is out of the branching range", token->str);
+      }
+    }else
+      verifyIsIntegerTokenThenConsume(tokenizer, &relative, -128, 255);
+    opcode |= (uint8_t) relative;
+    checkExtraToken(tokenizer);
+  }
   len = writeCodeToCodeMemory(opcode, codePtr);
   (*codePtrPtr) += len;
   return len;
@@ -782,12 +868,7 @@ void checkExtraToken(Tokenizer *tokenizer) {
 
 int writeCodeToCodeMemory(int opcode, uint8_t *codePtr) {
   int bytes;
-  if(opcode <= 0xFF)
-    bytes = 1;
-  else if(opcode <= 0xFFFF)
-    bytes = 2;
-  else if(opcode <= 0xFFFFFF)
-    bytes = 3;
+  bytes = getInstructionBytes(opcode);
 
   int pos = bytes;
 
@@ -805,4 +886,13 @@ int writeCodeToCodeMemory(int opcode, uint8_t *codePtr) {
 void throwInvalidOperandException(Token *token) {
    throwException(ERR_INVALID_OPERAND, token,
    "Did not expect %s as an operand here", token->str);
+}
+
+int getInstructionBytes(int opcode) {
+  if(opcode <= 0xFF)
+    return 1;
+  else if(opcode <= 0xFFFF)
+    return 2;
+  else if(opcode <= 0xFFFFFF)
+    return 3;
 }

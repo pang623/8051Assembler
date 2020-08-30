@@ -38,4 +38,7 @@
 #define ERR_REG_OUT_OF_RANGE        67
 #define ERR_INDIRECT_OUT_OF_RANGE   68
 
+#define ERR_INVALID_LABEL           69
+#define ERR_DUPLICATE_LABEL         70
+
 #endif // Errors_H

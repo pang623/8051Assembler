@@ -10,6 +10,7 @@
 #include "Exception.h"
 #include "ExceptionThrowing.h"
 #include "saveCodeToBin.h"
+#include "DoubleLinkedList.h"
 
 void setUp(void)
 {
@@ -20,6 +21,7 @@ void tearDown(void)
 }
 
 CEXCEPTION_T e;
+
 /*
 extern uint8_t codeMemory[];
 extern FILE *fileHandler;
@@ -31,13 +33,31 @@ void test_assembleInFileAndWriteToOutFile_given_asm_testCode_as_input_file_expec
   assembleInFileAndWriteToOutFile(inFile, outFile);
 }
 
+
+void test_recordLabel() {
+  int index;
+  Token *token;
+  Tokenizer* tokenizer;
+  tokenizer = createTokenizer("HERE");
+  listPtr = doubleLinkedListCreateList();
+  recordLabel("SKIP", 1, 2);
+  token = getToken(tokenizer);
+  recordLabel(token->str, 4, 8);
+  recordLabel("END", 3, 6);
+  LabelInfo *info = listPtr->head->data;
+  TEST_ASSERT_EQUAL_STRING("END", info->name);
+  
+  index = getIndexNumber("HI");
+  TEST_ASSERT_EQUAL(-1, index);
+}
+*/
 void test_assembleInFileAndWriteToOutFile_given_test_as_input_file_expect_opcode_written_to_bin_file() {
   char *inFile = "./test/data/test.txt";
   char *outFile = "./test/data/test.bin";
 
   assembleInFileAndWriteToOutFile(inFile, outFile);
 }
-
+/*
 void test_assembleFile_given_filename_expect_instructions_in_file_are_read_and_written_into_code_memory() {
   int totalBytes;
   char *filename = "./test/data/asm_testCode.txt";
