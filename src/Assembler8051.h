@@ -1,8 +1,15 @@
 #ifndef ASSEMBLER8051_H
 #define ASSEMBLER8051_H
 
+#include "Exception.h"
+#include "ExceptionThrowing.h"
+#include "saveCodeToBin.h"
+#include "Error.h"
+#include "Flags.h"
+#include "Token.h"
 #include "Tokenizer.h"
 #include "DoubleLinkedList.h"
+#include "LabelInfo.h"
 
 #define     getCurrentAbsoluteAddr()    codePtr - codeMemory
 
@@ -11,7 +18,6 @@
 #define     INDIRECT_ADDRESSING         200
 
 typedef struct _8051Instructions _8051Instructions;
-typedef struct LabelInfo LabelInfo;
 typedef int (*funcPtr)(Tokenizer *tokenizer, _8051Instructions *instructionPtr, uint8_t **codePtrPtr);
 typedef char *(*InstructionLineReader)();
 
@@ -19,12 +25,6 @@ struct _8051Instructions {
   char *instruction;
   funcPtr function;
   int data[3];
-};
-
-struct LabelInfo {
-  char *name;
-  int indexNo;
-  int lineNo;
 };
 
 /*
@@ -81,7 +81,5 @@ void recordLabel(char *label, int index, int lineNo);
 int getIndexNumber(char *label);
 int computeRel(Tokenizer *tokenizer, int opcode, uint8_t *codePtr);
 int getInstructionBytes(int opcode);  //maximum size of 3 bytes
-LabelInfo *createLabelInfo(char *label, int index, int lineNo);
-void freeLabelInfo(void *info);
 
 #endif // ASSEMBLER8051_H

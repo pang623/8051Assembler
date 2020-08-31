@@ -2,15 +2,15 @@
 #include "Token.h"
 #include "Tokenizer.h"
 #include "Assembler8051.h"
-#include <stdio.h>
-#include <stdlib.h>
 #include "Error.h"
 #include "Flags.h"
-#include "CException.h"
 #include "Exception.h"
 #include "ExceptionThrowing.h"
 #include "saveCodeToBin.h"
 #include "DoubleLinkedList.h"
+#include "LabelInfo.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 void setUp(void)
 {
@@ -24,7 +24,6 @@ CEXCEPTION_T e;
 
 extern DoubleLinkedList *listPtr;
 extern int muteOnNoLabel;
-
 
 extern uint8_t codeMemory[];
 extern FILE *fileHandler;

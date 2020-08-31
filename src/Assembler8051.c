@@ -1,12 +1,4 @@
 #include "Assembler8051.h"
-#include "Exception.h"
-#include "ExceptionThrowing.h"
-#include "saveCodeToBin.h"
-#include "Error.h"
-#include "Flags.h"
-#include "Token.h"
-#include "Tokenizer.h"
-#include "DoubleLinkedList.h"
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
@@ -167,34 +159,22 @@ int assembleInstruction(Tokenizer *tokenizer, uint8_t **codePtrPtr) {
   return len;
 }
 
-LabelInfo *createLabelInfo(char *label, int index, int lineNo) {
-  LabelInfo *infoPtr = malloc(sizeof(LabelInfo));
-  infoPtr->name      = label;
-  infoPtr->indexNo   = index;
-  infoPtr->lineNo    = lineNo;
-  return infoPtr;
-}
-
-void freeLabelInfo(void *info) {
-  if((LabelInfo *)info)
-    free((LabelInfo *)info);
-}
-
 void recordLabel(char *label, int index, int lineNo) {
-  LabelInfo *info = createLabelInfo(label, index, lineNo);
-  LabelInfo *infoPtr;
-  ListItem *itemPtr = doubleLinkedListCreateListItem(info);
+  LabelInfo info = {label, index, lineNo};
+  LabelInfo *infoPtr = createLabelInfo(&info);
+  LabelInfo *nextInfoPtr;
+  ListItem *itemPtr = doubleLinkedListCreateListItem(infoPtr);
   ListItem *nextItem = listPtr->head;
   if(nextItem == NULL)
     doubleLinkedListAddItemToHead(listPtr, itemPtr);
   else {
     while(nextItem) {
-      infoPtr = nextItem->data;
-      if(stricmp(label, infoPtr->name))
+      nextInfoPtr = nextItem->data;
+      if(stricmp(label, nextInfoPtr->name))
         nextItem = nextItem->next;
       else
         throwException(ERR_DUPLICATE_LABEL, NULL,
-        "Label '%s' appeared before at line %d", label, infoPtr->lineNo);
+        "Label '%s' appeared before at line %d", label, nextInfoPtr->lineNo);
     }
     doubleLinkedListAddItemToHead(listPtr, itemPtr);
   }
