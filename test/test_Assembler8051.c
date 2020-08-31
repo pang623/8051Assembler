@@ -22,27 +22,13 @@ void tearDown(void)
 
 CEXCEPTION_T e;
 
-/*
+extern DoubleLinkedList *listPtr;
+extern int muteOnNoLabel;
+
+
 extern uint8_t codeMemory[];
 extern FILE *fileHandler;
 
-void test_recordLabel() {
-  int index;
-  Token *token;
-  Tokenizer* tokenizer;
-  tokenizer = createTokenizer("HERE");
-  listPtr = doubleLinkedListCreateList();
-  recordLabel("SKIP", 1, 2);
-  token = getToken(tokenizer);
-  recordLabel(token->str, 4, 8);
-  recordLabel("END", 3, 6);
-  LabelInfo *info = listPtr->head->data;
-  TEST_ASSERT_EQUAL_STRING("END", info->name);
-  
-  index = getIndexNumber("HI");
-  TEST_ASSERT_EQUAL(-1, index);
-}
-*/
 void test_assembleInFileAndWriteToOutFile_given_asm_testCode_as_input_file_expect_opcode_written_to_bin_file() {
   char *inFile = "./test/data/asm_testCode.txt";
   char *outFile = "./test/data/asm_testCode.bin";
@@ -213,6 +199,141 @@ void test_getNextInstructionLine_expect_next_instruction_line_is_returned_everyt
   fclose(fileHandler);
 }
 */
+void test_getInstructionBytes_given_one_byte_opcode_expect_size_is_one_byte() {
+  int bytes;
+  Try{
+    bytes = getInstructionBytes(0x6A);
+    TEST_ASSERT_EQUAL(1, bytes);
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+}
+
+void test_getInstructionBytes_given_two_byte_opcode_expect_size_is_two_byte() {
+  int bytes;
+  Try{
+    bytes = getInstructionBytes(0x6AAB);
+    TEST_ASSERT_EQUAL(2, bytes);
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+}
+
+void test_getInstructionBytes_given_three_byte_opcode_expect_size_is_three_byte() {
+  int bytes;
+  Try{
+    bytes = getInstructionBytes(0x6A12BD);
+    TEST_ASSERT_EQUAL(3, bytes);
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+}
+
+void test_recordLabel_given_labelinfo_expect_it_is_stored_into_list_correctly() {
+  LabelInfo *infoPtr;
+  listPtr = doubleLinkedListCreateList();
+  recordLabel("SKIP", 1, 2);
+  
+  infoPtr = listPtr->head->data;
+  TEST_ASSERT_EQUAL_STRING("SKIP", infoPtr->name);
+  TEST_ASSERT_EQUAL(1, infoPtr->indexNo);
+  TEST_ASSERT_EQUAL(2, infoPtr->lineNo);
+  TEST_ASSERT_EQUAL(1, listPtr->count);
+  
+  recordLabel("HERE", 4, 9);
+  
+  infoPtr = listPtr->head->data;
+  TEST_ASSERT_EQUAL_STRING("HERE", infoPtr->name);
+  TEST_ASSERT_EQUAL(4, infoPtr->indexNo);
+  TEST_ASSERT_EQUAL(9, infoPtr->lineNo);
+  TEST_ASSERT_EQUAL(2, listPtr->count);
+  
+  TEST_ASSERT_EQUAL_PTR(NULL, listPtr->head->prev);
+  TEST_ASSERT_EQUAL_PTR(NULL, listPtr->tail->next);
+  
+  doubleLinkedListFreeList(listPtr, freeLabelInfo);
+}
+
+void test_recordLabel_given_duplicate_label_expect_ERR_DUPLICATE_LABEL_is_thrown() {
+  listPtr = doubleLinkedListCreateList();
+  
+  Try{
+    recordLabel("SKIP", 1, 2);
+    recordLabel("HERE", 4, 9);
+    recordLabel("SKIP", 3, 13);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_DUPLICATE_LABEL, e->errorCode);
+  }
+  doubleLinkedListFreeList(listPtr, freeLabelInfo);
+}
+
+void test_getIndexNumber_given_label_and_label_exists_in_list_expect_index_of_the_label_is_returned() {
+  int index;
+  listPtr = doubleLinkedListCreateList();
+  LabelInfo info1 = {"NOW", 3, 4};
+  LabelInfo info2 = {"END", 5, 6};
+  ListItem item1 = {NULL, NULL, &info1};
+  ListItem item2 = {NULL, NULL, &info2};
+  doubleLinkedListAddItemToHead(listPtr, &item1);
+  doubleLinkedListAddItemToHead(listPtr, &item2);
+  index = getIndexNumber("NOW");
+  
+  TEST_ASSERT_EQUAL(3, index);
+  free(listPtr);
+}
+
+void test_getIndexNumber_given_label_and_but_label_not_exists_in_list_expect_MINUSone_is_returned() {
+  int index;
+  listPtr = doubleLinkedListCreateList();
+  LabelInfo info1 = {"NOW", 1, 2};
+  LabelInfo info2 = {"END", 5, 6};
+  ListItem item1 = {NULL, NULL, &info1};
+  ListItem item2 = {NULL, NULL, &info2};
+  doubleLinkedListAddItemToHead(listPtr, &item1);
+  doubleLinkedListAddItemToHead(listPtr, &item2);
+  index = getIndexNumber("SKIP");
+  
+  TEST_ASSERT_EQUAL(-1, index);
+  free(listPtr);
+}
+
+void test_getIndexNumber_given_label_and_but_empty_list_expect_MINUSone_is_returned() {
+  int index;
+  listPtr = doubleLinkedListCreateList();
+  index = getIndexNumber("THERE");
+  
+  TEST_ASSERT_EQUAL(-1, index);
+  free(listPtr);
+}
+
+void test_computeRel_given_token_opcode_and_codePtr_address_expect_relative_is_computed_and_returned() {
+  int relative;
+  Tokenizer *tokenizer;
+  uint8_t *codePtr = codeMemory + 10;
+  //Second pass
+  muteOnNoLabel = 0;
+  
+  //Set up linked list
+  listPtr = doubleLinkedListCreateList();
+  LabelInfo info1 = {"NOW", 1, 2};
+  LabelInfo info2 = {"END", 5, 6};
+  ListItem item1 = {NULL, NULL, &info1};
+  ListItem item2 = {NULL, NULL, &info2};
+  doubleLinkedListAddItemToHead(listPtr, &item1);
+  doubleLinkedListAddItemToHead(listPtr, &item2);
+  
+  tokenizer = createTokenizer("NOW");
+  relative = computeRel(tokenizer, 0xD23400, codePtr);
+  
+  TEST_ASSERT_EQUAL(-12, relative);
+  free(listPtr);
+}
+
 void test_writeCodeToCodeMemory_given_opcode_0x7B_expect_opcode_stored_in_code_memory_and_return_the_size() {
   int len;
   uint8_t codeMemory[65536];
@@ -3168,7 +3289,7 @@ void test_assembleInstruction_given_LJMP_addr16_expect_opcode_0x02ABCD() {
   }
   freeTokenizer(tokenizer);
 }
-
+/*
 void test_assembleInstruction_given_jb_bit_rel_expect_opcode_0x20A0F0() {
   int len;
   uint8_t codeMemory[65536];
@@ -3228,7 +3349,7 @@ void test_assembleInstruction_given_jbc_bit_rel_expect_opcode_0x10EECE() {
   }
   freeTokenizer(tokenizer);
 }
-
+*/
 void test_assembleInstruction_given_ret_expect_opcode_0x22_written_in_code_memory() {
   int len;
   uint8_t codeMemory[65536];

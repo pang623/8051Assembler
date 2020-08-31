@@ -79,7 +79,8 @@ void throwInvalidOperandException(Token *token);
 int writeCodeToCodeMemory(int opcode, uint8_t *codePtr);
 void recordLabel(char *label, int index, int lineNo);
 int getIndexNumber(char *label);
-int getInstructionBytes(int opcode);
+int computeRel(Tokenizer *tokenizer, int opcode, uint8_t *codePtr);
+int getInstructionBytes(int opcode);  //maximum size of 3 bytes
 LabelInfo *createLabelInfo(char *label, int index, int lineNo);
 void freeLabelInfo(void *info);
 

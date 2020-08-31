@@ -40,5 +40,6 @@
 
 #define ERR_INVALID_LABEL           69
 #define ERR_DUPLICATE_LABEL         70
+#define ERR_ILLEGAL_LABEL           71
 
 #endif // Errors_H

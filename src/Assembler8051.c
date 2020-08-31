@@ -124,7 +124,6 @@ char *getNextInstructionLine() {
 }
 
 int assembleInstruction(Tokenizer *tokenizer, uint8_t **codePtrPtr) {
-  LabelInfo *infoPTR;
   Token* token;
   int opcode, len;
   int i = 0;
@@ -149,7 +148,7 @@ int assembleInstruction(Tokenizer *tokenizer, uint8_t **codePtrPtr) {
       i++;
   }
   if(isOperatorTokenThenConsume(tokenizer, ":")) {
-    throwException(ERR_INVALID_LABEL, token,
+    throwException(ERR_ILLEGAL_LABEL, token,
     "Instruction mnemonic '%s' cannot be used as a label", token->str);
   }else {
     instructionPtr = &instructionsTable[i];
@@ -170,9 +169,9 @@ int assembleInstruction(Tokenizer *tokenizer, uint8_t **codePtrPtr) {
 
 LabelInfo *createLabelInfo(char *label, int index, int lineNo) {
   LabelInfo *infoPtr = malloc(sizeof(LabelInfo));
-  infoPtr->name = label;
-  infoPtr->indexNo = index;
-  infoPtr->lineNo = lineNo;
+  infoPtr->name      = label;
+  infoPtr->indexNo   = index;
+  infoPtr->lineNo    = lineNo;
   return infoPtr;
 }
 
@@ -182,13 +181,12 @@ void freeLabelInfo(void *info) {
 }
 
 void recordLabel(char *label, int index, int lineNo) {
-  int count;
   LabelInfo *info = createLabelInfo(label, index, lineNo);
   LabelInfo *infoPtr;
   ListItem *itemPtr = doubleLinkedListCreateListItem(info);
   ListItem *nextItem = listPtr->head;
   if(nextItem == NULL)
-    count = doubleLinkedListAddItemToHead(listPtr, itemPtr);
+    doubleLinkedListAddItemToHead(listPtr, itemPtr);
   else {
     while(nextItem) {
       infoPtr = nextItem->data;
@@ -198,7 +196,7 @@ void recordLabel(char *label, int index, int lineNo) {
         throwException(ERR_DUPLICATE_LABEL, NULL,
         "Label '%s' appeared before at line %d", label, infoPtr->lineNo);
     }
-    count = doubleLinkedListAddItemToHead(listPtr, itemPtr);
+    doubleLinkedListAddItemToHead(listPtr, itemPtr);
   }
 }
 
@@ -219,10 +217,37 @@ int getIndexNumber(char *label) {
   }
 }
 
+int computeRel(Tokenizer *tokenizer, int opcode, uint8_t *codePtr) {
+  Token *token;
+  int relative = 0, index = 0;
+  if(!muteOnNoLabel) {
+    token = getToken(tokenizer);
+    pushBackToken(tokenizer, token);
+    if(token->type == TOKEN_IDENTIFIER_TYPE) {
+      token = getToken(tokenizer);
+      index = getIndexNumber(token->str);
+      if(index < 0)
+        throwException(ERR_INVALID_LABEL, token,
+        "Label '%s' is not found in this program", token->str);
+      else {
+        relative = index - (getCurrentAbsoluteAddr() + getInstructionBytes(opcode));
+        if(relative < -128 || relative > 255)
+          throwException(ERR_INTEGER_OUT_OF_RANGE, token,
+          "Label '%s' is out of the branching range", token->str);
+      }
+    }else if(isIntegerTokenThenConsume(tokenizer, &relative, -128, 255))
+      relative = relative;
+    else
+      throwException(ERR_INVALID_OPERAND, token,
+      "Expecting a label or integer, but received '%s' instead", token->str);
+    checkExtraToken(tokenizer);
+  }
+  return relative;
+}
+
 int assembleDJNZInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr) {
   int opcode, len, regNum = 0, relative = 0, direct = 0;
   uint8_t *codePtr = *codePtrPtr;
-  Token *token;
 
   if(isRegisterConsumeAndGetItsNumber(tokenizer, REGISTER_ADDRESSING, &regNum))
     opcode = (0xD8 + regNum) << 8;
@@ -232,26 +257,8 @@ int assembleDJNZInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8
     throwInvalidDJNZFirstOperandException(tokenizer);
 
   verifyIsOperatorTokenThenConsume(tokenizer, ",");
-  if(!muteOnNoLabel) {
-    token = getToken(tokenizer);
-    pushBackToken(tokenizer, token);
-    if(token->type == TOKEN_IDENTIFIER_TYPE) {
-      token = getToken(tokenizer);
-      int index = getIndexNumber(token->str);
-      if(index < 0)
-        throwException(ERR_INVALID_LABEL, token,
-        "Label '%s' is not found in this program", token->str);
-      else {
-        relative = index - ((*codePtrPtr - codeMemory) + getInstructionBytes(opcode));
-        if(relative < -128 || relative > 255)
-          throwException(ERR_INTEGER_OUT_OF_RANGE, token,
-          "Label '%s' is out of the branching range", token->str);
-      }
-    }else
-      verifyIsIntegerTokenThenConsume(tokenizer, &relative, -128, 255);
-    opcode |= (uint8_t) relative;
-    checkExtraToken(tokenizer);
-  }
+  relative = computeRel(tokenizer, opcode, codePtr);
+  opcode |= (uint8_t) relative;
   len = writeCodeToCodeMemory(opcode, codePtr);
   (*codePtrPtr) += len;
   return len;
@@ -281,9 +288,8 @@ int assembleCJNEInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8
     throwInvalidCJNEFirstOperandException(tokenizer);
 
   verifyIsOperatorTokenThenConsume(tokenizer, ",");
-  verifyIsIntegerTokenThenConsume(tokenizer, &relative, -128, 255);
-  opcode |= ((uint8_t) relative);
-  checkExtraToken(tokenizer);
+  relative = computeRel(tokenizer, opcode, codePtr);
+  opcode |= (uint8_t) relative;
   len = writeCodeToCodeMemory(opcode, codePtr);
   (*codePtrPtr) += len;
   return len;
@@ -295,9 +301,9 @@ int assembleBitWithRel(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **
 
   verifyIsIntegerTokenThenConsume(tokenizer, &bitAddr, 0, 255);
   verifyIsOperatorTokenThenConsume(tokenizer, ",");
-  verifyIsIntegerTokenThenConsume(tokenizer, &relative, -128, 255);
-  opcode = (info->data[0] << 16) | ((uint8_t) bitAddr << 8) | (uint8_t) relative;
-  checkExtraToken(tokenizer);
+  opcode = (info->data[0] << 16) | ((uint8_t) bitAddr << 8);
+  relative = computeRel(tokenizer, opcode, codePtr);
+  opcode |= (uint8_t) relative;
   len = writeCodeToCodeMemory(opcode, codePtr);
   (*codePtrPtr) += len;
   return len;
