@@ -1,5 +1,4 @@
 MOV a, r1
 DA A
-HERE: reti
-djnz r1, HERE
-HERE: subb a, @r0
+ok: reti
+djnz r1, ok

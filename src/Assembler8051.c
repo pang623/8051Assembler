@@ -119,27 +119,29 @@ int assembleInstruction(Tokenizer *tokenizer, uint8_t **codePtrPtr) {
   Token* token;
   int opcode, len;
   int i = 0;
+  int iteration = 1;
   _8051Instructions *instructionPtr;
 
   token = getToken(tokenizer);
   if(token->type != TOKEN_IDENTIFIER_TYPE)
     throwException(ERR_EXPECTING_IDENTIFIER, token,
-    "Expecting an identifier, received %s instead", token->str);
+    "Expecting an identifier here, but received '%s' instead", token->str);
 
   while(stricmp(token->str, instructionsTable[i].instruction)) {
     if(instructionsTable[i].instruction == NULL) {
-      if(isOperatorTokenThenConsume(tokenizer, ":")) {
+      if(iteration == 1 && isOperatorTokenThenConsume(tokenizer, ":")) {
         if(muteOnNoLabel)
           recordLabel(token->str, (*codePtrPtr) - codeMemory, lineNumber);
         token = getToken(tokenizer);
         i = 0;
+        iteration++;
       }else
         throwException(ERR_INVALID_INSTRUCTION, token,
         "An invalid instruction '%s' is inputted", token->str);
     }else
       i++;
   }
-  if(isOperatorTokenThenConsume(tokenizer, ":")) {
+  if(iteration == 1 && isOperatorTokenThenConsume(tokenizer, ":")) {
     throwException(ERR_ILLEGAL_LABEL, token,
     "Instruction mnemonic '%s' cannot be used as a label", token->str);
   }else {
@@ -152,6 +154,7 @@ int assembleInstruction(Tokenizer *tokenizer, uint8_t **codePtrPtr) {
       checkExtraToken(tokenizer);
       len = writeCodeToCodeMemory(instructionPtr->data[0], codePtr);
       (*codePtrPtr) += len;
+      freeToken(token);
       return len;
     }
   }

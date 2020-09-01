@@ -10,6 +10,7 @@
 #include "DoubleLinkedList.h"
 #include "LabelInfo.h"
 #include "MemAlloc.h"
+#include "CustomTestAssertion.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -29,6 +30,19 @@ extern int muteOnNoLabel;
 extern uint8_t codeMemory[];
 extern FILE *fileHandler;
 
+void test_assembleInFileAndWriteToOutFile_given_test_as_input_file_expect_opcode_written_to_bin_file() {
+  char *inFile = "./test/data/test.txt";
+  char *outFile = "./test/data/test.bin";
+
+  Try{
+    assembleInFileAndWriteToOutFile(inFile, outFile);
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  TEST_ASSERT_EQUAL_BIN_FILE(codeMemory, outFile, 5);
+}
+
 void test_assembleInFileAndWriteToOutFile_given_asm_testCode_as_input_file_expect_opcode_written_to_bin_file() {
   char *inFile = "./test/data/asm_testCode.txt";
   char *outFile = "./test/data/asm_testCode.bin";
@@ -38,19 +52,6 @@ void test_assembleInFileAndWriteToOutFile_given_asm_testCode_as_input_file_expec
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
-  }
-}
-
-void test_assembleInFileAndWriteToOutFile_given_test_as_input_file_expect_opcode_written_to_bin_file() {
-  char *inFile = "./test/data/test.txt";
-  char *outFile = "./test/data/test.bin";
-  
-  Try{
-    assembleInFileAndWriteToOutFile(inFile, outFile);
-    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
-  } Catch(e){
-    dumpTokenErrorMessage(e, 1);
-    TEST_ASSERT_EQUAL(ERR_DUPLICATE_LABEL, e->errorCode);
   }
 }
 

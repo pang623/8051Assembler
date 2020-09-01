@@ -17,7 +17,7 @@ char *createMessage(char *message, ...) {
 void testAssertEqualBinFile(uint8_t *expectedBinArr, char *filename, int length, int lineNum) {
   FILE *fptr;
   char *msg;
-  uint8_t actualBinArr[65536];
+  uint8_t actualBinArr[length];
   
   if((fptr = fopen(filename, "rb")) == NULL) {
     printf("Error opening file!\n");
