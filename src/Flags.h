@@ -25,9 +25,8 @@
 #define     OPERAND_DIR_STACK     (1 << 14)
 #define     OPERAND_C             (1 << 15)
 #define     OPERAND_DPTR          (1 << 16)
-#define     OPERAND_REL           (1 << 17)
-#define     OPERAND_DIR16         (1 << 18)
-#define     OPERAND_DIR11         (1 << 19)
-#define     OPERAND_BIT           (1 << 20)
+#define     OPERAND_DIR16         (1 << 17)
+#define     OPERAND_DIR11         (1 << 18)
+#define     OPERAND_BIT           (1 << 19)
 
 #endif // FLAGS_H

@@ -237,30 +237,32 @@ void test_recordLabel_given_labelinfo_expect_it_is_stored_into_list_correctly() 
   LabelInfo *infoPtr;
   listPtr = doubleLinkedListCreateList();
   recordLabel("SKIP", 1, 2);
-  
+
   infoPtr = listPtr->head->data;
+  TEST_ASSERT_NOT_NULL(infoPtr);
   TEST_ASSERT_EQUAL_STRING("SKIP", infoPtr->name);
   TEST_ASSERT_EQUAL(1, infoPtr->indexNo);
   TEST_ASSERT_EQUAL(2, infoPtr->lineNo);
   TEST_ASSERT_EQUAL(1, listPtr->count);
-  
+
   recordLabel("HERE", 4, 9);
-  
+
   infoPtr = listPtr->head->data;
+  TEST_ASSERT_NOT_NULL(infoPtr);
   TEST_ASSERT_EQUAL_STRING("HERE", infoPtr->name);
   TEST_ASSERT_EQUAL(4, infoPtr->indexNo);
   TEST_ASSERT_EQUAL(9, infoPtr->lineNo);
   TEST_ASSERT_EQUAL(2, listPtr->count);
-  
+
   TEST_ASSERT_EQUAL_PTR(NULL, listPtr->head->prev);
   TEST_ASSERT_EQUAL_PTR(NULL, listPtr->tail->next);
-  
+
   doubleLinkedListFreeList(listPtr, freeLabelInfo);
 }
 
 void test_recordLabel_given_duplicate_label_expect_ERR_DUPLICATE_LABEL_is_thrown() {
   listPtr = doubleLinkedListCreateList();
-  
+
   Try{
     recordLabel("SKIP", 1, 2);
     recordLabel("HERE", 4, 9);
@@ -283,7 +285,7 @@ void test_getIndexNumber_given_label_and_label_exists_in_list_expect_index_of_th
   doubleLinkedListAddItemToHead(listPtr, &item1);
   doubleLinkedListAddItemToHead(listPtr, &item2);
   index = getIndexNumber("NOW");
-  
+
   TEST_ASSERT_EQUAL(3, index);
   free(listPtr);
 }
@@ -298,7 +300,7 @@ void test_getIndexNumber_given_label_and_but_label_not_exists_in_list_expect_MIN
   doubleLinkedListAddItemToHead(listPtr, &item1);
   doubleLinkedListAddItemToHead(listPtr, &item2);
   index = getIndexNumber("SKIP");
-  
+
   TEST_ASSERT_EQUAL(-1, index);
   free(listPtr);
 }
@@ -307,18 +309,18 @@ void test_getIndexNumber_given_label_and_but_empty_list_expect_MINUSone_is_retur
   int index;
   listPtr = doubleLinkedListCreateList();
   index = getIndexNumber("THERE");
-  
+
   TEST_ASSERT_EQUAL(-1, index);
   free(listPtr);
 }
 
-void test_computeRel_given_token_opcode_and_codePtr_address_expect_relative_is_computed_and_returned() {
+void test_computeRel_given_label_as_token_and_label_exists_expect_relative_is_computed_and_returned() {
   int relative;
   Tokenizer *tokenizer;
   uint8_t *codePtr = codeMemory + 10;
   //Second pass
   muteOnNoLabel = 0;
-  
+
   //Set up linked list
   listPtr = doubleLinkedListCreateList();
   LabelInfo info1 = {"NOW", 1, 2};
@@ -327,12 +329,124 @@ void test_computeRel_given_token_opcode_and_codePtr_address_expect_relative_is_c
   ListItem item2 = {NULL, NULL, &info2};
   doubleLinkedListAddItemToHead(listPtr, &item1);
   doubleLinkedListAddItemToHead(listPtr, &item2);
-  
+
+  //label "NOW" is read
   tokenizer = createTokenizer("NOW");
   relative = computeRel(tokenizer, 0xD23400, codePtr);
-  
+
   TEST_ASSERT_EQUAL(-12, relative);
   free(listPtr);
+}
+
+void test_computeRel_given_integer_as_token_expect_relative_is_computed_and_returned() {
+  int relative;
+  Tokenizer *tokenizer;
+  uint8_t *codePtr = codeMemory + 10;
+  //Second pass
+  muteOnNoLabel = 0;
+
+  tokenizer = createTokenizer("+100");
+  relative = computeRel(tokenizer, 0xD23400, codePtr);
+
+  TEST_ASSERT_EQUAL(100, relative);
+}
+
+void test_computeRel_given_non_existent_label_as_token_expect_ERR_UNKNOWN_LABEL_is_thrown() {
+  int relative;
+  Tokenizer *tokenizer;
+  uint8_t *codePtr = codeMemory + 10;
+  //Second pass
+  muteOnNoLabel = 0;
+
+  //Set up linked list
+  listPtr = doubleLinkedListCreateList();
+  LabelInfo info1 = {"NOW", 1, 2};
+  LabelInfo info2 = {"END", 5, 6};
+  ListItem item1 = {NULL, NULL, &info1};
+  ListItem item2 = {NULL, NULL, &info2};
+  doubleLinkedListAddItemToHead(listPtr, &item1);
+  doubleLinkedListAddItemToHead(listPtr, &item2);
+
+  Try{
+    tokenizer = createTokenizer("HERE");
+    relative = computeRel(tokenizer, 0xD200, codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_UNKNOWN_LABEL, e->errorCode);
+  }
+  free(listPtr);
+}
+
+void test_computeRel_given_label_as_token_but_out_of_branching_range_backwards_branch_expect_ERR_INTEGER_OUT_OF_RANGE_is_thrown() {
+  int relative;
+  Tokenizer *tokenizer;
+  uint8_t *codePtr = codeMemory + 150;
+  //Second pass
+  muteOnNoLabel = 0;
+
+  //Set up linked list
+  listPtr = doubleLinkedListCreateList();
+  LabelInfo info1 = {"NOW", 50, 100};
+  LabelInfo info2 = {"END", 23, 50};
+  ListItem item1 = {NULL, NULL, &info1};
+  ListItem item2 = {NULL, NULL, &info2};
+  doubleLinkedListAddItemToHead(listPtr, &item1);
+  doubleLinkedListAddItemToHead(listPtr, &item2);
+
+  Try{
+    tokenizer = createTokenizer("END");
+    relative = computeRel(tokenizer, 0xD200, codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_INTEGER_OUT_OF_RANGE, e->errorCode);
+  }
+  free(listPtr);
+}
+
+void test_computeRel_given_label_as_token_but_out_of_branching_range_forward_branch_expect_ERR_INTEGER_OUT_OF_RANGE_is_thrown() {
+  int relative;
+  Tokenizer *tokenizer;
+  uint8_t *codePtr = codeMemory + 20;
+  //Second pass
+  muteOnNoLabel = 0;
+
+  //Set up linked list
+  listPtr = doubleLinkedListCreateList();
+  LabelInfo info1 = {"NOW", 150, 200};
+  LabelInfo info2 = {"END", 23, 50};
+  ListItem item1 = {NULL, NULL, &info1};
+  ListItem item2 = {NULL, NULL, &info2};
+  doubleLinkedListAddItemToHead(listPtr, &item1);
+  doubleLinkedListAddItemToHead(listPtr, &item2);
+
+  Try{
+    tokenizer = createTokenizer("NOW");
+    relative = computeRel(tokenizer, 0xD200, codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_INTEGER_OUT_OF_RANGE, e->errorCode);
+  }
+  free(listPtr);
+}
+
+void test_computeRel_given_token_but_is_neither_label_nor_integer_expect_ERR_INVALID_OPERAND_is_thrown() {
+  int relative;
+  Tokenizer *tokenizer;
+  uint8_t *codePtr = codeMemory;
+  //Second pass
+  muteOnNoLabel = 0;
+
+  Try{
+    tokenizer = createTokenizer("@r1");
+    relative = computeRel(tokenizer, 0xD200, codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+  }
 }
 
 void test_writeCodeToCodeMemory_given_opcode_0x7B_expect_opcode_stored_in_code_memory_and_return_the_size() {

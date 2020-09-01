@@ -12,6 +12,11 @@ _8051Instructions instructionsTable[45] = {
   {"jbc" , assembleBitWithRel                          , {0x10, 0}},
   {"jb"  , assembleBitWithRel                          , {0x20, 0}},
   {"jnb" , assembleBitWithRel                          , {0x30, 0}},
+  {"jc"  , assembleInstructionWithOnlyRelativeOperand  , {0x40, 0}},
+  {"jnc" , assembleInstructionWithOnlyRelativeOperand  , {0x50, 0}},
+  {"jz"  , assembleInstructionWithOnlyRelativeOperand  , {0x60, 0}},
+  {"jnz" , assembleInstructionWithOnlyRelativeOperand  , {0x70, 0}},
+  {"sjmp", assembleInstructionWithOnlyRelativeOperand  , {0x80, 0}},
   {"div" , assembleSingleOperand                       , {0x80, OPERAND_AB}},
   {"mul" , assembleSingleOperand                       , {0xA0, OPERAND_AB}},
   {"swap", assembleSingleOperand                       , {0xC0, OPERAND_A}},
@@ -24,11 +29,6 @@ _8051Instructions instructionsTable[45] = {
   {"lcall",assembleSingleOperand                       , {0x10, OPERAND_DIR16}},
   {"ajmp", assembleSingleOperand                       , {0x01, OPERAND_DIR11}},
   {"acall",assembleSingleOperand                       , {0x11, OPERAND_DIR11}},
-  {"jc " , assembleSingleOperand                       , {0x40, OPERAND_REL}},
-  {"jnc" , assembleSingleOperand                       , {0x50, OPERAND_REL}},
-  {"jz"  , assembleSingleOperand                       , {0x60, OPERAND_REL}},
-  {"jnz" , assembleSingleOperand                       , {0x70, OPERAND_REL}},
-  {"sjmp", assembleSingleOperand                       , {0x80, OPERAND_REL}},
   {"setb", assembleSingleOperand                       , {0x90, OPERAND_C | OPERAND_BIT}},
   {"clr" , assembleSingleOperand                       , {0xE0, OPERAND_C | OPERAND_BIT | OPERAND_A}},
   {"cpl" , assembleSingleOperand                       , {0xF0, OPERAND_C | OPERAND_BIT | OPERAND_A}},
@@ -210,11 +210,11 @@ int computeRel(Tokenizer *tokenizer, int opcode, uint8_t *codePtr) {
       token = getToken(tokenizer);
       index = getIndexNumber(token->str);
       if(index < 0)
-        throwException(ERR_INVALID_LABEL, token,
+        throwException(ERR_UNKNOWN_LABEL, token,
         "Label '%s' is not found in this program", token->str);
       else {
         relative = index - (getCurrentAbsoluteAddr() + getInstructionBytes(opcode));
-        if(relative < -128 || relative > 255)
+        if(relative < -128 || relative > 127)
           throwException(ERR_INTEGER_OUT_OF_RANGE, token,
           "Label '%s' is out of the branching range", token->str);
       }
@@ -487,14 +487,24 @@ int assembleXRLinstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_
   return len;
 }
 
+int assembleInstructionWithOnlyRelativeOperand(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr) {
+  int opcode, len, relative = 0;
+  uint8_t *codePtr = *codePtrPtr;
+  
+  opcode = info->data[0] << 8;
+  relative = computeRel(tokenizer, opcode, codePtr);
+  opcode |= (uint8_t) relative;
+  len = writeCodeToCodeMemory(opcode, codePtr);
+  (*codePtrPtr) += len;
+  return len;
+}
+
 int assembleSingleOperand(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr) {
   Token *token;
   int opcode, len, min = 0, max = 255, regNum = 0, value = 0;
   uint8_t *codePtr = *codePtrPtr;
 
-  if(info->data[1] & OPERAND_REL)
-    min = -128;
-  else if(info->data[1] & OPERAND_DIR16)
+  if(info->data[1] & OPERAND_DIR16)
     max = 65535;
   else if(info->data[1] & OPERAND_DIR11)
     max = 2047;
@@ -524,7 +534,7 @@ int assembleSingleOperand(Tokenizer *tokenizer, _8051Instructions *info, uint8_t
     else
       throwInvalidOperandException(token);
   }else if(isIntegerTokenThenConsume(tokenizer, &value, min, max)) {
-    if(info->data[1] & OPERAND_DIR_STACK || info->data[1] & OPERAND_REL)
+    if(info->data[1] & OPERAND_DIR_STACK)
       opcode = (info->data[0] << 8) | ((uint8_t) value);
     else if(info->data[1] & OPERAND_DIR)
       opcode = ((info->data[0] | 0x05) << 8) | ((uint8_t) value);

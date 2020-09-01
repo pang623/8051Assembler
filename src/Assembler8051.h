@@ -59,6 +59,7 @@ int assembleInstructionWithOnlyAccAsFirstOperand(Tokenizer *tokenizer, _8051Inst
 int assembleLogicalInstructionWithoutXRL(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);
 int assembleXRLinstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);
 int assembleSingleOperand(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);
+int assembleInstructionWithOnlyRelativeOperand(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);
 int assembleAWithOperands(Tokenizer *tokenizer, int opcode, int flags);
 int assembleDirectWithOperands(Tokenizer *tokenizer, int opcode, int flags);
 int assembleCWithOperands(Tokenizer *tokenizer, int opcode, int flags);
