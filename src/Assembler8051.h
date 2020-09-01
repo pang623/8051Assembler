@@ -33,13 +33,11 @@ functions yet to be tested
   int assembleFile(char *filename);
   int assembleInstructions(InstructionLineReader lineReader);
   char *getNextInstructionLine();
-  
+
   int assembleDJNZInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);
   int assembleCJNEInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);
-  int assembleJMPInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);
-  int assembleBitWithRel(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);
-  
-  (tested partially, haven't test instructions with rel (LABEL) because not yet implement)
+
+  tested partially, haven't test instructions with direct(11bit, 16bit)
   int assembleSingleOperand(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);
 */
 
