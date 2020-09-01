@@ -10,7 +10,7 @@ void tearDown(void)
 {
 }
 
-void test_createLabelInfo() {
+void test_createLabelInfo_through_mocking_memAlloc() {
   LabelInfo info = {"END", 5, 6};
   LabelInfo info1 = {"SKIP", 1, 2};
   LabelInfo *infoPtr;
@@ -23,5 +23,18 @@ void test_createLabelInfo() {
   TEST_ASSERT_EQUAL(2, infoPtr->lineNo);
   
   memFree_Expect(infoPtr);
+  freeLabelInfo(infoPtr);
+}
+
+void test_freeLabelInfo_through_mocking_memAlloc() {
+  LabelInfo info = {"HERE", 5, 7};
+  LabelInfo *infoPtr = &info;
+  
+  memFree_Expect(infoPtr);
+  freeLabelInfo(infoPtr);
+}
+
+void test_freeLabelInfo_through_mocking_memAlloc_given_empty_info_expect_memFree_not_called() {
+  LabelInfo *infoPtr = NULL;
   freeLabelInfo(infoPtr);
 }

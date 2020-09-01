@@ -6,9 +6,10 @@
 #include "Flags.h"
 #include "Exception.h"
 #include "ExceptionThrowing.h"
-#include "saveCodeToBin.h"
+#include "SaveCodeToBin.h"
 #include "DoubleLinkedList.h"
 #include "LabelInfo.h"
+#include "MemAlloc.h"
 #include <stdio.h>
 #include <stdlib.h>
 

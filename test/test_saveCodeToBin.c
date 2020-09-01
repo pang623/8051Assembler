@@ -1,6 +1,6 @@
 #include "unity.h"
 #include "CustomTestAssertion.h"
-#include "saveCodeToBin.h"
+#include "SaveCodeToBin.h"
 
 void setUp(void)
 {

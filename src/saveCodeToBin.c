@@ -1,4 +1,4 @@
-#include "saveCodeToBin.h"
+#include "SaveCodeToBin.h"
 
 void saveCodeToBin(char *filename, uint8_t *codeMemory, int length) {
   FILE *fptr;
