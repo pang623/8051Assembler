@@ -11,13 +11,12 @@
 #include "DoubleLinkedList.h"
 #include "LabelInfo.h"
 
-#define     getCurrentAbsoluteAddr()    codePtr - codeMemory
+#define     getCurrentAbsoluteAddr()        (codePtr - codeMemory)
+#define     isIdentifierToken(token)        (token->type == TOKEN_IDENTIFIER_TYPE)
 
 //addressing mode
 #define     REGISTER_ADDRESSING         100
 #define     INDIRECT_ADDRESSING         200
-#define     RELATIVE_ADDRESSING         300
-#define     ABSOLUTE_ADDRESSING         400
 
 typedef struct _8051Instructions _8051Instructions;
 typedef int (*funcPtr)(Tokenizer *tokenizer, _8051Instructions *instructionPtr, uint8_t **codePtrPtr);
@@ -44,7 +43,7 @@ functions yet to be tested
 void assembleInFileAndWriteToOutFile(char *inFile, char *outFile);
 int assembleFile(char *filename);
 int assembleInstructions(InstructionLineReader lineReader);
-char *getNextInstructionLine();
+char *getNextInstructionLineInFile();
 int assembleInstruction(Tokenizer *tokenizer, uint8_t **codePtrPtr);
 int assembleMOVInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);
 int assembleMOVCInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);
@@ -78,7 +77,8 @@ void throwInvalidOperandException(Token *token);
 int writeCodeToCodeMemory(int opcode, uint8_t *codePtr);
 int getInstructionBytes(int opcode);
 void recordLabel(char *label, int index, int lineNo);
-int getIndexNumber(char *label);
-int getAbsoluteOrRelative(Tokenizer *tokenizer, int addrMode, int opcode, uint8_t *codePtr);
+int getLabelIndex(char *label);
+int getAbsoluteAddress(Tokenizer *tokenizer, int min, int max);
+int getRelativeAddress(Tokenizer *tokenizer, int baseAddr, int min, int max);
 
 #endif // ASSEMBLER8051_H

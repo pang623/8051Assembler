@@ -72,10 +72,10 @@ int assembleFile(char *filename) {
     lineNumber = 0;
     if((fileHandler = fopen(filename, "r")) == NULL) {
       printf("Error opening file!\n");
-      exit(1);
+      exit(-1);
     }
     muteOnNoLabel = !(pass - 1);
-    totalBytes = assembleInstructions(getNextInstructionLine);
+    totalBytes = assembleInstructions(getNextInstructionLineInFile);
     fclose(fileHandler);
   }
   doubleLinkedListFreeList(listPtr, freeLabelInfo);
@@ -98,12 +98,13 @@ int assembleInstructions(InstructionLineReader lineReader) {
     else {
       tokenizer = createTokenizer(line);
       totalLen += assembleInstruction(tokenizer, codePtrPtr);
+      freeTokenizer(tokenizer);
     }
   }
   return totalLen;
 }
 
-char *getNextInstructionLine() {
+char *getNextInstructionLineInFile() {
   char buffer[1024];
   char *line;
 
@@ -114,7 +115,12 @@ char *getNextInstructionLine() {
   }else
     return NULL;
 }
+/*
+char *getNextInstructionLineInString() {
 
+
+}
+*/
 int assembleInstruction(Tokenizer *tokenizer, uint8_t **codePtrPtr) {
   Token* token;
   int opcode, len;
@@ -183,7 +189,7 @@ void recordLabel(char *label, int index, int lineNo) {
   }
 }
 
-int getIndexNumber(char *label) {
+int getLabelIndex(char *label) {
   LabelInfo *infoPtr;
   ListItem *nextItem = listPtr->head;
   if(nextItem == NULL)
@@ -200,42 +206,34 @@ int getIndexNumber(char *label) {
   }
 }
 
-int getAbsoluteOrRelative(Tokenizer *tokenizer, int addrMode, int opcode, uint8_t *codePtr) {
-  Token *token;
-  int relative = 0, absolute = 0, address = 0, index = 0;
-  int min = 0, max = 65535;
+int getAbsoluteAddress(Tokenizer *tokenizer, int min, int max) {
+  return getRelativeAddress(tokenizer, 0, min, max);
+}
 
-  if(addrMode == RELATIVE_ADDRESSING) {
-    min = -128;
-    max = 255;
-  }
+int getRelativeAddress(Tokenizer *tokenizer, int baseAddr, int min, int max) {
+  Token *token;
+  int labelIndex, addr = 0;
 
   token = getToken(tokenizer);
-  pushBackToken(tokenizer, token);
-  if(token->type == TOKEN_IDENTIFIER_TYPE) {
-    token = getToken(tokenizer);
-    index = getIndexNumber(token->str);
-    if(index < 0)
+  if(isIdentifierToken(token)) {
+    if((labelIndex = getLabelIndex(token->str)) < 0)
       throwException(ERR_UNKNOWN_LABEL, token,
       "Label '%s' is not found in this program", token->str);
-    else {
-      switch(addrMode) {
-        case RELATIVE_ADDRESSING :
-          relative = index - (getCurrentAbsoluteAddr() + getInstructionBytes(opcode));
-          if(relative < -128 || relative > 127)
-            throwException(ERR_INTEGER_OUT_OF_RANGE, token,
-            "Label '%s' is out of the branching range", token->str);
-          return relative;
-        case ABSOLUTE_ADDRESSING :
-          absolute = index;
-          return absolute;
-      }
-    }
-  }else if(isIntegerTokenThenConsume(tokenizer, &address, min, max))
-    return address;
-  else
-    throwException(ERR_INVALID_OPERAND, token,
-    "Expecting a label or integer, but received '%s' instead", token->str);
+    else
+      addr = labelIndex - baseAddr;
+  }else {
+    pushBackToken(tokenizer, token);
+    if(isIntegerTokenThenConsume(tokenizer, &addr, min, max))
+      return addr;
+    else
+      throwException(ERR_INVALID_OPERAND, token,
+      "Expecting a label or integer, but received '%s' instead", token->str);
+  }
+  if(addr < min || addr > max)
+    throwException(ERR_INTEGER_OUT_OF_RANGE, token,
+    "Label '%s' is out of the branching range", token->str);
+  freeToken(token);
+  return addr;
 }
 
 int assembleDJNZInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr) {
@@ -251,7 +249,7 @@ int assembleDJNZInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8
 
   verifyIsOperatorTokenThenConsume(tokenizer, ",");
   if(!muteOnNoLabel) {
-    relative = getAbsoluteOrRelative(tokenizer, RELATIVE_ADDRESSING, opcode, codePtr);
+    relative = getRelativeAddress(tokenizer, getCurrentAbsoluteAddr() + getInstructionBytes(opcode), -128, 127);
     checkExtraToken(tokenizer);
   }
   opcode |= (uint8_t) relative;
@@ -285,7 +283,7 @@ int assembleCJNEInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8
 
   verifyIsOperatorTokenThenConsume(tokenizer, ",");
   if(!muteOnNoLabel) {
-    relative = getAbsoluteOrRelative(tokenizer, RELATIVE_ADDRESSING, opcode, codePtr);
+    relative = getRelativeAddress(tokenizer, getCurrentAbsoluteAddr() + getInstructionBytes(opcode), -128, 127);
     checkExtraToken(tokenizer);
   }
   opcode |= (uint8_t) relative;
@@ -302,7 +300,7 @@ int assembleBitWithRel(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **
   verifyIsOperatorTokenThenConsume(tokenizer, ",");
   opcode = (info->data[0] << 16) | ((uint8_t) bitAddr << 8);
   if(!muteOnNoLabel) {
-    relative = getAbsoluteOrRelative(tokenizer, RELATIVE_ADDRESSING, opcode, codePtr);
+    relative = getRelativeAddress(tokenizer, getCurrentAbsoluteAddr() + getInstructionBytes(opcode), -128, 127);
     checkExtraToken(tokenizer);
   }
   opcode |= (uint8_t) relative;
@@ -513,24 +511,21 @@ int assembleSingleOperandWithLabel(Tokenizer *tokenizer, _8051Instructions *info
   if(info->data[1] & OPERAND_REL) {
     opcode = info->data[0] << 8;
     if(!muteOnNoLabel) {
-      relative = getAbsoluteOrRelative(tokenizer, RELATIVE_ADDRESSING, opcode, codePtr);
+      relative = getRelativeAddress(tokenizer, getCurrentAbsoluteAddr() + getInstructionBytes(opcode), -128, 127);
       checkExtraToken(tokenizer);
     }
     opcode |= (uint8_t) relative;
   }else if(info->data[1] & OPERAND_DIR11) {
     opcode = info->data[0] << 8;
     if(!muteOnNoLabel) {
-      absolute = getAbsoluteOrRelative(tokenizer, ABSOLUTE_ADDRESSING, opcode, codePtr);
-      if(absolute > 0x7FF)
-        throwException(ERR_INTEGER_OUT_OF_RANGE, NULL,
-        "Absolute branch instructions can only branch within 2K range of code memory, but attempted to branch to 0x%x", absolute);
+      absolute = getAbsoluteAddress(tokenizer, 0, 2047);
       checkExtraToken(tokenizer);
     }
     opcode = ((((absolute << 4) & 0xF000) << 1) | opcode) | (absolute & 0xFF);
   }else if(info->data[1] & OPERAND_DIR16) {
     opcode = (info->data[0] | 0x02) << 16;
     if(!muteOnNoLabel) {
-      absolute = getAbsoluteOrRelative(tokenizer, ABSOLUTE_ADDRESSING, opcode, codePtr);
+      absolute = getAbsoluteAddress(tokenizer, 0, 65535);
       checkExtraToken(tokenizer);
     }
     opcode = opcode | absolute;
