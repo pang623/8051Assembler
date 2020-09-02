@@ -68,16 +68,22 @@ void assembleInFileAndWriteToOutFile(char *inFile, char *outFile) {
 int assembleFile(char *filename) {
   int totalBytes;
   listPtr = doubleLinkedListCreateList();
-  for(int pass = 1; pass < 3; pass++) {
-    lineNumber = 0;
-    if((fileHandler = fopen(filename, "r")) == NULL) {
-      printf("Error opening file!\n");
-      exit(-1);
-    }
-    muteOnNoLabel = !(pass - 1);
-    totalBytes = assembleInstructions(getNextInstructionLineInFile);
-    fclose(fileHandler);
+  if((fileHandler = fopen(filename, "r")) == NULL) {
+    printf("Error opening file!\n");
+    exit(-1);
   }
+
+  lineNumber = 0;
+  muteOnNoLabel = 1;
+  totalBytes = assembleInstructions(getNextInstructionLineInFile);
+
+  rewind(fileHandler);
+
+  lineNumber = 0;
+  muteOnNoLabel = 0;
+  totalBytes = assembleInstructions(getNextInstructionLineInFile);
+
+  fclose(fileHandler);
   doubleLinkedListFreeList(listPtr, freeLabelInfo);
   return totalBytes;
 }

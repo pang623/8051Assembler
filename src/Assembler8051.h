@@ -37,7 +37,6 @@ functions yet to be tested
 
   int assembleDJNZInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);
   int assembleCJNEInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);
-  int assembleSingleOperandWithLabel(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);
 */
 
 void assembleInFileAndWriteToOutFile(char *inFile, char *outFile);
