@@ -59,6 +59,7 @@ int lineNumber = 0;
 uint8_t codeMemory[65536];
 FILE *fileHandler;
 DoubleLinkedList *listPtr;
+char *lines[];
 
 void assembleInFileAndWriteToOutFile(char *inFile, char *outFile) {
   int totalBytes = assembleFile(inFile);
@@ -99,11 +100,13 @@ int assembleInstructions(InstructionLineReader lineReader) {
     codeMemory[i] = 0;
 
   while((line = lineReader()) != NULL) {
-    if(isspace(*line))
+    if(isspace(*line)){
+      free(line);
       continue;
-    else {
+    }else {
       tokenizer = createTokenizer(line);
       totalLen += assembleInstruction(tokenizer, codePtrPtr);
+      free(line);
       freeTokenizer(tokenizer);
     }
   }
@@ -121,12 +124,19 @@ char *getNextInstructionLineInFile() {
   }else
     return NULL;
 }
-/*
+
 char *getNextInstructionLineInString() {
-
-
+  char *line;
+  static int i = 0;
+  
+  if(lines[i] != NULL)
+    return line = lines[i++];
+  else {
+    i = 0;
+    return NULL;
+  }
 }
-*/
+
 int assembleInstruction(Tokenizer *tokenizer, uint8_t **codePtrPtr) {
   Token* token;
   int opcode, len;

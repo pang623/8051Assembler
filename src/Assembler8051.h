@@ -35,7 +35,6 @@ functions yet to be tested
   int assembleInstructions(InstructionLineReader lineReader);
   char *getNextInstructionLine();
 
-  int assembleDJNZInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);
   int assembleCJNEInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);
 */
 
@@ -43,6 +42,7 @@ void assembleInFileAndWriteToOutFile(char *inFile, char *outFile);
 int assembleFile(char *filename);
 int assembleInstructions(InstructionLineReader lineReader);
 char *getNextInstructionLineInFile();
+char *getNextInstructionLineInString();
 int assembleInstruction(Tokenizer *tokenizer, uint8_t **codePtrPtr);
 int assembleMOVInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);
 int assembleMOVCInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);
