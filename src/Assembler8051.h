@@ -16,6 +16,8 @@
 //addressing mode
 #define     REGISTER_ADDRESSING         100
 #define     INDIRECT_ADDRESSING         200
+#define     RELATIVE_ADDRESSING         300
+#define     ABSOLUTE_ADDRESSING         400
 
 typedef struct _8051Instructions _8051Instructions;
 typedef int (*funcPtr)(Tokenizer *tokenizer, _8051Instructions *instructionPtr, uint8_t **codePtrPtr);
@@ -36,9 +38,7 @@ functions yet to be tested
 
   int assembleDJNZInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);
   int assembleCJNEInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);
-
-  tested partially, haven't test instructions with direct(11bit, 16bit)
-  int assembleSingleOperand(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);
+  int assembleSingleOperandWithLabel(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);
 */
 
 void assembleInFileAndWriteToOutFile(char *inFile, char *outFile);
@@ -57,7 +57,7 @@ int assembleInstructionWithOnlyAccAsFirstOperand(Tokenizer *tokenizer, _8051Inst
 int assembleLogicalInstructionWithoutXRL(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);
 int assembleXRLinstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);
 int assembleSingleOperand(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);
-int assembleInstructionWithOnlyRelativeOperand(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);
+int assembleSingleOperandWithLabel(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);
 int assembleAWithOperands(Tokenizer *tokenizer, int opcode, int flags);
 int assembleDirectWithOperands(Tokenizer *tokenizer, int opcode, int flags);
 int assembleCWithOperands(Tokenizer *tokenizer, int opcode, int flags);
@@ -76,9 +76,9 @@ int extractNum(char *start, Token *token);
 void checkExtraToken(Tokenizer *tokenizer);
 void throwInvalidOperandException(Token *token);
 int writeCodeToCodeMemory(int opcode, uint8_t *codePtr);
+int getInstructionBytes(int opcode);
 void recordLabel(char *label, int index, int lineNo);
 int getIndexNumber(char *label);
-int computeRel(Tokenizer *tokenizer, int opcode, uint8_t *codePtr);
-int getInstructionBytes(int opcode);  //maximum size of 3 bytes
+int getAbsoluteOrRelative(Tokenizer *tokenizer, int addrMode, int opcode, uint8_t *codePtr);
 
 #endif // ASSEMBLER8051_H

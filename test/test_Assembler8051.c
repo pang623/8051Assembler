@@ -314,12 +314,10 @@ void test_getIndexNumber_given_label_and_but_empty_list_expect_MINUSone_is_retur
   free(listPtr);
 }
 
-void test_computeRel_given_label_as_token_and_label_exists_expect_relative_is_computed_and_returned() {
+void test_getAbsoluteOrRelative_given_label_as_token_and_label_exists_get_relative_expect_relative_is_computed_and_returned() {
   int relative;
   Tokenizer *tokenizer;
   uint8_t *codePtr = codeMemory + 10;
-  //Second pass
-  muteOnNoLabel = 0;
 
   //Set up linked list
   listPtr = doubleLinkedListCreateList();
@@ -332,33 +330,95 @@ void test_computeRel_given_label_as_token_and_label_exists_expect_relative_is_co
 
   //label "NOW" is read
   tokenizer = createTokenizer("NOW");
-  relative = computeRel(tokenizer, 0xD23400, codePtr);
+  relative = getAbsoluteOrRelative(tokenizer, RELATIVE_ADDRESSING, 0xD23400, codePtr);
 
   TEST_ASSERT_EQUAL(-12, relative);
   free(listPtr);
   freeTokenizer(tokenizer);
 }
 
-void test_computeRel_given_integer_as_token_expect_relative_is_computed_and_returned() {
+void test_getAbsoluteOrRelative_given_label_as_token_and_label_exists_get_absolute_expect_absolute_is_computed_and_returned() {
+  int absolute;
+  Tokenizer *tokenizer;
+  uint8_t *codePtr = codeMemory;
+
+  //Set up linked list
+  listPtr = doubleLinkedListCreateList();
+  LabelInfo info1 = {"NOW", 1, 2};
+  LabelInfo info2 = {"HERE", 0x9A9B, 500};
+  ListItem item1 = {NULL, NULL, &info1};
+  ListItem item2 = {NULL, NULL, &info2};
+  doubleLinkedListAddItemToHead(listPtr, &item1);
+  doubleLinkedListAddItemToHead(listPtr, &item2);
+
+  tokenizer = createTokenizer("HERE");
+  absolute = getAbsoluteOrRelative(tokenizer, ABSOLUTE_ADDRESSING, 0xD23400, codePtr);
+
+  TEST_ASSERT_EQUAL_HEX16(0x9A9B, absolute);
+  free(listPtr);
+  freeTokenizer(tokenizer);
+}
+
+void test_getAbsoluteOrRelative_given_integer_as_token_get_relative_expect_relative_is_computed_and_returned() {
   int relative;
   Tokenizer *tokenizer;
   uint8_t *codePtr = codeMemory + 10;
-  //Second pass
-  muteOnNoLabel = 0;
 
   tokenizer = createTokenizer("+100");
-  relative = computeRel(tokenizer, 0xD23400, codePtr);
+  relative = getAbsoluteOrRelative(tokenizer, RELATIVE_ADDRESSING, 0xD23400, codePtr);
 
   TEST_ASSERT_EQUAL(100, relative);
   freeTokenizer(tokenizer);
 }
 
-void test_computeRel_given_non_existent_label_as_token_expect_ERR_UNKNOWN_LABEL_is_thrown() {
+void test_getAbsoluteOrRelative_given_integer_as_token_get_relative_but_out_of_range_expect_ERR_INTEGER_OUT_OF_RANGE_is_thrown() {
   int relative;
   Tokenizer *tokenizer;
   uint8_t *codePtr = codeMemory + 10;
-  //Second pass
-  muteOnNoLabel = 0;
+
+  Try {
+    tokenizer = createTokenizer("-150");
+    relative = getAbsoluteOrRelative(tokenizer, RELATIVE_ADDRESSING, 0xD23400, codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_INTEGER_OUT_OF_RANGE, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_getAbsoluteOrRelative_given_integer_as_token_get_absolute_expect_absolute_is_computed_and_returned() {
+  int absolute;
+  Tokenizer *tokenizer;
+  uint8_t *codePtr = codeMemory + 10;
+
+  tokenizer = createTokenizer("0xBBA");
+  absolute = getAbsoluteOrRelative(tokenizer, ABSOLUTE_ADDRESSING, 0xD200, codePtr);
+
+  TEST_ASSERT_EQUAL(0xBBA, absolute);
+  freeTokenizer(tokenizer);
+}
+
+void test_getAbsoluteOrRelative_given_integer_as_token_get_absolute_but_out_of_range_expect_ERR_INTEGER_OUT_OF_RANGE_is_thrown() {
+  int relative;
+  Tokenizer *tokenizer;
+  uint8_t *codePtr = codeMemory + 10;
+
+  Try {
+    tokenizer = createTokenizer("0x10000");
+    relative = getAbsoluteOrRelative(tokenizer, ABSOLUTE_ADDRESSING, 0xD23400, codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_ASSERT_EQUAL(ERR_INTEGER_OUT_OF_RANGE, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_getAbsoluteOrRelative_given_non_existent_label_as_token_expect_ERR_UNKNOWN_LABEL_is_thrown() {
+  int relative;
+  Tokenizer *tokenizer;
+  uint8_t *codePtr = codeMemory + 10;
 
   //Set up linked list
   listPtr = doubleLinkedListCreateList();
@@ -371,7 +431,7 @@ void test_computeRel_given_non_existent_label_as_token_expect_ERR_UNKNOWN_LABEL_
 
   Try{
     tokenizer = createTokenizer("HERE");
-    relative = computeRel(tokenizer, 0xD200, codePtr);
+    relative = getAbsoluteOrRelative(tokenizer, RELATIVE_ADDRESSING, 0xD200, codePtr);
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
@@ -381,7 +441,7 @@ void test_computeRel_given_non_existent_label_as_token_expect_ERR_UNKNOWN_LABEL_
   freeTokenizer(tokenizer);
 }
 
-void test_computeRel_given_label_as_token_but_out_of_branching_range_backwards_branch_expect_ERR_INTEGER_OUT_OF_RANGE_is_thrown() {
+void test_getAbsoluteOrRelative_given_label_as_token_but_out_of_branching_range_backwards_branch_relative_expect_ERR_INTEGER_OUT_OF_RANGE_is_thrown() {
   int relative;
   Tokenizer *tokenizer;
   uint8_t *codePtr = codeMemory + 150;
@@ -399,7 +459,7 @@ void test_computeRel_given_label_as_token_but_out_of_branching_range_backwards_b
 
   Try{
     tokenizer = createTokenizer("END");
-    relative = computeRel(tokenizer, 0xD200, codePtr);
+    relative = getAbsoluteOrRelative(tokenizer, RELATIVE_ADDRESSING, 0xD200, codePtr);
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
@@ -409,7 +469,7 @@ void test_computeRel_given_label_as_token_but_out_of_branching_range_backwards_b
   freeTokenizer(tokenizer);
 }
 
-void test_computeRel_given_label_as_token_but_out_of_branching_range_forward_branch_expect_ERR_INTEGER_OUT_OF_RANGE_is_thrown() {
+void test_getAbsoluteOrRelative_given_label_as_token_but_out_of_branching_range_forward_branch_relative_expect_ERR_INTEGER_OUT_OF_RANGE_is_thrown() {
   int relative;
   Tokenizer *tokenizer;
   uint8_t *codePtr = codeMemory + 20;
@@ -427,7 +487,7 @@ void test_computeRel_given_label_as_token_but_out_of_branching_range_forward_bra
 
   Try{
     tokenizer = createTokenizer("NOW");
-    relative = computeRel(tokenizer, 0xD200, codePtr);
+    relative = getAbsoluteOrRelative(tokenizer, RELATIVE_ADDRESSING, 0xD200, codePtr);
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
@@ -437,16 +497,14 @@ void test_computeRel_given_label_as_token_but_out_of_branching_range_forward_bra
   freeTokenizer(tokenizer);
 }
 
-void test_computeRel_given_token_but_is_neither_label_nor_integer_expect_ERR_INVALID_OPERAND_is_thrown() {
-  int relative;
+void test_getAbsoluteOrRelative_given_token_but_is_neither_label_nor_integer_expect_ERR_INVALID_OPERAND_is_thrown() {
+  int absolute;
   Tokenizer *tokenizer;
   uint8_t *codePtr = codeMemory;
-  //Second pass
-  muteOnNoLabel = 0;
 
   Try{
     tokenizer = createTokenizer("@r1");
-    relative = computeRel(tokenizer, 0xD200, codePtr);
+    absolute = getAbsoluteOrRelative(tokenizer, ABSOLUTE_ADDRESSING, 0xD200, codePtr);
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
     dumpTokenErrorMessage(e, 1);
@@ -2472,74 +2530,6 @@ void test_assembleJMPInstruction_given_invalid_operand_expect_ERR_INVALID_OPERAN
   freeTokenizer(tokenizer);
 }
 
-void test_assembleInstructionWithOnlyRelativeOperand_given_jz_with_label_and_label_exists_expect_it_is_assembled_and_written_into_codeMemory() {
-  _8051Instructions table = {"jz", assembleInstructionWithOnlyRelativeOperand,
-  {0x60, 0}};
-  int len;
-  uint8_t *codePtr = codeMemory + 3;
-  Tokenizer* tokenizer;
-  //set to second pass (assembling is done at second pass, first pass is just to record the label into list)
-  muteOnNoLabel = 0;
-
-  //set up linked list
-  listPtr = doubleLinkedListCreateList();
-  LabelInfo info1 = {"NOW", 50, 100};
-  LabelInfo info2 = {"END", 23, 50};
-  ListItem item1 = {NULL, NULL, &info1};
-  ListItem item2 = {NULL, NULL, &info2};
-  doubleLinkedListAddItemToHead(listPtr, &item1);
-  doubleLinkedListAddItemToHead(listPtr, &item2);
-
-  Try{
-    tokenizer = createTokenizer("NOW ;comment ");
-    len = assembleInstructionWithOnlyRelativeOperand(tokenizer, &table, &codePtr);
-    TEST_ASSERT_EQUAL(2, len);
-    TEST_ASSERT_EQUAL_HEX8(0x60, codeMemory[3]);
-    TEST_ASSERT_EQUAL_HEX8(0x2D, codeMemory[4]);
-    TEST_ASSERT_EQUAL(5, getCurrentAbsoluteAddr());
-  } Catch(e){
-    dumpTokenErrorMessage(e, 1);
-    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
-  }
-  for(int i = 0; i < 65536; i++)
-    codeMemory[i] = 0;
-  free(listPtr);
-  freeTokenizer(tokenizer);
-}
-
-void test_assembleInstructionWithOnlyRelativeOperand_given_jnc_with_label_and_label_exists_expect_it_is_assembled_and_written_into_codeMemory() {
-  _8051Instructions table = {"jnc", assembleInstructionWithOnlyRelativeOperand,
-  {0x50, 0}};
-  int len;
-  uint8_t *codePtr = codeMemory + 50;
-  Tokenizer* tokenizer;
-  muteOnNoLabel = 0;
-
-  listPtr = doubleLinkedListCreateList();
-  LabelInfo info1 = {"WHERE", 2, 4};
-  LabelInfo info2 = {"HERE", 23, 50};
-  ListItem item1 = {NULL, NULL, &info1};
-  ListItem item2 = {NULL, NULL, &info2};
-  doubleLinkedListAddItemToHead(listPtr, &item1);
-  doubleLinkedListAddItemToHead(listPtr, &item2);
-
-  Try{
-    tokenizer = createTokenizer(" WHERE ");
-    len = assembleInstructionWithOnlyRelativeOperand(tokenizer, &table, &codePtr);
-    TEST_ASSERT_EQUAL(2, len);
-    TEST_ASSERT_EQUAL_HEX8(0x50, codeMemory[50]);
-    TEST_ASSERT_EQUAL_HEX8(0xCE, codeMemory[51]);
-    TEST_ASSERT_EQUAL(52, getCurrentAbsoluteAddr());
-  } Catch(e){
-    dumpTokenErrorMessage(e, 1);
-    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
-  }
-  for(int i = 0; i < 65536; i++)
-    codeMemory[i] = 0;
-  free(listPtr);
-  freeTokenizer(tokenizer);
-}
-
 void test_assembleBitWithRel_given_jb_bit_with_label_and_label_exists_expect_it_is_assembled_and_written_into_codeMemory() {
   _8051Instructions table = {"jb", assembleBitWithRel, {0x20, 0}};
   int len;
@@ -2602,6 +2592,73 @@ void test_assembleBitWithRel_given_jbc_bit_with_label_and_label_exists_expect_it
   }
   for(int i = 0; i < 65536; i++)
     codeMemory[i] = 0;
+  free(listPtr);
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleSingleOperandWithLabel_given_jz_with_label_and_label_exists_expect_it_is_assembled_and_written_into_codeMemory() {
+  _8051Instructions table = {"jz", assembleSingleOperandWithLabel,
+  {0x60, OPERAND_REL}};
+  int len;
+  uint8_t *codePtr = codeMemory + 3;
+  Tokenizer* tokenizer;
+  //set to second pass (assembling is done at second pass, first pass is just to record the label into list)
+  muteOnNoLabel = 0;
+
+  //set up linked list
+  listPtr = doubleLinkedListCreateList();
+  LabelInfo info1 = {"NOW", 50, 100};
+  LabelInfo info2 = {"END", 23, 50};
+  ListItem item1 = {NULL, NULL, &info1};
+  ListItem item2 = {NULL, NULL, &info2};
+  doubleLinkedListAddItemToHead(listPtr, &item1);
+  doubleLinkedListAddItemToHead(listPtr, &item2);
+
+  Try{
+    tokenizer = createTokenizer("NOW ;comment ");
+    len = assembleSingleOperandWithLabel(tokenizer, &table, &codePtr);
+    TEST_ASSERT_EQUAL(2, len);
+    TEST_ASSERT_EQUAL_HEX8(0x60, codeMemory[3]);
+    TEST_ASSERT_EQUAL_HEX8(0x2D, codeMemory[4]);
+    TEST_ASSERT_EQUAL(5, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  for(int i = 0; i < 65536; i++)
+    codeMemory[i] = 0;
+  free(listPtr);
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleSingleOperandWithLabel_given_acall_with_label_and_label_exists_expect_it_is_assembled_and_written_into_codeMemory() {
+  _8051Instructions table = {"acall", assembleSingleOperandWithLabel,
+  {0x11, OPERAND_DIR11}};
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory + 50;
+  Tokenizer* tokenizer;
+  muteOnNoLabel = 0;
+
+  listPtr = doubleLinkedListCreateList();
+  LabelInfo info1 = {"WHERE", 0x51A, 100};
+  LabelInfo info2 = {"HERE", 23, 50};
+  ListItem item1 = {NULL, NULL, &info1};
+  ListItem item2 = {NULL, NULL, &info2};
+  doubleLinkedListAddItemToHead(listPtr, &item1);
+  doubleLinkedListAddItemToHead(listPtr, &item2);
+
+  Try{
+    tokenizer = createTokenizer(" WHERE ");
+    len = assembleSingleOperandWithLabel(tokenizer, &table, &codePtr);
+    TEST_ASSERT_EQUAL(2, len);
+    TEST_ASSERT_EQUAL_HEX8(0xB1, codeMemory[50]);
+    TEST_ASSERT_EQUAL_HEX8(0x1A, codeMemory[51]);
+    TEST_ASSERT_EQUAL(52, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, 1);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
   free(listPtr);
   freeTokenizer(tokenizer);
 }

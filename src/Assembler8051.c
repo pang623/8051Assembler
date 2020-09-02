@@ -12,11 +12,15 @@ _8051Instructions instructionsTable[45] = {
   {"jbc" , assembleBitWithRel                          , {0x10, 0}},
   {"jb"  , assembleBitWithRel                          , {0x20, 0}},
   {"jnb" , assembleBitWithRel                          , {0x30, 0}},
-  {"jc"  , assembleInstructionWithOnlyRelativeOperand  , {0x40, 0}},
-  {"jnc" , assembleInstructionWithOnlyRelativeOperand  , {0x50, 0}},
-  {"jz"  , assembleInstructionWithOnlyRelativeOperand  , {0x60, 0}},
-  {"jnz" , assembleInstructionWithOnlyRelativeOperand  , {0x70, 0}},
-  {"sjmp", assembleInstructionWithOnlyRelativeOperand  , {0x80, 0}},
+  {"jc"  , assembleSingleOperandWithLabel              , {0x40, OPERAND_REL}},
+  {"jnc" , assembleSingleOperandWithLabel              , {0x50, OPERAND_REL}},
+  {"jz"  , assembleSingleOperandWithLabel              , {0x60, OPERAND_REL}},
+  {"jnz" , assembleSingleOperandWithLabel              , {0x70, OPERAND_REL}},
+  {"sjmp", assembleSingleOperandWithLabel              , {0x80, OPERAND_REL}},
+  {"ljmp", assembleSingleOperandWithLabel              , {0x00, OPERAND_DIR16}},
+  {"lcall",assembleSingleOperandWithLabel              , {0x10, OPERAND_DIR16}},
+  {"ajmp", assembleSingleOperandWithLabel              , {0x01, OPERAND_DIR11}},
+  {"acall",assembleSingleOperandWithLabel              , {0x11, OPERAND_DIR11}},
   {"div" , assembleSingleOperand                       , {0x80, OPERAND_AB}},
   {"mul" , assembleSingleOperand                       , {0xA0, OPERAND_AB}},
   {"swap", assembleSingleOperand                       , {0xC0, OPERAND_A}},
@@ -25,10 +29,6 @@ _8051Instructions instructionsTable[45] = {
   {"rlc" , assembleSingleOperand                       , {0x30, OPERAND_A_ROT}},
   {"rr"  , assembleSingleOperand                       , {0x00, OPERAND_A_ROT}},
   {"rrc" , assembleSingleOperand                       , {0x10, OPERAND_A_ROT}},
-  {"ljmp", assembleSingleOperand                       , {0x00, OPERAND_DIR16}},
-  {"lcall",assembleSingleOperand                       , {0x10, OPERAND_DIR16}},
-  {"ajmp", assembleSingleOperand                       , {0x01, OPERAND_DIR11}},
-  {"acall",assembleSingleOperand                       , {0x11, OPERAND_DIR11}},
   {"setb", assembleSingleOperand                       , {0x90, OPERAND_C | OPERAND_BIT}},
   {"clr" , assembleSingleOperand                       , {0xE0, OPERAND_C | OPERAND_BIT | OPERAND_A}},
   {"cpl" , assembleSingleOperand                       , {0xF0, OPERAND_C | OPERAND_BIT | OPERAND_A}},
@@ -91,7 +91,7 @@ int assembleInstructions(InstructionLineReader lineReader) {
 
   for(int i = 0; i < 65536; i++)
     codeMemory[i] = 0;
-  
+
   while((line = lineReader()) != NULL) {
     if(isspace(*line))
       continue;
@@ -106,7 +106,7 @@ int assembleInstructions(InstructionLineReader lineReader) {
 char *getNextInstructionLine() {
   char buffer[1024];
   char *line;
-  
+
   if(fgets(buffer, 1024, fileHandler) != NULL) {
     line = strdup(buffer);
     lineNumber += 1;
@@ -200,32 +200,42 @@ int getIndexNumber(char *label) {
   }
 }
 
-int computeRel(Tokenizer *tokenizer, int opcode, uint8_t *codePtr) {
+int getAbsoluteOrRelative(Tokenizer *tokenizer, int addrMode, int opcode, uint8_t *codePtr) {
   Token *token;
-  int relative = 0, index = 0;
-  if(!muteOnNoLabel) {
-    token = getToken(tokenizer);
-    pushBackToken(tokenizer, token);
-    if(token->type == TOKEN_IDENTIFIER_TYPE) {
-      token = getToken(tokenizer);
-      index = getIndexNumber(token->str);
-      if(index < 0)
-        throwException(ERR_UNKNOWN_LABEL, token,
-        "Label '%s' is not found in this program", token->str);
-      else {
-        relative = index - (getCurrentAbsoluteAddr() + getInstructionBytes(opcode));
-        if(relative < -128 || relative > 127)
-          throwException(ERR_INTEGER_OUT_OF_RANGE, token,
-          "Label '%s' is out of the branching range", token->str);
-      }
-    }else if(isIntegerTokenThenConsume(tokenizer, &relative, -128, 255))
-      relative = relative;
-    else
-      throwException(ERR_INVALID_OPERAND, token,
-      "Expecting a label or integer, but received '%s' instead", token->str);
-    checkExtraToken(tokenizer);
+  int relative = 0, absolute = 0, address = 0, index = 0;
+  int min = 0, max = 65535;
+
+  if(addrMode == RELATIVE_ADDRESSING) {
+    min = -128;
+    max = 255;
   }
-  return relative;
+
+  token = getToken(tokenizer);
+  pushBackToken(tokenizer, token);
+  if(token->type == TOKEN_IDENTIFIER_TYPE) {
+    token = getToken(tokenizer);
+    index = getIndexNumber(token->str);
+    if(index < 0)
+      throwException(ERR_UNKNOWN_LABEL, token,
+      "Label '%s' is not found in this program", token->str);
+    else {
+      switch(addrMode) {
+        case RELATIVE_ADDRESSING :
+          relative = index - (getCurrentAbsoluteAddr() + getInstructionBytes(opcode));
+          if(relative < -128 || relative > 127)
+            throwException(ERR_INTEGER_OUT_OF_RANGE, token,
+            "Label '%s' is out of the branching range", token->str);
+          return relative;
+        case ABSOLUTE_ADDRESSING :
+          absolute = index;
+          return absolute;
+      }
+    }
+  }else if(isIntegerTokenThenConsume(tokenizer, &address, min, max))
+    return address;
+  else
+    throwException(ERR_INVALID_OPERAND, token,
+    "Expecting a label or integer, but received '%s' instead", token->str);
 }
 
 int assembleDJNZInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr) {
@@ -240,7 +250,10 @@ int assembleDJNZInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8
     throwInvalidDJNZFirstOperandException(tokenizer);
 
   verifyIsOperatorTokenThenConsume(tokenizer, ",");
-  relative = computeRel(tokenizer, opcode, codePtr);
+  if(!muteOnNoLabel) {
+    relative = getAbsoluteOrRelative(tokenizer, RELATIVE_ADDRESSING, opcode, codePtr);
+    checkExtraToken(tokenizer);
+  }
   opcode |= (uint8_t) relative;
   len = writeCodeToCodeMemory(opcode, codePtr);
   (*codePtrPtr) += len;
@@ -271,7 +284,10 @@ int assembleCJNEInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8
     throwInvalidCJNEFirstOperandException(tokenizer);
 
   verifyIsOperatorTokenThenConsume(tokenizer, ",");
-  relative = computeRel(tokenizer, opcode, codePtr);
+  if(!muteOnNoLabel) {
+    relative = getAbsoluteOrRelative(tokenizer, RELATIVE_ADDRESSING, opcode, codePtr);
+    checkExtraToken(tokenizer);
+  }
   opcode |= (uint8_t) relative;
   len = writeCodeToCodeMemory(opcode, codePtr);
   (*codePtrPtr) += len;
@@ -285,7 +301,10 @@ int assembleBitWithRel(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **
   verifyIsIntegerTokenThenConsume(tokenizer, &bitAddr, 0, 255);
   verifyIsOperatorTokenThenConsume(tokenizer, ",");
   opcode = (info->data[0] << 16) | ((uint8_t) bitAddr << 8);
-  relative = computeRel(tokenizer, opcode, codePtr);
+  if(!muteOnNoLabel) {
+    relative = getAbsoluteOrRelative(tokenizer, RELATIVE_ADDRESSING, opcode, codePtr);
+    checkExtraToken(tokenizer);
+  }
   opcode |= (uint8_t) relative;
   len = writeCodeToCodeMemory(opcode, codePtr);
   (*codePtrPtr) += len;
@@ -295,7 +314,7 @@ int assembleBitWithRel(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **
 int assembleJMPInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr) {
   int opcode, len;
   uint8_t *codePtr = *codePtrPtr;
-  
+
   verifyIsOperatorTokenThenConsume(tokenizer, "@");
   verifyIsIdentifierTokenThenConsume(tokenizer, "A");
   verifyIsOperatorTokenThenConsume(tokenizer, "+");
@@ -487,13 +506,35 @@ int assembleXRLinstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_
   return len;
 }
 
-int assembleInstructionWithOnlyRelativeOperand(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr) {
-  int opcode, len, relative = 0;
+int assembleSingleOperandWithLabel(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr) {
+  int opcode, len, relative = 0, absolute = 0;
   uint8_t *codePtr = *codePtrPtr;
-  
-  opcode = info->data[0] << 8;
-  relative = computeRel(tokenizer, opcode, codePtr);
-  opcode |= (uint8_t) relative;
+
+  if(info->data[1] & OPERAND_REL) {
+    opcode = info->data[0] << 8;
+    if(!muteOnNoLabel) {
+      relative = getAbsoluteOrRelative(tokenizer, RELATIVE_ADDRESSING, opcode, codePtr);
+      checkExtraToken(tokenizer);
+    }
+    opcode |= (uint8_t) relative;
+  }else if(info->data[1] & OPERAND_DIR11) {
+    opcode = info->data[0] << 8;
+    if(!muteOnNoLabel) {
+      absolute = getAbsoluteOrRelative(tokenizer, ABSOLUTE_ADDRESSING, opcode, codePtr);
+      if(absolute > 0x7FF)
+        throwException(ERR_INTEGER_OUT_OF_RANGE, NULL,
+        "Absolute branch instructions can only branch within 2K range of code memory, but attempted to branch to 0x%x", absolute);
+      checkExtraToken(tokenizer);
+    }
+    opcode = ((((absolute << 4) & 0xF000) << 1) | opcode) | (absolute & 0xFF);
+  }else if(info->data[1] & OPERAND_DIR16) {
+    opcode = (info->data[0] | 0x02) << 16;
+    if(!muteOnNoLabel) {
+      absolute = getAbsoluteOrRelative(tokenizer, ABSOLUTE_ADDRESSING, opcode, codePtr);
+      checkExtraToken(tokenizer);
+    }
+    opcode = opcode | absolute;
+  }
   len = writeCodeToCodeMemory(opcode, codePtr);
   (*codePtrPtr) += len;
   return len;
@@ -501,13 +542,8 @@ int assembleInstructionWithOnlyRelativeOperand(Tokenizer *tokenizer, _8051Instru
 
 int assembleSingleOperand(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr) {
   Token *token;
-  int opcode, len, min = 0, max = 255, regNum = 0, value = 0;
+  int opcode, len, regNum = 0, addr = 0;
   uint8_t *codePtr = *codePtrPtr;
-
-  if(info->data[1] & OPERAND_DIR16)
-    max = 65535;
-  else if(info->data[1] & OPERAND_DIR11)
-    max = 2047;
 
   token = getToken(tokenizer);
   pushBackToken(tokenizer, token);
@@ -533,18 +569,14 @@ int assembleSingleOperand(Tokenizer *tokenizer, _8051Instructions *info, uint8_t
       opcode = (info->data[0] | 0x06) + regNum;
     else
       throwInvalidOperandException(token);
-  }else if(isIntegerTokenThenConsume(tokenizer, &value, min, max)) {
+  }else if(isIntegerTokenThenConsume(tokenizer, &addr, 0, 255)) {
     if(info->data[1] & OPERAND_DIR_STACK)
-      opcode = (info->data[0] << 8) | ((uint8_t) value);
+      opcode = (info->data[0] << 8) | ((uint8_t) addr);
     else if(info->data[1] & OPERAND_DIR)
-      opcode = ((info->data[0] | 0x05) << 8) | ((uint8_t) value);
+      opcode = ((info->data[0] | 0x05) << 8) | ((uint8_t) addr);
     else if(info->data[1] & OPERAND_BIT)
       opcode = ((((info->data[0] ^ 0x40) | (((info->data[0] ^ 0x10) & 0x10) << 2))
-               & (((info->data[0] & 0x10) << 1) | 0xDF)) | 0x02) << 8 | ((uint8_t) value);
-    else if(info->data[1] & OPERAND_DIR16)
-      opcode = ((info->data[0] | 0x02) << 16) | ((uint16_t) value);
-    else if(info->data[1] & OPERAND_DIR11)
-      opcode = (((value & 0xF00) >> 3 | info->data[0]) << 8) | (value & 0xFF);
+               & (((info->data[0] & 0x10) << 1) | 0xDF)) | 0x02) << 8 | ((uint8_t) addr);
     else
       throwInvalidOperandException(token);
   }else if(isIdentifierTokenThenConsume(tokenizer, "DPTR")) {
@@ -893,7 +925,7 @@ int writeCodeToCodeMemory(int opcode, uint8_t *codePtr) {
 //this exception will be thrown
 void throwInvalidOperandException(Token *token) {
    throwException(ERR_INVALID_OPERAND, token,
-   "Did not expect %s as an operand here", token->str);
+   "Operand %s cannot be used here", token->str);
 }
 
 int getInstructionBytes(int opcode) {
