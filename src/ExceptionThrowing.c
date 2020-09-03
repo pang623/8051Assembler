@@ -1,20 +1,20 @@
 #include "ExceptionThrowing.h"
 
-void throwAWithInvalidOperandException(Tokenizer *tokenizer) {
+void throwMovAWithInvalidOperandException(Tokenizer *tokenizer) {
   Token *token;
   token = getToken(tokenizer);
   throwException(ERR_INVALID_OPERAND, token,
   "Expecting register, integer, '#' or '@', received %s instead", token->str);
 }
 
-void throwRegWithInvalidOperandException(Tokenizer *tokenizer) {
+void throwMovRegWithInvalidOperandException(Tokenizer *tokenizer) {
   Token *token;
   token = getToken(tokenizer);
   throwException(ERR_INVALID_OPERAND, token,
   "Expecting A, integer or '#', received %s instead", token->str);
 }
 
-void throwDirectWithInvalidOperandException(Tokenizer *tokenizer) {
+void throwMovDirectWithInvalidOperandException(Tokenizer *tokenizer) {
   Token *token;
   token = getToken(tokenizer);
   throwException(ERR_INVALID_OPERAND, token,

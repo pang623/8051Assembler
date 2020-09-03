@@ -16,11 +16,11 @@ void tearDown(void)
 {
 }
 
-void test_throwAWithInvalidOperandException_just_to_test_exception_is_thrown_correctly() {
+void test_throwMovAWithInvalidOperandException_just_to_test_exception_is_thrown_correctly() {
   Tokenizer *tokenizer;
   tokenizer = createTokenizer("PC");
   Try {
-    throwAWithInvalidOperandException(tokenizer);
+    throwMovAWithInvalidOperandException(tokenizer);
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
@@ -29,11 +29,11 @@ void test_throwAWithInvalidOperandException_just_to_test_exception_is_thrown_cor
   freeTokenizer(tokenizer);
 }
 
-void test_throwRegWithInvalidOperandException_just_to_test_exception_is_thrown_correctly() {
+void test_throwMovRegWithInvalidOperandException_just_to_test_exception_is_thrown_correctly() {
   Tokenizer *tokenizer;
   tokenizer = createTokenizer(" hello ");
   Try {
-    throwRegWithInvalidOperandException(tokenizer);
+    throwMovRegWithInvalidOperandException(tokenizer);
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
@@ -42,11 +42,11 @@ void test_throwRegWithInvalidOperandException_just_to_test_exception_is_thrown_c
   freeTokenizer(tokenizer);
 }
 
-void test_throwDirectWithInvalidOperandException_just_to_test_exception_is_thrown_correctly() {
+void test_throwMovDirectWithInvalidOperandException_just_to_test_exception_is_thrown_correctly() {
   Tokenizer *tokenizer;
   tokenizer = createTokenizer(" DPTR ");
   Try {
-    throwDirectWithInvalidOperandException(tokenizer);
+    throwMovDirectWithInvalidOperandException(tokenizer);
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);

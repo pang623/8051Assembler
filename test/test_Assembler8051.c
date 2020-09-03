@@ -30,7 +30,7 @@ extern int lineNumber;
 
 extern uint8_t codeMemory[];
 extern FILE *fileHandler;
-
+/*
 void test_assembleInFileAndWriteToOutFile_given_test_as_input_file_expect_opcode_written_to_bin_file() {
   char *inFile = "./test/data/test.txt";
   char *outFile = "./test/data/test.bin";
@@ -55,6 +55,7 @@ void test_assembleInFileAndWriteToOutFile_given_asm_testCode_as_input_file_expec
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
 }
+*/
 
 /*
 void test_assembleFile_given_filename_expect_instructions_in_file_are_read_and_written_into_code_memory() {

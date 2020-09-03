@@ -7,9 +7,9 @@
 #include "CException.h"
 #include "Exception.h"
 
-void throwAWithInvalidOperandException(Tokenizer *tokenizer);
-void throwRegWithInvalidOperandException(Tokenizer *tokenizer);
-void throwDirectWithInvalidOperandException(Tokenizer *tokenizer);
+void throwMovAWithInvalidOperandException(Tokenizer *tokenizer);
+void throwMovRegWithInvalidOperandException(Tokenizer *tokenizer);
+void throwMovDirectWithInvalidOperandException(Tokenizer *tokenizer);
 void throwInvalidMovFirstOperand(Tokenizer *tokenizer);
 void throwExpectingRegisterOrDPTRexception(Tokenizer *tokenizer);
 void throwExpectingAOrIndException(Tokenizer *tokenizer);

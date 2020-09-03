@@ -12,6 +12,7 @@
 #include "LabelInfo.h"
 
 #define     getCurrentAbsoluteAddr()        (codePtr - codeMemory)
+#define     isIntegerToken(token)           (token->type == TOKEN_INTEGER_TYPE)
 #define     isIdentifierToken(token)        (token->type == TOKEN_IDENTIFIER_TYPE)
 
 //addressing mode

@@ -128,7 +128,7 @@ char *getNextInstructionLineInFile() {
 char *getNextInstructionLineInString() {
   char *line;
   static int i = 0;
-  
+
   if(lines[i] != NULL)
     return line = lines[i++];
   else {
@@ -356,7 +356,7 @@ int assembleMOVInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_
     else if(isImmediateThenGetsItsValueAndConsume(tokenizer, &immediate, -128, 255))
       opcode = 0x74 << 8 | ((uint8_t) immediate);
     else
-      throwAWithInvalidOperandException(tokenizer);
+      throwMovAWithInvalidOperandException(tokenizer);
   }else if(isRegisterConsumeAndGetItsNumber(tokenizer, REGISTER_ADDRESSING, &regNum)) {
     verifyIsOperatorTokenThenConsume(tokenizer, ",");
     if(isIdentifierTokenThenConsume(tokenizer, "A"))
@@ -366,7 +366,7 @@ int assembleMOVInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_
     else if(isImmediateThenGetsItsValueAndConsume(tokenizer, &immediate, -128, 255))
       opcode = ((0x78 + regNum) << 8) | ((uint8_t) immediate);
     else
-      throwRegWithInvalidOperandException(tokenizer);
+      throwMovRegWithInvalidOperandException(tokenizer);
   }else if(isIndRegisterThenGetItsNumberAndConsume(tokenizer, &regNum)) {
     verifyIsOperatorTokenThenConsume(tokenizer, ",");
     if(isIdentifierTokenThenConsume(tokenizer, "A"))
@@ -376,7 +376,7 @@ int assembleMOVInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_
     else if(isImmediateThenGetsItsValueAndConsume(tokenizer, &immediate, -128, 255))
       opcode = ((0x76 + regNum) << 8) | ((uint8_t) immediate);
     else
-      throwRegWithInvalidOperandException(tokenizer);
+      throwMovRegWithInvalidOperandException(tokenizer);
   }else if(isIntegerTokenThenConsume(tokenizer, &direct, 0, 255)) {
     verifyIsOperatorTokenThenConsume(tokenizer, ",");
     if(isIdentifierTokenThenConsume(tokenizer, "A"))
@@ -392,7 +392,7 @@ int assembleMOVInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_
     else if(isIdentifierTokenThenConsume(tokenizer, "C"))
       opcode = (0x92 << 8) | ((uint8_t) direct);
     else
-      throwDirectWithInvalidOperandException(tokenizer);
+      throwMovDirectWithInvalidOperandException(tokenizer);
   }else if(isIdentifierTokenThenConsume(tokenizer, "C")) {
     verifyIsOperatorTokenThenConsume(tokenizer, ",");
     verifyIsIntegerTokenThenConsume(tokenizer, &bitAddr, 0, 255);
@@ -480,19 +480,17 @@ int assembleLogicalInstructionWithoutXRL(Tokenizer *tokenizer, _8051Instructions
 
   token = getToken(tokenizer);
   pushBackToken(tokenizer, token);
-  if(isIdentifierTokenThenConsume(tokenizer, "A")) {
-    pushBackToken(tokenizer, token);
+  if(!strcmp(token->str, "A"))
     opcode = assembleAWithOperands(tokenizer, info->data[0], info->data[1]);
-  }else if(isIdentifierTokenThenConsume(tokenizer, "C")) {
-    pushBackToken(tokenizer, token);
+  else if(!strcmp(token->str, "C"))
     opcode = assembleCWithOperands(tokenizer, info->data[0] + 0x30, info->data[1]);
-  }else if(isIntegerTokenThenConsume(tokenizer, &value, 0, 255)) {
-    pushBackToken(tokenizer, token);
+  else if(isIntegerToken(token))
     opcode = assembleDirectWithOperands(tokenizer, info->data[0], info->data[1]);
-  }else
+  else
     throwException(ERR_INVALID_OPERAND, token,
     "Expecting an 'A', 'C' or integer, received %s instead", token->str);
 
+  freeToken(token);
   len = writeCodeToCodeMemory(opcode, codePtr);
   (*codePtrPtr) += len;
   return len;
@@ -505,16 +503,15 @@ int assembleXRLinstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_
 
   token = getToken(tokenizer);
   pushBackToken(tokenizer, token);
-  if(isIdentifierTokenThenConsume(tokenizer, "A")) {
-    pushBackToken(tokenizer, token);
+  if(!strcmp(token->str, "A"))
     opcode = assembleAWithOperands(tokenizer, info->data[0], info->data[1]);
-  }else if(isIntegerTokenThenConsume(tokenizer, &value, 0, 255)) {
-    pushBackToken(tokenizer, token);
+  else if(isIntegerToken(token))
     opcode = assembleDirectWithOperands(tokenizer, info->data[0], info->data[1]);
-  }else
+  else
     throwException(ERR_INVALID_OPERAND, token,
     "Expecting an 'A' or integer, received %s instead", token->str);
 
+  freeToken(token);
   len = writeCodeToCodeMemory(opcode, codePtr);
   (*codePtrPtr) += len;
   return len;
@@ -714,46 +711,32 @@ int isIntegerTokenThenConsume(Tokenizer *tokenizer, int *val, int min, int max) 
 
   if(isOperatorTokenThenConsume(tokenizer, "+")) {
     token = getToken(tokenizer);
-    if(token->type == TOKEN_INTEGER_TYPE) {
-      if(((IntegerToken* )token)->value < min || ((IntegerToken* )token)->value > max)
-        throwException(ERR_INTEGER_OUT_OF_RANGE, token,
-        "Expecting integer of range %d to %d, received %d instead", min, max, ((IntegerToken *)token)->value);
-      else {
-        *val = ((IntegerToken *)token)->value;
-        return 1;
-      }
-    }else
+    if(isIntegerToken(token))
+      number = ((IntegerToken *)token)->value;
+    else
       throwException(ERR_EXPECTING_INTEGER, token,
       "Expecting integer, but received %s instead", token->str);
   }else if(isOperatorTokenThenConsume(tokenizer, "-")) {
     token = getToken(tokenizer);
-    if(token->type == TOKEN_INTEGER_TYPE) {
+    if(isIntegerToken(token))
       number = (~(((IntegerToken* )token)->value)) + 1;
-      if(number < min || number > max)
-        throwException(ERR_INTEGER_OUT_OF_RANGE, token,
-        "Expecting integer of range %d to %d, received %d instead", min, max, number);
-      else {
-        *val = number;
-        return 1;
-      }
-    }else
+    else
       throwException(ERR_EXPECTING_INTEGER, token,
       "Expecting integer, but received %s instead", token->str);
   }else {
     token = getToken(tokenizer);
-    if(token->type == TOKEN_INTEGER_TYPE) {
-      if(((IntegerToken* )token)->value < min || ((IntegerToken* )token)->value > max)
-        throwException(ERR_INTEGER_OUT_OF_RANGE, token,
-        "Expecting integer of range %d to %d, received %d instead", min, max, ((IntegerToken *)token)->value);
-      else {
-        *val = ((IntegerToken *)token)->value;
-        return 1;
-      }
-    }else {
+    if(isIntegerToken(token))
+      number = ((IntegerToken *)token)->value;
+    else {
       pushBackToken(tokenizer, token);
       return 0;
     }
   }
+  if(number < min || number > max)
+    throwException(ERR_INTEGER_OUT_OF_RANGE, token,
+    "Expecting integer of range %d to %d, received %d instead", min, max, number);
+  *val = number;
+  return 1;
 }
 
 //consume token if is integer token and in valid range, else throwException
@@ -772,7 +755,7 @@ void verifyIsIntegerTokenThenConsume(Tokenizer *tokenizer, int *value, int min, 
 int isIdentifierTokenThenConsume(Tokenizer *tokenizer, char *identifier) {
   Token *token;
   token = getToken(tokenizer);
-  if(token->type == TOKEN_IDENTIFIER_TYPE) {
+  if(isIdentifierToken(token)) {
     if(stricmp(token->str, identifier)) {
       pushBackToken(tokenizer, token);
       return 0;
