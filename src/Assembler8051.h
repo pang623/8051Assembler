@@ -3,13 +3,16 @@
 
 #include "Exception.h"
 #include "ExceptionThrowing.h"
-#include "SaveCodeToBin.h"
 #include "Error.h"
 #include "Flags.h"
 #include "Token.h"
 #include "Tokenizer.h"
 #include "DoubleLinkedList.h"
 #include "LabelInfo.h"
+#include "AssembleFile.h"
+#include "AssembleStrings.h"
+#include "MemAlloc.h"
+#include "SaveCodeToBin.h"
 
 #define     getCurrentAbsoluteAddr()        (codePtr - codeMemory)
 #define     isIntegerToken(token)           (token->type == TOKEN_INTEGER_TYPE)
@@ -29,19 +32,7 @@ struct _8051Instructions {
   int data[3];
 };
 
-/*
-functions yet to be tested
-  void assembleInFileAndWriteToOutFile(char *inFile, char *outFile);
-  int assembleFile(char *filename);
-  int assembleInstructions(InstructionLineReader lineReader);
-  char *getNextInstructionLineInString();
-*/
-
-void assembleInFileAndWriteToOutFile(char *inFile, char *outFile);
-int assembleFile(char *filename);
 int assembleInstructions(InstructionLineReader lineReader);
-char *getNextInstructionLineInFile();
-char *getNextInstructionLineInString();
 int assembleInstruction(Tokenizer *tokenizer, uint8_t **codePtrPtr);
 int assembleMOVInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);
 int assembleMOVCInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);
