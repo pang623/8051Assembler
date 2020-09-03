@@ -1,9 +1,4 @@
 #include "ExceptionThrowing.h"
-#include "Error.h"
-#include "Token.h"
-#include "Tokenizer.h"
-#include "CException.h"
-#include "Exception.h"
 
 void throwAWithInvalidOperandException(Tokenizer *tokenizer) {
   Token *token;
@@ -26,7 +21,7 @@ void throwDirectWithInvalidOperandException(Tokenizer *tokenizer) {
   "Expecting A, register, integer '@' or '#', received %s instead", token->str);
 }
 
-void throwInvalidMovOperand(Tokenizer *tokenizer) {
+void throwInvalidMovFirstOperand(Tokenizer *tokenizer) {
   Token *token;
   token = getToken(tokenizer);
   throwException(ERR_INVALID_OPERAND, token,

@@ -1,12 +1,16 @@
 #ifndef EXCEPTIONTHROWING_H
 #define EXCEPTIONTHROWING_H
 
+#include "Error.h"
+#include "Token.h"
 #include "Tokenizer.h"
+#include "CException.h"
+#include "Exception.h"
 
 void throwAWithInvalidOperandException(Tokenizer *tokenizer);
 void throwRegWithInvalidOperandException(Tokenizer *tokenizer);
 void throwDirectWithInvalidOperandException(Tokenizer *tokenizer);
-void throwInvalidMovOperand(Tokenizer *tokenizer);
+void throwInvalidMovFirstOperand(Tokenizer *tokenizer);
 void throwExpectingRegisterOrDPTRexception(Tokenizer *tokenizer);
 void throwExpectingAOrIndException(Tokenizer *tokenizer);
 void throwExpectingPCorDPTRexception(Tokenizer *tokenizer);

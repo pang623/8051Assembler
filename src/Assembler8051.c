@@ -402,7 +402,7 @@ int assembleMOVInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_
     verifyIsImmediateThenGetsItsValueAndConsume(tokenizer, &immediate, -32768, 65535);      //16 bits immediate
     opcode = (0x90 << 16) | ((uint16_t) immediate);
   }else
-    throwInvalidMovOperand(tokenizer);
+    throwInvalidMovFirstOperand(tokenizer);
 
   checkExtraToken(tokenizer);
   len = writeCodeToCodeMemory(opcode, codePtr);

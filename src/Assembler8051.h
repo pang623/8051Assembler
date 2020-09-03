@@ -33,9 +33,7 @@ functions yet to be tested
   void assembleInFileAndWriteToOutFile(char *inFile, char *outFile);
   int assembleFile(char *filename);
   int assembleInstructions(InstructionLineReader lineReader);
-  char *getNextInstructionLine();
-
-  int assembleCJNEInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);
+  char *getNextInstructionLineInString();
 */
 
 void assembleInFileAndWriteToOutFile(char *inFile, char *outFile);

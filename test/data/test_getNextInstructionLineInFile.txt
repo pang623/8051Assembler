@@ -1,0 +1,9 @@
+CJNE @r0, #0x66, +10
+SETB C		 ;0xD3
+DJNZ R3, HERE	 ;0xDBF4
+	
+DJNZ R4, -6
+DA A
+LJMP HERE
+MUL AB
+THERE: 	MOVX A, @DPTR ;comment

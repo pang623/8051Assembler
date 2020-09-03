@@ -97,7 +97,7 @@ void test_assembleInstructions_given_func_ptr_expect_all_lines_in_asm_file_are_a
   char *filename = "./test/data/asm_testCode.txt";
   fileHandler = fopen(filename, "r");
   Try{
-    totalBytes = assembleInstructions(getNextInstructionLine);
+    totalBytes = assembleInstructions(getNextInstructionLineInFile);
     TEST_ASSERT_EQUAL(21, totalBytes);
     TEST_ASSERT_EQUAL_HEX8(0x74, codeMemory[0]);
     TEST_ASSERT_EQUAL_HEX8(0x8A, codeMemory[1]);
@@ -134,7 +134,7 @@ void test_assembleInstructions_given_different_txt_file_containing_instruction_e
   char *filename = "./test/data/test.txt";
   fileHandler = fopen(filename, "r");
   Try{
-    totalBytes = assembleInstructions(getNextInstructionLine);
+    totalBytes = assembleInstructions(getNextInstructionLineInFile);
     TEST_ASSERT_EQUAL(2, totalBytes);
     TEST_ASSERT_EQUAL_HEX8(0x95, codeMemory[0]);
     TEST_ASSERT_EQUAL_HEX8(0xf4, codeMemory[1]);
@@ -146,61 +146,59 @@ void test_assembleInstructions_given_different_txt_file_containing_instruction_e
   }
   fclose(fileHandler);
 }
-
-void test_getNextInstructionLine_expect_next_instruction_line_is_returned_everytime_the_function_is_called() {
-  char *filename = "./test/data/asm_testCode.txt";
+*/
+void test_getNextInstructionLineInFile_expect_next_instruction_line_is_read_from_file_and_is_returned_everytime_the_function_is_called() {
+  char *filename = "./test/data/test_getNextInstructionLineInFile.txt";
   fileHandler = fopen(filename, "r");
   char *instructionLine;
   Try{
-    instructionLine = getNextInstructionLine();
-    TEST_ASSERT_EQUAL_STRING("MOV A, #0x8A	 ;0x748A\n", instructionLine);
+    instructionLine = getNextInstructionLineInFile();
+    TEST_ASSERT_EQUAL_STRING("CJNE @r0, #0x66, +10\n", instructionLine);
+    free(instructionLine);
 
-    instructionLine = getNextInstructionLine();
-    TEST_ASSERT_EQUAL_STRING("MOV 0x83, #0x12	 ;0x758312\n", instructionLine);
-
-    instructionLine = getNextInstructionLine();
-    TEST_ASSERT_EQUAL_STRING("MOV 0xF4, 0x83	 ;0x8583F4\n", instructionLine);
-
-    instructionLine = getNextInstructionLine();
-    TEST_ASSERT_EQUAL_STRING("SUBB A, 0xF4	 ;0x95F4\n", instructionLine);
-
-    instructionLine = getNextInstructionLine();
-    TEST_ASSERT_EQUAL_STRING("\t\n", instructionLine);
-
-    instructionLine = getNextInstructionLine();
-    TEST_ASSERT_EQUAL_STRING("XRL 0x83, A	 ;0x6283\n", instructionLine);
-
-    instructionLine = getNextInstructionLine();
-    TEST_ASSERT_EQUAL_STRING("CLR C		 ;0xC3\n", instructionLine);
-
-    instructionLine = getNextInstructionLine();
-    TEST_ASSERT_EQUAL_STRING("CPL A		 ;0xF4\n", instructionLine);
-
-    instructionLine = getNextInstructionLine();
+    instructionLine = getNextInstructionLineInFile();
     TEST_ASSERT_EQUAL_STRING("SETB C		 ;0xD3\n", instructionLine);
+    free(instructionLine);
 
-    instructionLine = getNextInstructionLine();
-    TEST_ASSERT_EQUAL_STRING("DJNZ R3, -8	 ;0xDBF8\n", instructionLine);
+    instructionLine = getNextInstructionLineInFile();
+    TEST_ASSERT_EQUAL_STRING("DJNZ R3, HERE	 ;0xDBF4\n", instructionLine);
+    free(instructionLine);
 
-    instructionLine = getNextInstructionLine();
-    TEST_ASSERT_EQUAL_STRING("ADD A, R3\n", instructionLine);
+    instructionLine = getNextInstructionLineInFile();
+    TEST_ASSERT_EQUAL_STRING("\t\n", instructionLine);
+    free(instructionLine);
 
-    instructionLine = getNextInstructionLine();
-    TEST_ASSERT_EQUAL_STRING("\n", instructionLine);
+    instructionLine = getNextInstructionLineInFile();
+    TEST_ASSERT_EQUAL_STRING("DJNZ R4, -6\n", instructionLine);
+    free(instructionLine);
 
-    instructionLine = getNextInstructionLine();
-    TEST_ASSERT_EQUAL_STRING("CJNE @R0, #-23, -8\n", instructionLine);
+    instructionLine = getNextInstructionLineInFile();
+    TEST_ASSERT_EQUAL_STRING("DA A\n", instructionLine);
+    free(instructionLine);
+
+    instructionLine = getNextInstructionLineInFile();
+    TEST_ASSERT_EQUAL_STRING("LJMP HERE\n", instructionLine);
+    free(instructionLine);
+
+    instructionLine = getNextInstructionLineInFile();
+    TEST_ASSERT_EQUAL_STRING("MUL AB\n", instructionLine);
+    free(instructionLine);
+
+    instructionLine = getNextInstructionLineInFile();
+    TEST_ASSERT_EQUAL_STRING("THERE: 	MOVX A, @DPTR ;comment", instructionLine);
+    free(instructionLine);
 
     //no more lines left
-    instructionLine = getNextInstructionLine();
+    instructionLine = getNextInstructionLineInFile();
     TEST_ASSERT_EQUAL_STRING(NULL, instructionLine);
+    free(instructionLine);
   }Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   fclose(fileHandler);
 }
-*/
+
 void test_getInstructionBytes_given_one_byte_opcode_expect_size_is_one_byte() {
   int bytes = getInstructionBytes(0x6A);
   TEST_ASSERT_EQUAL(1, bytes);
