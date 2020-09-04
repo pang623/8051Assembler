@@ -5,7 +5,7 @@ void saveCodeToBin(char *filename, uint8_t *codeMemory, int length) {
   
   if((fptr = fopen(filename, "wb")) == NULL) {
     printf("Error opening file!\n");
-    exit(1);
+    exit(-1);
   }
   fwrite(codeMemory, sizeof(uint8_t), length, fptr);
   fclose(fptr);

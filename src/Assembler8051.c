@@ -69,11 +69,13 @@ int assembleInstructions(InstructionLineReader lineReader) {
     codeMemory[i] = 0;
 
   while((line = lineReader()) != NULL) {
-    if(isspace(*line))
+    if(isspace(*line)) {
+      free(line);
       continue;
-    else {
+    }else {
       tokenizer = createTokenizer(line);
       totalLen += assembleInstruction(tokenizer, codePtrPtr);
+      free(line);
       freeTokenizer(tokenizer);
     }
   }

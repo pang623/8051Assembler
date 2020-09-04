@@ -17,10 +17,10 @@ void tearDown(void)
 
 CEXCEPTION_T e;
 
-extern uint8_t codeMemory[];
 extern char **instructionLines;
-extern int lineIndex;
+extern uint8_t codeMemory[];
 extern int lineNumber;
+extern int lineIndex;
 
 //forward jump and backward jump tested
 void test_assembleStrings_given_strings_of_instruction_expect_all_of_them_are_assembled_correctly() {
@@ -56,6 +56,7 @@ void test_assembleStrings_given_strings_of_instruction_expect_all_of_them_are_as
       TEST_ASSERT_EQUAL(0, codeMemory[i]);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
+    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
 }
@@ -81,6 +82,7 @@ void test_assembleStrings_given_strings_of_instruction_but_jump_to_an_undefined_
   } Catch(e){
     dumpTokenErrorMessage(e, lineNumber);
     TEST_ASSERT_EQUAL(ERR_UNKNOWN_LABEL, e->errorCode);
+    freeException(e);
   }
 }
 
@@ -120,6 +122,7 @@ void test_assembleStrings_given_strings_of_instruction_and_jump_without_label_ex
       TEST_ASSERT_EQUAL(0, codeMemory[i]);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
+    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
 }
@@ -145,6 +148,7 @@ void test_assembleStrings_given_strings_of_instruction_with_repeated_label_expec
   } Catch(e){
     dumpTokenErrorMessage(e, lineNumber);
     TEST_ASSERT_EQUAL(ERR_DUPLICATE_LABEL, e->errorCode);
+    freeException(e);
   }
 }
 
@@ -169,6 +173,7 @@ void test_assembleStrings_given_strings_of_instruction_with_instruction_mnemonic
   } Catch(e){
     dumpTokenErrorMessage(e, lineNumber);
     TEST_ASSERT_EQUAL(ERR_ILLEGAL_LABEL, e->errorCode);
+    freeException(e);
   }
 }
 
@@ -194,6 +199,7 @@ void test_assembleStrings_given_strings_of_instruction_with_two_label_in_a_line_
   } Catch(e){
     dumpTokenErrorMessage(e, lineNumber);
     TEST_ASSERT_EQUAL(ERR_INVALID_INSTRUCTION, e->errorCode);
+    freeException(e);
   }
 }
 
@@ -220,6 +226,7 @@ void test_assembleStrings_given_strings_of_instruction_with_colon_after_an_instr
   } Catch(e){
     dumpTokenErrorMessage(e, lineNumber);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+    freeException(e);
   }
 }
 
@@ -238,17 +245,22 @@ void test_getNextInstructionLineInString_expect_next_instruction_line_is_read_fr
   Try {
     instructionLine = getNextInstructionLineInString();
     TEST_ASSERT_EQUAL_STRING("add a, R0\n", instructionLine);
+    free(instructionLine);
     
     instructionLine = getNextInstructionLineInString();
     TEST_ASSERT_EQUAL_STRING("da A\n", instructionLine);
+    free(instructionLine);
     
     instructionLine = getNextInstructionLineInString();
     TEST_ASSERT_EQUAL_STRING("Cjne a, #23, HERE", instructionLine);
+    free(instructionLine);
     
     instructionLine = getNextInstructionLineInString();
     TEST_ASSERT_EQUAL_PTR(NULL, instructionLine);
+    free(instructionLine);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+    freeException(e);
   }
 }

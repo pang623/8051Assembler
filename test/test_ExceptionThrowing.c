@@ -25,6 +25,7 @@ void test_throwMovAWithInvalidOperandException_just_to_test_exception_is_thrown_
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -38,6 +39,7 @@ void test_throwMovRegWithInvalidOperandException_just_to_test_exception_is_throw
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -51,6 +53,7 @@ void test_throwMovDirectWithInvalidOperandException_just_to_test_exception_is_th
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -64,6 +67,7 @@ void test_throwInvalidMovFirstOperand_just_to_test_exception_is_thrown_correctly
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -77,6 +81,7 @@ void test_throwExpectingRegisterOrDPTRexception_just_to_test_exception_is_thrown
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -90,6 +95,7 @@ void test_throwExpectingAOrIndException_just_to_test_exception_is_thrown_correct
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -103,6 +109,7 @@ void test_throwExpectingPCorDPTRexception_just_to_test_exception_is_thrown_corre
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -116,6 +123,7 @@ void test_throwExpectingIntOrImmException_just_to_test_exception_is_thrown_corre
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -129,6 +137,7 @@ void test_throwInvalidCJNEFirstOperandException_just_to_test_exception_is_thrown
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -142,6 +151,7 @@ void test_throwInvalidDJNZFirstOperandException_just_to_test_exception_is_thrown
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+    freeException(e);
   }
   freeTokenizer(tokenizer);
 }

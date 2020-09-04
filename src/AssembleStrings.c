@@ -1,4 +1,6 @@
 #include "AssembleStrings.h"
+#include "String.h"
+#include <stdlib.h>
 
 int lineIndex = 0;
 
@@ -19,11 +21,15 @@ int assembleStrings() {
 }
 
 char *getNextInstructionLineInString() {
+  int len;
   char *line;
-
   if(instructionLines[lineIndex] != NULL) {
+    len = strlen(instructionLines[lineIndex]);
+    line = malloc(len+1);
+    strncpy(line, instructionLines[lineIndex++], len);
+    line[len] = '\0';
     lineNumber += 1;
-    return line = instructionLines[lineIndex++];
+    return line;
   }else
     return NULL;
 }

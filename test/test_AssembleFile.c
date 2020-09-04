@@ -30,11 +30,12 @@ void test_assembleInFileAndWriteToOutFile_given_asm_testCode_as_input_file_expec
 
   Try{
     totalBytes = assembleInFileAndWriteToOutFile(inFile, outFile);
+    TEST_ASSERT_EQUAL_BIN_FILE(codeMemory, outFile, totalBytes);
   } Catch(e){
     dumpTokenErrorMessage(e, lineNumber);
+    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
-  TEST_ASSERT_EQUAL_BIN_FILE(codeMemory, outFile, totalBytes);
 }
 
 //assemble another assembly txt file to see whether codeMemory will be reinitialized with new machine codes
@@ -45,11 +46,12 @@ void test_assembleInFileAndWriteToOutFile_given_test_as_input_file_expect_opcode
 
   Try{
     totalBytes = assembleInFileAndWriteToOutFile(inFile, outFile);
+    TEST_ASSERT_EQUAL_BIN_FILE(codeMemory, outFile, totalBytes);
   } Catch(e){
     dumpTokenErrorMessage(e, lineNumber);
+    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
-  TEST_ASSERT_EQUAL_BIN_FILE(codeMemory, outFile, totalBytes);
 }
 
 //test fwd jump, backward jump, jump w/o label and absolute addressing with and w/o label
@@ -83,6 +85,7 @@ void test_assembleFile_given_filename_expect_instructions_in_file_are_read_and_w
       TEST_ASSERT_EQUAL(0, codeMemory[i]);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
+    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
 }
@@ -134,6 +137,7 @@ void test_getNextInstructionLineInFile_expect_next_instruction_line_is_read_from
     free(instructionLine);
   }Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
+    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   fclose(fileHandler);

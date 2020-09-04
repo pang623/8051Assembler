@@ -86,44 +86,71 @@ void test_assembleInstructions_given_different_txt_file_containing_instruction_e
 */
 
 void test_getInstructionBytes_given_one_byte_opcode_expect_size_is_one_byte() {
-  int bytes = getInstructionBytes(0x6A);
-  TEST_ASSERT_EQUAL(1, bytes);
+  int bytes;
+  Try{
+    bytes = getInstructionBytes(0x6A);
+    TEST_ASSERT_EQUAL(1, bytes);
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    freeException(e);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
 }
 
 void test_getInstructionBytes_given_two_byte_opcode_expect_size_is_two_byte() {
-  int bytes = getInstructionBytes(0x6AAB);
-  TEST_ASSERT_EQUAL(2, bytes);
+  int bytes;
+  Try{
+    bytes = getInstructionBytes(0x6AAB);
+    TEST_ASSERT_EQUAL(2, bytes);
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    freeException(e);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
 }
 
 void test_getInstructionBytes_given_three_byte_opcode_expect_size_is_three_byte() {
-  int bytes = getInstructionBytes(0x6A12BD);
-  TEST_ASSERT_EQUAL(3, bytes);
+  int bytes;
+  Try{
+    bytes = getInstructionBytes(0x6A12BD);
+    TEST_ASSERT_EQUAL(3, bytes);
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    freeException(e);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
 }
 
 void test_recordLabel_given_labelinfo_expect_it_is_stored_into_list_correctly() {
   LabelInfo *infoPtr;
   listPtr = doubleLinkedListCreateList();
-  recordLabel("SKIP", 1, 2);
+  
+  Try{
+    recordLabel("SKIP", 1, 2);
 
-  infoPtr = listPtr->head->data;
-  TEST_ASSERT_NOT_NULL(infoPtr);
-  TEST_ASSERT_EQUAL_STRING("SKIP", infoPtr->name);
-  TEST_ASSERT_EQUAL(1, infoPtr->indexNo);
-  TEST_ASSERT_EQUAL(2, infoPtr->lineNo);
-  TEST_ASSERT_EQUAL(1, listPtr->count);
+    infoPtr = listPtr->head->data;
+    TEST_ASSERT_NOT_NULL(infoPtr);
+    TEST_ASSERT_EQUAL_STRING("SKIP", infoPtr->name);
+    TEST_ASSERT_EQUAL(1, infoPtr->indexNo);
+    TEST_ASSERT_EQUAL(2, infoPtr->lineNo);
+    TEST_ASSERT_EQUAL(1, listPtr->count);
 
-  recordLabel("HERE", 4, 9);
+    recordLabel("HERE", 4, 9);
 
-  infoPtr = listPtr->head->data;
-  TEST_ASSERT_NOT_NULL(infoPtr);
-  TEST_ASSERT_EQUAL_STRING("HERE", infoPtr->name);
-  TEST_ASSERT_EQUAL(4, infoPtr->indexNo);
-  TEST_ASSERT_EQUAL(9, infoPtr->lineNo);
-  TEST_ASSERT_EQUAL(2, listPtr->count);
+    infoPtr = listPtr->head->data;
+    TEST_ASSERT_NOT_NULL(infoPtr);
+    TEST_ASSERT_EQUAL_STRING("HERE", infoPtr->name);
+    TEST_ASSERT_EQUAL(4, infoPtr->indexNo);
+    TEST_ASSERT_EQUAL(9, infoPtr->lineNo);
+    TEST_ASSERT_EQUAL(2, listPtr->count);
 
-  TEST_ASSERT_EQUAL_PTR(NULL, listPtr->head->prev);
-  TEST_ASSERT_EQUAL_PTR(NULL, listPtr->tail->next);
-
+    TEST_ASSERT_EQUAL_PTR(NULL, listPtr->head->prev);
+    TEST_ASSERT_EQUAL_PTR(NULL, listPtr->tail->next);
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    freeException(e);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
   doubleLinkedListFreeList(listPtr, freeLabelInfo);
 }
 
@@ -138,6 +165,7 @@ void test_recordLabel_given_duplicate_label_expect_ERR_DUPLICATE_LABEL_is_thrown
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_DUPLICATE_LABEL, e->errorCode);
+    freeException(e);
   }
   doubleLinkedListFreeList(listPtr, freeLabelInfo);
 }
@@ -151,9 +179,15 @@ void test_getLabelIndex_given_label_and_label_exists_in_list_expect_index_of_the
   ListItem item2 = {NULL, NULL, &info2};
   doubleLinkedListAddItemToHead(listPtr, &item1);
   doubleLinkedListAddItemToHead(listPtr, &item2);
-  index = getLabelIndex("NOW");
-
-  TEST_ASSERT_EQUAL(3, index);
+  
+  Try{
+    index = getLabelIndex("NOW");
+    TEST_ASSERT_EQUAL(3, index);
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    freeException(e);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
   free(listPtr);
 }
 
@@ -166,18 +200,30 @@ void test_getLabelIndex_given_label_and_but_label_not_exists_in_list_expect_MINU
   ListItem item2 = {NULL, NULL, &info2};
   doubleLinkedListAddItemToHead(listPtr, &item1);
   doubleLinkedListAddItemToHead(listPtr, &item2);
-  index = getLabelIndex("SKIP");
-
-  TEST_ASSERT_EQUAL(-1, index);
+  
+  Try{
+    index = getLabelIndex("SKIP");
+    TEST_ASSERT_EQUAL(-1, index);
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    freeException(e);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
   free(listPtr);
 }
 
 void test_getLabelIndex_given_label_and_but_empty_list_expect_MINUSone_is_returned() {
   int index;
   listPtr = doubleLinkedListCreateList();
-  index = getLabelIndex("THERE");
-
-  TEST_ASSERT_EQUAL(-1, index);
+  
+  Try{
+    index = getLabelIndex("THERE");
+    TEST_ASSERT_EQUAL(-1, index);
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    freeException(e);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
   free(listPtr);
 }
 
@@ -196,9 +242,15 @@ void test_getRelativeAddress_given_label_as_token_and_label_exists_expect_relati
 
   //label "NOW" is read
   tokenizer = createTokenizer("NOW");
-  relative = getRelativeAddress(tokenizer, 30, -128, 127);
-
-  TEST_ASSERT_EQUAL(-29, relative);
+  
+  Try{
+    relative = getRelativeAddress(tokenizer, 30, -128, 127);
+    TEST_ASSERT_EQUAL(-29, relative);
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    freeException(e);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
   free(listPtr);
   freeTokenizer(tokenizer);
 }
@@ -208,23 +260,31 @@ void test_getRelativeAddress_given_integer_as_token_expect_relative_is_computed_
   Tokenizer *tokenizer;
 
   tokenizer = createTokenizer("+100");
-  relative = getRelativeAddress(tokenizer, 0x90A, -128, 127);
-
-  TEST_ASSERT_EQUAL(100, relative);
+  
+  Try{
+    relative = getRelativeAddress(tokenizer, 0x90A, -128, 127);
+    TEST_ASSERT_EQUAL(100, relative);
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    freeException(e);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
   freeTokenizer(tokenizer);
 }
 
 void test_getRelativeAddress_given_integer_as_token_but_out_of_range_expect_ERR_INTEGER_OUT_OF_RANGE_is_thrown() {
   int relative;
   Tokenizer *tokenizer;
+  
+  tokenizer = createTokenizer("200");
 
   Try {
-    tokenizer = createTokenizer("200");
     relative = getRelativeAddress(tokenizer, 50, -128, 127);
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INTEGER_OUT_OF_RANGE, e->errorCode);
+    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -241,14 +301,16 @@ void test_getRelativeAddress_given_non_existent_label_as_token_expect_ERR_UNKNOW
   ListItem item2 = {NULL, NULL, &info2};
   doubleLinkedListAddItemToHead(listPtr, &item1);
   doubleLinkedListAddItemToHead(listPtr, &item2);
+  
+  tokenizer = createTokenizer("HERE");
 
   Try{
-    tokenizer = createTokenizer("HERE");
     relative = getRelativeAddress(tokenizer, 0x50, -128, 127);
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_UNKNOWN_LABEL, e->errorCode);
+    freeException(e);
   }
   free(listPtr);
   freeTokenizer(tokenizer);
@@ -266,14 +328,16 @@ void test_getRelativeAddress_given_label_as_token_but_out_of_branching_range_bac
   ListItem item2 = {NULL, NULL, &info2};
   doubleLinkedListAddItemToHead(listPtr, &item1);
   doubleLinkedListAddItemToHead(listPtr, &item2);
+  
+  tokenizer = createTokenizer("END");
 
   Try{
-    tokenizer = createTokenizer("END");
     relative = getRelativeAddress(tokenizer, 152, -128, 127);
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INTEGER_OUT_OF_RANGE, e->errorCode);
+    freeException(e);
   }
   free(listPtr);
   freeTokenizer(tokenizer);
@@ -291,14 +355,16 @@ void test_getRelativeAddress_given_label_as_token_but_out_of_branching_range_for
   ListItem item2 = {NULL, NULL, &info2};
   doubleLinkedListAddItemToHead(listPtr, &item1);
   doubleLinkedListAddItemToHead(listPtr, &item2);
+  
+  tokenizer = createTokenizer("NOW");
 
   Try{
-    tokenizer = createTokenizer("NOW");
     relative = getRelativeAddress(tokenizer, 22, -128, 127);
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INTEGER_OUT_OF_RANGE, e->errorCode);
+    freeException(e);
   }
   free(listPtr);
   freeTokenizer(tokenizer);
@@ -307,14 +373,16 @@ void test_getRelativeAddress_given_label_as_token_but_out_of_branching_range_for
 void test_getRelativeAddress_given_token_but_is_neither_label_nor_integer_expect_ERR_INVALID_OPERAND_is_thrown() {
   int relative;
   Tokenizer *tokenizer;
+  
+  tokenizer = createTokenizer("@r1");
 
   Try{
-    tokenizer = createTokenizer("@r1");
     relative = getRelativeAddress(tokenizer, 30, -128, 127);
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -333,9 +401,15 @@ void test_getAbsoluteAddress_given_label_as_token_and_label_exists_expect_absolu
   doubleLinkedListAddItemToHead(listPtr, &item2);
 
   tokenizer = createTokenizer("HERE");
-  absolute = getAbsoluteAddress(tokenizer, 0, 65535);
-
-  TEST_ASSERT_EQUAL_HEX16(0x9A9B, absolute);
+  
+  Try{
+    absolute = getAbsoluteAddress(tokenizer, 0, 65535);
+    TEST_ASSERT_EQUAL_HEX16(0x9A9B, absolute);
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    freeException(e);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
   free(listPtr);
   freeTokenizer(tokenizer);
 }
