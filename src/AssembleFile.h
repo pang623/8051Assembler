@@ -12,7 +12,7 @@ extern DoubleLinkedList *listPtr;
 extern int lineNumber;
 extern int muteOnNoLabel;
 
-void assembleInFileAndWriteToOutFile(char *inFile, char *outFile);
+int assembleInFileAndWriteToOutFile(char *inFile, char *outFile);
 int assembleFile(char *filename);
 char *getNextInstructionLineInFile();
 

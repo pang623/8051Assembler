@@ -20,6 +20,7 @@ CEXCEPTION_T e;
 extern uint8_t codeMemory[];
 extern char **instructionLines;
 extern int lineIndex;
+extern int lineNumber;
 
 //forward jump and backward jump tested
 void test_assembleStrings_given_strings_of_instruction_expect_all_of_them_are_assembled_correctly() {
@@ -78,7 +79,7 @@ void test_assembleStrings_given_strings_of_instruction_but_jump_to_an_undefined_
     len = assembleStrings();
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
-    dumpTokenErrorMessage(e, __LINE__);
+    dumpTokenErrorMessage(e, lineNumber);
     TEST_ASSERT_EQUAL(ERR_UNKNOWN_LABEL, e->errorCode);
   }
 }
@@ -120,6 +121,105 @@ void test_assembleStrings_given_strings_of_instruction_and_jump_without_label_ex
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+}
+
+//repeated use of label
+void test_assembleStrings_given_strings_of_instruction_with_repeated_label_expect_ERR_DUPLICATE_LABEL_is_thrown() {
+  int len;
+  char *lines[] = {
+    "MOV A, R3",
+    "JMP @A+DPTR",
+    "AGAIN: RRC A",
+    "JNB 0x65, HERE   ;unknown label 'HERE'",
+    "INC R1",
+    "AGAIN: DEC R0",
+    "CJNE R0, #0, AGAIN",
+    NULL
+  };
+  instructionLines = lines;
+  
+  Try{
+    len = assembleStrings();
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, lineNumber);
+    TEST_ASSERT_EQUAL(ERR_DUPLICATE_LABEL, e->errorCode);
+  }
+}
+
+//illegal label used (instruction mnemonics used as label)
+void test_assembleStrings_given_strings_of_instruction_with_instruction_mnemonic_used_as_label_expect_ERR_ILLEGAL_LABEL_is_thrown() {
+  int len;
+  char *lines[] = {
+    "MOV A, R3",
+    "JMP @A+DPTR",
+    "AGAIN: RRC A",
+    "JNB: JB 0x65, HERE   ;unknown label 'HERE'",
+    "INC R1",
+    "AGAIN: DEC R0",
+    "CJNE R0, #0, AGAIN",
+    NULL
+  };
+  instructionLines = lines;
+  
+  Try{
+    len = assembleStrings();
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, lineNumber);
+    TEST_ASSERT_EQUAL(ERR_ILLEGAL_LABEL, e->errorCode);
+  }
+}
+
+//given label is used twice in one line of instruction
+void test_assembleStrings_given_strings_of_instruction_with_two_label_in_a_line_expect_ERR_INVALID_INSTRUCTION_is_thrown() {
+  int len;
+  char *lines[] = {
+    "MOV A, #0xFF",
+    "AGAIN: MOV R3, #200",
+    "DELAY: HERE: NOP",    //token after the first colon must be an instruction, else it is considered an invalid instruction
+    "NOP",
+    "nop",
+    "DJNZ R3, -5  ;jump to DELAY",
+    "DEC A",
+    "CJNE A, #0, AGAIN",
+    NULL
+  };
+  instructionLines = lines;
+  
+  Try{
+    len = assembleStrings();
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, lineNumber);
+    TEST_ASSERT_EQUAL(ERR_INVALID_INSTRUCTION, e->errorCode);
+  }
+}
+
+//given colon after an instruction mnemonic
+void test_assembleStrings_given_strings_of_instruction_with_colon_after_an_instruction_mnemonic_expect_ERR_INVALID_OPERAND_is_thrown() {
+  int len;
+  char *lines[] = {
+    //at first line, MOV is seen as an instruction mnemonic, not a label, thus the colon after the MOV is considered an invalid opernad
+    "START: MOV: A, #0xFF",
+    "AGAIN: MOV R3, #200",
+    "DELAY: NOP",
+    "NOP",
+    "nop",
+    "DJNZ R3, -5  ;jump to DELAY",
+    "DEC A",
+    "CJNE A, #0, AGAIN",
+    NULL
+  };
+  instructionLines = lines;
+  
+  Try{
+    len = assembleStrings();
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, lineNumber);
+    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
   }
 }
 

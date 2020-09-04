@@ -5,9 +5,10 @@
 
 FILE *fileHandler;
 
-void assembleInFileAndWriteToOutFile(char *inFile, char *outFile) {
+int assembleInFileAndWriteToOutFile(char *inFile, char *outFile) {
   int totalBytes = assembleFile(inFile);
   saveCodeToBin(outFile, codeMemory, totalBytes);
+  return totalBytes;
 }
 
 int assembleFile(char *filename) {
