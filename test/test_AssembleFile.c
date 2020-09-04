@@ -55,7 +55,7 @@ void test_assembleInFileAndWriteToOutFile_given_test_as_input_file_expect_opcode
 //test fwd jump, backward jump, jump w/o label and absolute addressing with and w/o label
 void test_assembleFile_given_filename_expect_instructions_in_file_are_read_and_written_into_code_memory() {
   int totalBytes;
-  char *filename = "./test/data/AssembleFile/test_assembleFile_NoError.txt";
+  char *filename = "./test/data/AssembleFile/test_assembleFile.txt";
   Try{
     totalBytes = assembleFile(filename);
     TEST_ASSERT_EQUAL(20, totalBytes);

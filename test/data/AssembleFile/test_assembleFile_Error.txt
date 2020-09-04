@@ -1,7 +1,0 @@
-START: NOP
-MOV A, #-50;
-mov 0x56, A
-mov r0, 0x56
-ADD A, r0
-LCALL FAR
-AJMP START
