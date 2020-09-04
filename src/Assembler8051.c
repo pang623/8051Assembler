@@ -425,9 +425,9 @@ int assembleLogicalInstructionWithoutXRL(Tokenizer *tokenizer, _8051Instructions
 
   token = getToken(tokenizer);
   pushBackToken(tokenizer, token);
-  if(!strcmp(token->str, "A"))
+  if(!stricmp(token->str, "A"))
     opcode = assembleAWithOperands(tokenizer, info->data[0], info->data[1]);
-  else if(!strcmp(token->str, "C"))
+  else if(!stricmp(token->str, "C"))
     opcode = assembleCWithOperands(tokenizer, info->data[0] + 0x30, info->data[1]);
   else if(isIntegerToken(token))
     opcode = assembleDirectWithOperands(tokenizer, info->data[0], info->data[1]);
@@ -448,7 +448,7 @@ int assembleXRLinstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_
 
   token = getToken(tokenizer);
   pushBackToken(tokenizer, token);
-  if(!strcmp(token->str, "A"))
+  if(!stricmp(token->str, "A"))
     opcode = assembleAWithOperands(tokenizer, info->data[0], info->data[1]);
   else if(isIntegerToken(token))
     opcode = assembleDirectWithOperands(tokenizer, info->data[0], info->data[1]);
