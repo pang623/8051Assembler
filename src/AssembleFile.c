@@ -4,10 +4,6 @@
 #include <string.h>
 
 FILE *fileHandler;
-extern uint8_t codeMemory[];
-extern DoubleLinkedList *listPtr;
-extern int lineNumber;
-extern int muteOnNoLabel;
 
 void assembleInFileAndWriteToOutFile(char *inFile, char *outFile) {
   int totalBytes = assembleFile(inFile);

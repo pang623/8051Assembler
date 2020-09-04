@@ -53,8 +53,6 @@ _8051Instructions instructionsTable[45] = {
   {NULL  , NULL                                        , {0, 0}},
 };
 
-extern int muteOnNoLabel;
-extern int lineNumber;
 uint8_t codeMemory[65536];
 DoubleLinkedList *listPtr;
 int lineNumber = 0;
@@ -144,7 +142,7 @@ void recordLabel(char *label, int index, int lineNo) {
         nextItem = nextItem->next;
       else
         throwException(ERR_DUPLICATE_LABEL, NULL,
-        "Label '%s' appeared before at line %d", label, nextInfoPtr->lineNo);
+        "Label '%s' appeared before at line %d, but is defined again at line %d", label, nextInfoPtr->lineNo, lineNo);
     }
     doubleLinkedListAddItemToHead(listPtr, itemPtr);
   }

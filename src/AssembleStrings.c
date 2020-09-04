@@ -1,11 +1,8 @@
 #include "AssembleStrings.h"
 
-static int lineIndex;
-extern int lineNumber;
-extern int muteOnNoLabel;
-extern DoubleLinkedList *listPtr;
+int lineIndex = 0;
 
-char *instructionLines[1024];
+char **instructionLines;
 
 int assembleStrings() {
   int totalBytes;

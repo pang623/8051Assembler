@@ -7,6 +7,10 @@
 #include "LabelInfo.h"
 #include "ExceptionThrowing.h"
 
+extern int lineNumber;
+extern int muteOnNoLabel;
+extern DoubleLinkedList *listPtr;
+
 int assembleStrings();
 char *getNextInstructionLineInString();
 
