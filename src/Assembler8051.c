@@ -192,10 +192,9 @@ int getRelativeAddress(Tokenizer *tokenizer, int baseAddr, int min, int max) {
       addr = labelIndex - baseAddr;
   }else {
     pushBackToken(tokenizer, token);
-    if(isIntegerTokenThenConsume(tokenizer, &addr, min, max)) {
-      freeToken(token);
+    if(isIntegerTokenThenConsume(tokenizer, &addr, min, max))
       return addr;
-    }else
+    else
       throwException(ERR_INVALID_OPERAND, token,
       "Expecting a label or integer, but received '%s' instead", token->str);
   }
@@ -444,7 +443,6 @@ int assembleLogicalInstructionWithoutXRL(Tokenizer *tokenizer, _8051Instructions
     throwException(ERR_INVALID_OPERAND, token,
     "Expecting an 'A', 'C' or integer, received %s instead", token->str);
 
-  freeToken(token);
   len = writeCodeToCodeMemory(opcode, codePtr);
   (*codePtrPtr) += len;
   return len;
@@ -465,7 +463,6 @@ int assembleXRLinstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_
     throwException(ERR_INVALID_OPERAND, token,
     "Expecting an 'A' or integer, received %s instead", token->str);
 
-  freeToken(token);
   len = writeCodeToCodeMemory(opcode, codePtr);
   (*codePtrPtr) += len;
   return len;
@@ -503,12 +500,14 @@ int assembleSingleOperandWithLabel(Tokenizer *tokenizer, _8051Instructions *info
 }
 
 int assembleSingleOperand(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr) {
-  Token *token;
+  Tokenizer *tempTokenizer = NULL;
+  Token *token = NULL;
   int opcode, len, regNum = 0, addr = 0;
   uint8_t *codePtr = *codePtrPtr;
 
-  token = getToken(tokenizer);
-  pushBackToken(tokenizer, token);
+  tempTokenizer = createTokenizer(tokenizer->str);
+  tempTokenizer->index = tokenizer->index;
+  token = getToken(tempTokenizer);
   if(isIdentifierTokenThenConsume(tokenizer, "A")) {
     if(info->data[1] & OPERAND_A_ROT)
       opcode = info->data[0] | 0x03;
@@ -557,6 +556,7 @@ int assembleSingleOperand(Tokenizer *tokenizer, _8051Instructions *info, uint8_t
     "The operand '%s' entered is invalid", token->str);
 
   freeToken(token);
+  freeTokenizer(tempTokenizer);
   checkExtraToken(tokenizer);
   len = writeCodeToCodeMemory(opcode, codePtr);
   (*codePtrPtr) += len;
@@ -564,12 +564,14 @@ int assembleSingleOperand(Tokenizer *tokenizer, _8051Instructions *info, uint8_t
 }
 
 int assembleAWithOperands(Tokenizer *tokenizer, int opcode, int flags) {
-  Token *token;
+  Token *token = NULL;
+  Tokenizer *tempTokenizer = NULL;
   int regNum = 0, immediate = 0, direct = 0;
   verifyIsIdentifierTokenThenConsume(tokenizer, "A");
   verifyIsOperatorTokenThenConsume(tokenizer, ",");
-  token = getToken(tokenizer);
-  pushBackToken(tokenizer, token);
+  tempTokenizer = createTokenizer(tokenizer->str);
+  tempTokenizer->index = tokenizer->index;
+  token = getToken(tempTokenizer);
   if(isIntegerTokenThenConsume(tokenizer, &direct, 0, 255)) {
     if(flags & A_DIR)
       opcode = ((opcode | 0x05) << 8) | ((uint8_t) direct);
@@ -597,17 +599,20 @@ int assembleAWithOperands(Tokenizer *tokenizer, int opcode, int flags) {
     "The operand '%s' inputted is not a valid operand", token->str);
 
   freeToken(token);
+  freeTokenizer(tempTokenizer);
   checkExtraToken(tokenizer);
   return opcode;
 }
 
 int assembleDirectWithOperands(Tokenizer *tokenizer, int opcode, int flags) {
-  Token *token;
+  Token *token = NULL;
+  Tokenizer *tempTokenizer = NULL;
   int direct = 0, immediate = 0;
   verifyIsIntegerTokenThenConsume(tokenizer, &direct, 0, 255);
   verifyIsOperatorTokenThenConsume(tokenizer, ",");
-  token = getToken(tokenizer);
-  pushBackToken(tokenizer, token);
+  tempTokenizer = createTokenizer(tokenizer->str);
+  tempTokenizer->index = tokenizer->index;
+  token = getToken(tempTokenizer);
   if(isIdentifierTokenThenConsume(tokenizer, "A")) {
     if(flags & DIR_A)
       opcode = ((opcode | 0x02) << 8) | ((uint8_t) direct);
@@ -624,17 +629,20 @@ int assembleDirectWithOperands(Tokenizer *tokenizer, int opcode, int flags) {
     "The operand '%s' inputted is not a valid operand", token->str);
 
   freeToken(token);
+  freeTokenizer(tempTokenizer);
   checkExtraToken(tokenizer);
   return opcode;
 }
 
 int assembleCWithOperands(Tokenizer *tokenizer, int opcode, int flags) {
-  Token *token;
+  Token *token = NULL;
+  Tokenizer *tempTokenizer = NULL;
   int bitAddr = 0;
   verifyIsIdentifierTokenThenConsume(tokenizer, "C");
   verifyIsOperatorTokenThenConsume(tokenizer, ",");
-  token = getToken(tokenizer);
-  pushBackToken(tokenizer, token);
+  tempTokenizer = createTokenizer(tokenizer->str);
+  tempTokenizer->index = tokenizer->index;
+  token = getToken(tempTokenizer);
   if(isIntegerTokenThenConsume(tokenizer, &bitAddr, 0, 255)) {
     if(flags & C_BIT)
       opcode = ((opcode | 0x02) << 8) | ((uint8_t) bitAddr);
@@ -651,6 +659,7 @@ int assembleCWithOperands(Tokenizer *tokenizer, int opcode, int flags) {
     "The operand '%s' inputted is not a valid operand", token->str);
 
   freeToken(token);
+  freeTokenizer(tempTokenizer);
   checkExtraToken(tokenizer);
   return opcode;
 }
@@ -660,7 +669,7 @@ int assembleCWithOperands(Tokenizer *tokenizer, int opcode, int flags) {
 //throw exception if token next to '+' and '-' is not integer
 //throw exception if integer token is out of range
 int isIntegerTokenThenConsume(Tokenizer *tokenizer, int *val, int min, int max) {
-  Token *token;
+  Token *token = NULL;
   int number;
 
   if(isOperatorTokenThenConsume(tokenizer, "+")) {
@@ -689,13 +698,14 @@ int isIntegerTokenThenConsume(Tokenizer *tokenizer, int *val, int min, int max) 
   if(number < min || number > max)
     throwException(ERR_INTEGER_OUT_OF_RANGE, token,
     "Expecting integer of range %d to %d, received %d instead", min, max, number);
+  freeToken(token);
   *val = number;
   return 1;
 }
 
 //consume token if is integer token and in valid range, else throwException
 void verifyIsIntegerTokenThenConsume(Tokenizer *tokenizer, int *value, int min, int max) {
-  Token *token;
+  Token *token = NULL;
   int val = 0;
   if(!isIntegerTokenThenConsume(tokenizer, &val, min, max)) {
     token = getToken(tokenizer);
@@ -713,8 +723,10 @@ int isIdentifierTokenThenConsume(Tokenizer *tokenizer, char *identifier) {
     if(stricmp(token->str, identifier)) {
       pushBackToken(tokenizer, token);
       return 0;
-    }else
+    }else {
+      freeToken(token);
       return 1;
+    }
   }else {
     pushBackToken(tokenizer, token);
     return 0;
@@ -723,7 +735,7 @@ int isIdentifierTokenThenConsume(Tokenizer *tokenizer, char *identifier) {
 
 //consume token if is correct identifier token, else throwException
 void verifyIsIdentifierTokenThenConsume(Tokenizer *tokenizer, char *identifier) {
-  Token *token;
+  Token *token = NULL;
   if(!isIdentifierTokenThenConsume(tokenizer, identifier)) {
     token = getToken(tokenizer);
     throwException(ERR_INVALID_OPERAND, token,
@@ -733,14 +745,16 @@ void verifyIsIdentifierTokenThenConsume(Tokenizer *tokenizer, char *identifier) 
 
 //consume token if is correct operator token, else pushBack the token
 int isOperatorTokenThenConsume(Tokenizer *tokenizer, char *Operator) {
-  Token *token;
+  Token *token = NULL;
   token = getToken(tokenizer);
   if(token->type == TOKEN_OPERATOR_TYPE) {
     if(strcmp(token->str, Operator)) {
       pushBackToken(tokenizer, token);
       return 0;
-    }else
+    }else {
+      freeToken(token);
       return 1;
+      }
   }else {
     pushBackToken(tokenizer, token);
     return 0;
@@ -749,7 +763,7 @@ int isOperatorTokenThenConsume(Tokenizer *tokenizer, char *Operator) {
 
 //consume token if is correct operator token, else throwException
 void verifyIsOperatorTokenThenConsume(Tokenizer *tokenizer, char *Operator) {
-  Token *token;
+  Token *token = NULL;
   if(!isOperatorTokenThenConsume(tokenizer, Operator)) {
     token = getToken(tokenizer);
     throwException(ERR_INVALID_OPERAND, token,
@@ -761,7 +775,7 @@ void verifyIsOperatorTokenThenConsume(Tokenizer *tokenizer, char *Operator) {
 //does not throw exception if its not register
 //return 1 if register is valid and in range
 int isRegisterConsumeAndGetItsNumber(Tokenizer *tokenizer, int addrMode, int *number) {
-  Token *token;
+  Token *token = NULL;
   token = getToken(tokenizer);
 
   if(token->type != TOKEN_IDENTIFIER_TYPE || (!(tolower(token->str[0]) == 'r'))) {
@@ -780,12 +794,13 @@ int isRegisterConsumeAndGetItsNumber(Tokenizer *tokenizer, int addrMode, int *nu
       throwException(ERR_INDIRECT_OUT_OF_RANGE, token,
       "Register indirect %s is out of range, expecting register of R0-R1", token->str);
   }
+  freeToken(token);
   return 1;
 }
 
 //throw exception if token is not register, else consume token and get register number
 void verifyIsRegisterConsumeAndGetItsNumber(Tokenizer *tokenizer, int addrMode, int *number) {
-  Token *token;
+  Token *token = NULL;
   int n = 0;
   if(!isRegisterConsumeAndGetItsNumber(tokenizer, addrMode, &n)) {
     token = getToken(tokenizer);
@@ -824,7 +839,7 @@ int isImmediateThenGetsItsValueAndConsume(Tokenizer *tokenizer, int *value, int 
 //throw exception if # is not detected, which means it is not immediate
 void verifyIsImmediateThenGetsItsValueAndConsume(Tokenizer *tokenizer, int *value, int min, int max) {
   int immediate = 0;
-  Token *token;
+  Token *token = NULL;
   if(!isImmediateThenGetsItsValueAndConsume(tokenizer, &immediate, min, max)) {
     token = getToken(tokenizer);
     throwException(ERR_EXPECTING_IMMEDIATE, token,
@@ -845,7 +860,7 @@ int extractNum(char *start, Token *token) {
 }
 
 void checkExtraToken(Tokenizer *tokenizer) {
-  Token *token;
+  Token *token = NULL;
   token = getToken(tokenizer);
   if(token->type != TOKEN_NULL_TYPE && token->type != TOKEN_NEWLINE_TYPE && (strcmp(token->str, ";")))
     throwException(ERR_EXTRA_PARAMETER, token,
@@ -867,15 +882,6 @@ int writeCodeToCodeMemory(int opcode, uint8_t *codePtr) {
   return bytes;
 }
 
-//this exception is thrown when a set of valid operands is entered,
-//but the flags for this operand is not set for that certain instruction
-//eg : xchd has only A, @Ri set of operands, if A, Rn or others is inputted,
-//this exception will be thrown
-void throwInvalidOperandException(Token *token) {
-   throwException(ERR_INVALID_OPERAND, token,
-   "Operand %s cannot be used here", token->str);
-}
-
 int getInstructionBytes(int opcode) {
   if(opcode <= 0xFF)
     return 1;
@@ -883,4 +889,13 @@ int getInstructionBytes(int opcode) {
     return 2;
   else if(opcode <= 0xFFFFFF)
     return 3;
+}
+
+//this exception is thrown when a set of valid operands is entered,
+//but the flags for this operand is not set for that certain instruction
+//eg : xchd has only A, @Ri set of operands, if A, Rn or others is inputted,
+//this exception will be thrown
+void throwInvalidOperandException(Token *token) {
+   throwException(ERR_INVALID_OPERAND, token,
+   "Operand %s cannot be used here", token->str);
 }
