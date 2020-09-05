@@ -17,7 +17,7 @@ void tearDown(void)
 }
 
 void test_throwMovAWithInvalidOperandException_just_to_test_exception_is_thrown_correctly() {
-  Tokenizer *tokenizer;
+  Tokenizer *tokenizer = NULL;
   tokenizer = createTokenizer("PC");
   Try {
     throwMovAWithInvalidOperandException(tokenizer);
@@ -31,7 +31,7 @@ void test_throwMovAWithInvalidOperandException_just_to_test_exception_is_thrown_
 }
 
 void test_throwMovRegWithInvalidOperandException_just_to_test_exception_is_thrown_correctly() {
-  Tokenizer *tokenizer;
+  Tokenizer *tokenizer = NULL;
   tokenizer = createTokenizer(" hello ");
   Try {
     throwMovRegWithInvalidOperandException(tokenizer);
@@ -45,7 +45,7 @@ void test_throwMovRegWithInvalidOperandException_just_to_test_exception_is_throw
 }
 
 void test_throwMovDirectWithInvalidOperandException_just_to_test_exception_is_thrown_correctly() {
-  Tokenizer *tokenizer;
+  Tokenizer *tokenizer = NULL;
   tokenizer = createTokenizer(" DPTR ");
   Try {
     throwMovDirectWithInvalidOperandException(tokenizer);
@@ -59,7 +59,7 @@ void test_throwMovDirectWithInvalidOperandException_just_to_test_exception_is_th
 }
 
 void test_throwInvalidMovFirstOperand_just_to_test_exception_is_thrown_correctly() {
-  Tokenizer *tokenizer;
+  Tokenizer *tokenizer = NULL;
   tokenizer = createTokenizer(" #23 ");
   Try {
     throwInvalidMovFirstOperand(tokenizer);
@@ -73,7 +73,7 @@ void test_throwInvalidMovFirstOperand_just_to_test_exception_is_thrown_correctly
 }
 
 void test_throwExpectingRegisterOrDPTRexception_just_to_test_exception_is_thrown_correctly() {
-  Tokenizer *tokenizer;
+  Tokenizer *tokenizer = NULL;
   tokenizer = createTokenizer(" A ");
   Try {
     throwExpectingRegisterOrDPTRexception(tokenizer);
@@ -87,7 +87,7 @@ void test_throwExpectingRegisterOrDPTRexception_just_to_test_exception_is_thrown
 }
 
 void test_throwExpectingAOrIndException_just_to_test_exception_is_thrown_correctly() {
-  Tokenizer *tokenizer;
+  Tokenizer *tokenizer = NULL;
   tokenizer = createTokenizer(" R4 ");
   Try {
     throwExpectingAOrIndException(tokenizer);
@@ -101,7 +101,7 @@ void test_throwExpectingAOrIndException_just_to_test_exception_is_thrown_correct
 }
 
 void test_throwExpectingPCorDPTRexception_just_to_test_exception_is_thrown_correctly() {
-  Tokenizer *tokenizer;
+  Tokenizer *tokenizer = NULL;
   tokenizer = createTokenizer(" 0x56 ");
   Try {
     throwExpectingPCorDPTRexception(tokenizer);
@@ -115,7 +115,7 @@ void test_throwExpectingPCorDPTRexception_just_to_test_exception_is_thrown_corre
 }
 
 void test_throwExpectingIntOrImmException_just_to_test_exception_is_thrown_correctly() {
-  Tokenizer *tokenizer;
+  Tokenizer *tokenizer = NULL;
   tokenizer = createTokenizer("@r0 ");
   Try {
     throwExpectingIntOrImmException(tokenizer);
@@ -129,7 +129,7 @@ void test_throwExpectingIntOrImmException_just_to_test_exception_is_thrown_corre
 }
 
 void test_throwInvalidCJNEFirstOperandException_just_to_test_exception_is_thrown_correctly() {
-  Tokenizer *tokenizer;
+  Tokenizer *tokenizer = NULL;
   tokenizer = createTokenizer(" SKIP ");
   Try {
     throwInvalidCJNEFirstOperandException(tokenizer);
@@ -143,7 +143,7 @@ void test_throwInvalidCJNEFirstOperandException_just_to_test_exception_is_thrown
 }
 
 void test_throwInvalidDJNZFirstOperandException_just_to_test_exception_is_thrown_correctly() {
-  Tokenizer *tokenizer;
+  Tokenizer *tokenizer = NULL;
   tokenizer = createTokenizer(" A ");
   Try {
     throwInvalidDJNZFirstOperandException(tokenizer);

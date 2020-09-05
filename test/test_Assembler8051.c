@@ -497,8 +497,8 @@ void test_writeCodeToCodeMemory_given_opcode_0x9BA12C_expect_opcode_stored_in_co
 }
 
 void test_isIndRegisterThenGetItsNumberAndConsume_given_indR0_token_expect_number_extracted_is_0_and_token_is_consumed() {
-  Tokenizer* tokenizer;
-  Token *token;
+  Tokenizer *tokenizer = NULL;
+  Token *token = NULL;
   int number = 8;
   Try{
     tokenizer = createTokenizer(" @r0 , A");
@@ -517,8 +517,8 @@ void test_isIndRegisterThenGetItsNumberAndConsume_given_indR0_token_expect_numbe
 }
 
 void test_isIndRegisterThenGetItsNumberAndConsume_given_not_indirect_expect_number_is_not_extracted_and_token_is_pushed_back() {
-  Tokenizer* tokenizer;
-  Token *token;
+  Tokenizer *tokenizer = NULL;
+  Token *token = NULL;
   int number = 8;
   Try{
     tokenizer = createTokenizer("r3 #0x55");
@@ -537,7 +537,7 @@ void test_isIndRegisterThenGetItsNumberAndConsume_given_not_indirect_expect_numb
 }
 
 void test_isIndRegisterThenGetItsNumberAndConsume_given_is_indReg_but_invalidReg_expect_exception_ERR_INVALID_REGISTER_to_be_thrown() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   int number;
   Try{
     tokenizer = createTokenizer("    @ratatouille ");     //token is indirect but register is invalid
@@ -552,7 +552,7 @@ void test_isIndRegisterThenGetItsNumberAndConsume_given_is_indReg_but_invalidReg
 }
 
 void test_isIndRegisterThenGetItsNumberAndConsume_given_is_indReg_but_outOfRange_expect_exception_ERR_INDIRECT_OUT_OF_RANGE_to_be_thrown() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   int number;
   Try{
     tokenizer = createTokenizer("  @r3 ");                //token is indirect but register is out of range
@@ -571,7 +571,7 @@ void test_isIndRegisterThenGetItsNumberAndConsume_given_is_indReg_but_outOfRange
 //automatically the token next to it must be a register,
 //this function is not used in assembling MOVX and MOVC instruction (@Ri is not checked using this function for MOVX and MOVC)
 void test_isIndRegisterThenGetItsNumberAndConsume_given_is_ind_but_not_register_expect_exception_ERR_EXPECTING_REGISTER_to_be_thrown() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   int number;
   Try{
     tokenizer = createTokenizer("  @hello ");
@@ -586,8 +586,8 @@ void test_isIndRegisterThenGetItsNumberAndConsume_given_is_ind_but_not_register_
 }
 
 void test_isImmediateThenGetsItsValueAndConsume_given_negative_imm8bit_expect_value_extracted_and_token_is_consumed() {
-  Tokenizer* tokenizer;
-  Token *token;
+  Tokenizer *tokenizer = NULL;
+  Token *token = NULL;
   int value = 0xAA;
   Try{
     tokenizer = createTokenizer("   #-123@123");
@@ -607,8 +607,8 @@ void test_isImmediateThenGetsItsValueAndConsume_given_negative_imm8bit_expect_va
 }
 
 void test_isImmediateThenGetsItsValueAndConsume_given_imm16bit_expect_value_extracted_and_token_is_consumed() {
-  Tokenizer* tokenizer;
-  Token *token;
+  Tokenizer *tokenizer = NULL;
+  Token *token = NULL;
   int value = 0xB0;
   Try{
     tokenizer = createTokenizer(" #50000 happy");
@@ -628,8 +628,8 @@ void test_isImmediateThenGetsItsValueAndConsume_given_imm16bit_expect_value_extr
 }
 
 void test_isImmediateThenGetsItsValueAndConsume_given_negative_imm16bit_expect_value_extracted_and_token_is_consumed() {
-  Tokenizer* tokenizer;
-  Token *token;
+  Tokenizer *tokenizer = NULL;
+  Token *token = NULL;
   int value = 0xB1;
   Try{
     tokenizer = createTokenizer(" #-20000 sad");
@@ -649,8 +649,8 @@ void test_isImmediateThenGetsItsValueAndConsume_given_negative_imm16bit_expect_v
 }
 
 void test_isImmediateThenGetsItsValueAndConsume_given_imm8bit_with_plus_sign_expect_value_extracted_and_token_is_consumed() {
-  Tokenizer* tokenizer;
-  Token *token;
+  Tokenizer *tokenizer = NULL;
+  Token *token = NULL;
   int value = 0x05;
   Try{
     tokenizer = createTokenizer(" #+200 bye");
@@ -670,8 +670,8 @@ void test_isImmediateThenGetsItsValueAndConsume_given_imm8bit_with_plus_sign_exp
 }
 
 void test_isImmediateThenGetsItsValueAndConsume_given_not_imm_expect_value_is_not_extracted_and_token_is_pushed_back() {
-  Tokenizer* tokenizer;
-  Token *token;
+  Tokenizer *tokenizer = NULL;
+  Token *token = NULL;
   int value = 0x88;
   Try{
     tokenizer = createTokenizer(" 0xA0 haha");
@@ -690,7 +690,7 @@ void test_isImmediateThenGetsItsValueAndConsume_given_not_imm_expect_value_is_no
 }
 
 void test_isImmediateThenGetsItsValueAndConsume_given_is_imm_but_outOfRange_expect_exception_ERR_INTEGER_OUT_OF_RANGE_to_be_thrown() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   int value;
   Try{
     tokenizer = createTokenizer("#0xFFA  ");
@@ -708,7 +708,7 @@ void test_isImmediateThenGetsItsValueAndConsume_given_is_imm_but_outOfRange_expe
 //automatically the token next to it must be integer
 //if it is not integer it will throw exception
 void test_isImmediateThenGetsItsValueAndConsume_given_is_imm_but_not_integer_expect_exception_ERR_EXPECTING_INTEGER_to_be_thrown() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   int value;
   Try{
     tokenizer = createTokenizer("  #r7  ");
@@ -723,8 +723,8 @@ void test_isImmediateThenGetsItsValueAndConsume_given_is_imm_but_not_integer_exp
 }
 
 void test_verifyIsImmediateThenGetsItsValueAndConsume_given_is_imm_expect_value_is_extracted_and_token_is_consumed() {
-  Tokenizer* tokenizer;
-  Token *token;
+  Tokenizer *tokenizer = NULL;
+  Token *token = NULL;
   int value = 0x70;
   Try{
     tokenizer = createTokenizer("     #-85 hehe");
@@ -742,7 +742,7 @@ void test_verifyIsImmediateThenGetsItsValueAndConsume_given_is_imm_expect_value_
 }
 
 void test_verifyIsImmediateThenGetsItsValueAndConsume_given_not_imm_expect_exception_ERR_EXPECTING_IMMEDIATE_to_be_thrown() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   int value;
   Try{
     tokenizer = createTokenizer(" @r0  ");
@@ -757,8 +757,8 @@ void test_verifyIsImmediateThenGetsItsValueAndConsume_given_not_imm_expect_excep
 }
 
 void test_isOperatorTokenThenConsume_given_is_correct_operator_expect_token_is_consumed_and_return_1() {
-  Tokenizer* tokenizer;
-  Token *token;
+  Tokenizer *tokenizer = NULL;
+  Token *token = NULL;
   Try{
     tokenizer = createTokenizer(" @r0, r1");
     int isTrue = isOperatorTokenThenConsume(tokenizer, "@");
@@ -775,8 +775,8 @@ void test_isOperatorTokenThenConsume_given_is_correct_operator_expect_token_is_c
 }
 
 void test_isOperatorTokenThenConsume_given_wrong_operator_expect_token_is_pushed_back_and_return_0() {
-  Tokenizer* tokenizer;
-  Token *token;
+  Tokenizer *tokenizer = NULL;
+  Token *token = NULL;
   Try{
     tokenizer = createTokenizer(" $hello  ");
     int isTrue = isOperatorTokenThenConsume(tokenizer, "#");
@@ -793,8 +793,8 @@ void test_isOperatorTokenThenConsume_given_wrong_operator_expect_token_is_pushed
 }
 
 void test_isOperatorTokenThenConsume_given_not_operator_expect_token_is_pushed_back_and_return_0() {
-  Tokenizer* tokenizer;
-  Token *token;
+  Tokenizer *tokenizer = NULL;
+  Token *token = NULL;
   Try{
     tokenizer = createTokenizer(" doom  ");
     int isTrue = isOperatorTokenThenConsume(tokenizer, "%");
@@ -811,8 +811,8 @@ void test_isOperatorTokenThenConsume_given_not_operator_expect_token_is_pushed_b
 }
 
 void test_verifyIsOperatorTokenThenConsume_given_is_correct_operator_expect_token_is_consumed() {
-  Tokenizer* tokenizer;
-  Token *token;
+  Tokenizer *tokenizer = NULL;
+  Token *token = NULL;
   Try{
     tokenizer = createTokenizer(" +#@ret");
     verifyIsOperatorTokenThenConsume(tokenizer, "+");
@@ -828,7 +828,7 @@ void test_verifyIsOperatorTokenThenConsume_given_is_correct_operator_expect_toke
 }
 
 void test_verifyIsOperatorTokenThenConsume_given_wrong_operator_expect_exception_ERR_INVALID_OPERAND_to_be_thrown() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer(" -A+B  ");
     verifyIsOperatorTokenThenConsume(tokenizer, "=");
@@ -842,7 +842,7 @@ void test_verifyIsOperatorTokenThenConsume_given_wrong_operator_expect_exception
 }
 
 void test_verifyIsOperatorTokenThenConsume_given_not_operator_expect_exception_ERR_INVALID_OPERAND_to_be_thrown() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer(" 123456+  654321  ");
     verifyIsOperatorTokenThenConsume(tokenizer, "+");
@@ -856,8 +856,8 @@ void test_verifyIsOperatorTokenThenConsume_given_not_operator_expect_exception_E
 }
 
 void test_isIdentifierTokenThenConsume_given_is_correct_identifier_expect_token_is_consumed_and_return_1() {
-  Tokenizer* tokenizer;
-  Token *token;
+  Tokenizer *tokenizer = NULL;
+  Token *token = NULL;
   Try{
     tokenizer = createTokenizer(" abcd123 x1y2z");
     int isTrue = isIdentifierTokenThenConsume(tokenizer, "abcd123");
@@ -874,8 +874,8 @@ void test_isIdentifierTokenThenConsume_given_is_correct_identifier_expect_token_
 }
 
 void test_isIdentifierTokenThenConsume_given_wrong_identifier_expect_token_is_pushed_back_and_return_0() {
-  Tokenizer* tokenizer;
-  Token *token;
+  Tokenizer *tokenizer = NULL;
+  Token *token = NULL;
   Try{
     tokenizer = createTokenizer("     good bad  ");
     int isTrue = isIdentifierTokenThenConsume(tokenizer, "bad");
@@ -892,8 +892,8 @@ void test_isIdentifierTokenThenConsume_given_wrong_identifier_expect_token_is_pu
 }
 
 void test_isIdentifierTokenThenConsume_given_not_identifier_expect_token_is_pushed_back_and_return_0() {
-  Tokenizer* tokenizer;
-  Token *token;
+  Tokenizer *tokenizer = NULL;
+  Token *token = NULL;
   Try{
     tokenizer = createTokenizer(" 9987@#1  ");
     int isTrue = isIdentifierTokenThenConsume(tokenizer, "byebye321");
@@ -910,8 +910,8 @@ void test_isIdentifierTokenThenConsume_given_not_identifier_expect_token_is_push
 }
 
 void test_verifyIsIdentifierTokenThenConsume_given_is_correct_identifier_expect_token_is_consumed() {
-  Tokenizer* tokenizer;
-  Token *token;
+  Tokenizer *tokenizer = NULL;
+  Token *token = NULL;
   Try{
     tokenizer = createTokenizer(" boba isgood2");
     verifyIsIdentifierTokenThenConsume(tokenizer, "boba");
@@ -927,7 +927,7 @@ void test_verifyIsIdentifierTokenThenConsume_given_is_correct_identifier_expect_
 }
 
 void test_verifyIsIdentifierTokenThenConsume_given_wrong_identifier_expect_exception_ERR_INVALID_OPERAND_to_be_thrown() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer(" McDonalds Or KFC");
     verifyIsIdentifierTokenThenConsume(tokenizer, "KFC");
@@ -941,7 +941,7 @@ void test_verifyIsIdentifierTokenThenConsume_given_wrong_identifier_expect_excep
 }
 
 void test_verifyIsIdentifierTokenThenConsume_given_not_identifier_expect_exception_ERR_INVALID_OPERAND_to_be_thrown() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer(" @!# done");
     verifyIsIdentifierTokenThenConsume(tokenizer, "fries");
@@ -955,8 +955,8 @@ void test_verifyIsIdentifierTokenThenConsume_given_not_identifier_expect_excepti
 }
 
 void test_isIntegerTokenThenConsume_given_is_neg_integer_expect_token_is_consumed_value_is_extracted_and_return_1() {
-  Tokenizer* tokenizer;
-  Token *token;
+  Tokenizer *tokenizer = NULL;
+  Token *token = NULL;
   int value = 0xAA;
   Try{
     tokenizer = createTokenizer(" -32678 6699876 A");
@@ -975,8 +975,8 @@ void test_isIntegerTokenThenConsume_given_is_neg_integer_expect_token_is_consume
 }
 
 void test_isIntegerTokenThenConsume_given_is_integer_with_plus_sign_expect_token_is_consumed_value_is_extracted_and_return_1() {
-  Tokenizer* tokenizer;
-  Token *token;
+  Tokenizer *tokenizer = NULL;
+  Token *token = NULL;
   int value = 0xAA;
   Try{
     tokenizer = createTokenizer(" +12345 6699876 A");
@@ -995,8 +995,8 @@ void test_isIntegerTokenThenConsume_given_is_integer_with_plus_sign_expect_token
 }
 
 void test_isIntegerTokenThenConsume_given_is_integer_without_plus_sign_expect_token_is_consumed_value_is_extracted_and_return_1() {
-  Tokenizer* tokenizer;
-  Token *token;
+  Tokenizer *tokenizer = NULL;
+  Token *token = NULL;
   int value = 0xAA;
   Try{
     tokenizer = createTokenizer(" 120 !6699876 A");
@@ -1015,7 +1015,7 @@ void test_isIntegerTokenThenConsume_given_is_integer_without_plus_sign_expect_to
 }
 
 void test_isIntegerTokenThenConsume_given_is_neg_integer_but_out_of_range_expect_ERR_INTEGER_OUT_OF_RANGE_exception_to_be_thrown() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   int value = 0xAA;
   Try{
     tokenizer = createTokenizer(" -129 666");
@@ -1030,7 +1030,7 @@ void test_isIntegerTokenThenConsume_given_is_neg_integer_but_out_of_range_expect
 }
 
 void test_isIntegerTokenThenConsume_given_is_pos_integer_but_out_of_range_expect_ERR_INTEGER_OUT_OF_RANGE_exception_to_be_thrown() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   int value = 0xAA;
   Try{
     tokenizer = createTokenizer(" +300 666");
@@ -1045,7 +1045,7 @@ void test_isIntegerTokenThenConsume_given_is_pos_integer_but_out_of_range_expect
 }
 
 void test_isIntegerTokenThenConsume_given_is_pos_integer_without_sign_but_out_of_range_expect_ERR_INTEGER_OUT_OF_RANGE_exception_to_be_thrown() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   int value = 0xAA;
   Try{
     tokenizer = createTokenizer(" 300 666");
@@ -1060,7 +1060,7 @@ void test_isIntegerTokenThenConsume_given_is_pos_integer_without_sign_but_out_of
 }
 
 void test_isIntegerTokenThenConsume_given_sign_but_not_integer_expect_ERR_EXPECTING_INTEGER_to_be_thrown() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   int value = 0xAA;
   Try{
     tokenizer = createTokenizer(" -abcdef xyz  ");
@@ -1075,8 +1075,8 @@ void test_isIntegerTokenThenConsume_given_sign_but_not_integer_expect_ERR_EXPECT
 }
 
 void test_verifyIsIntegerTokenThenConsume_given_is_integer_expect_token_is_consumed_and_value_is_extracted() {
-  Tokenizer* tokenizer;
-  Token *token;
+  Tokenizer *tokenizer = NULL;
+  Token *token = NULL;
   int value = 0xAA;
   Try{
     tokenizer = createTokenizer(" 0x789 muthu");
@@ -1094,7 +1094,7 @@ void test_verifyIsIntegerTokenThenConsume_given_is_integer_expect_token_is_consu
 }
 
 void test_verifyIsIntegerTokenThenConsume_given_not_integer_expect_exception_ERR_EXPECTING_INTEGER_to_be_thrown() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   int value;
   Try{
     tokenizer = createTokenizer("  +beef  or chicken");
@@ -1109,8 +1109,8 @@ void test_verifyIsIntegerTokenThenConsume_given_not_integer_expect_exception_ERR
 }
 
 void test_isRegisterConsumeAndGetItsNumber_given_is_register_of_valid_range_expect_token_is_consumed_and_value_is_extracted_and_return_1() {
-  Tokenizer* tokenizer;
-  Token *token;
+  Tokenizer *tokenizer = NULL;
+  Token *token = NULL;
   int regNum = 0;
   Try{
     tokenizer = createTokenizer(" r5 C");
@@ -1129,8 +1129,8 @@ void test_isRegisterConsumeAndGetItsNumber_given_is_register_of_valid_range_expe
 }
 
 void test_isRegisterConsumeAndGetItsNumber_given_not_register_expect_token_is_pushed_back_and_return_0() {
-  Tokenizer* tokenizer;
-  Token *token;
+  Tokenizer *tokenizer = NULL;
+  Token *token = NULL;
   int regNum = 7;
   Try{
     tokenizer = createTokenizer(" @abcd");
@@ -1149,7 +1149,7 @@ void test_isRegisterConsumeAndGetItsNumber_given_not_register_expect_token_is_pu
 }
 
 void test_isRegisterConsumeAndGetItsNumber_given_is_register_with_indirect_addressing_mode_but_out_of_range_expect_exception_ERR_INDIRECT_OUT_OF_RANGE_to_be_thrown() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   int regNum;
   Try{
     tokenizer = createTokenizer(" r5 bb");
@@ -1165,7 +1165,7 @@ void test_isRegisterConsumeAndGetItsNumber_given_is_register_with_indirect_addre
 }
 
 void test_isRegisterConsumeAndGetItsNumber_given_is_register_with_register_addressing_mode_but_out_of_range_expect_exception_ERR_REG_OUT_OF_RANGE_to_be_thrown() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   int regNum;
   Try{
     tokenizer = createTokenizer(" r21 bb");
@@ -1181,7 +1181,7 @@ void test_isRegisterConsumeAndGetItsNumber_given_is_register_with_register_addre
 }
 
 void test_isRegisterConsumeAndGetItsNumber_given_invalid_register_expect_exception_ERR_INVALID_REGISTER_to_be_thrown() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   int regNum;
   Try{
     tokenizer = createTokenizer(" R5starry night");
@@ -1196,8 +1196,8 @@ void test_isRegisterConsumeAndGetItsNumber_given_invalid_register_expect_excepti
 }
 
 void test_verifyIsRegisterConsumeAndGetItsNumber_given_is_register_of_valid_range_expect_token_is_consumed_and_value_is_extracted() {
-  Tokenizer* tokenizer;
-  Token *token;
+  Tokenizer *tokenizer = NULL;
+  Token *token = NULL;
   int regNum = 5;
   Try{
     tokenizer = createTokenizer(" r1 register");
@@ -1215,7 +1215,7 @@ void test_verifyIsRegisterConsumeAndGetItsNumber_given_is_register_of_valid_rang
 }
 
 void test_verifyIsRegisterConsumeAndGetItsNumber_given_not_register_expect_exception_ERR_EXPECTING_REGISTER_to_be_thrown() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   int regNum;
   Try{
     tokenizer = createTokenizer(" 0x13 r2 ");
@@ -1230,7 +1230,7 @@ void test_verifyIsRegisterConsumeAndGetItsNumber_given_not_register_expect_excep
 }
 
 void test_checkExtraToken_given_null_token_expect_no_exception_is_thrown() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("     ");
     checkExtraToken(tokenizer);
@@ -1243,7 +1243,7 @@ void test_checkExtraToken_given_null_token_expect_no_exception_is_thrown() {
 }
 
 void test_checkExtraToken_given_newline_token_expect_no_exception_is_thrown() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  \n   ");
     checkExtraToken(tokenizer);
@@ -1256,7 +1256,7 @@ void test_checkExtraToken_given_newline_token_expect_no_exception_is_thrown() {
 }
 
 void test_checkExtraToken_given_tab_token_expect_no_exception_is_thrown() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  \t   ");
     checkExtraToken(tokenizer);
@@ -1269,7 +1269,7 @@ void test_checkExtraToken_given_tab_token_expect_no_exception_is_thrown() {
 }
 
 void test_checkExtraToken_given_semicolon_token_expect_no_exception_is_thrown() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  ;this is a comment   ");
     checkExtraToken(tokenizer);
@@ -1282,7 +1282,7 @@ void test_checkExtraToken_given_semicolon_token_expect_no_exception_is_thrown() 
 }
 
 void test_checkExtraToken_given_not_whitespace_expect_exception_ERR_EXTRA_PARAMETER_is_thrown() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer(" A");
     checkExtraToken(tokenizer);
@@ -1296,8 +1296,8 @@ void test_checkExtraToken_given_not_whitespace_expect_exception_ERR_EXTRA_PARAME
 }
 
 void test_extractNum_given_string_3668_expect_number_3668_is_extracted() {
-  Tokenizer* tokenizer;
-  Token *token;
+  Tokenizer *tokenizer = NULL;
+  Token *token = NULL;
   Try{
     tokenizer = createTokenizer("tree3668");
     token = getToken(tokenizer);
@@ -1314,8 +1314,8 @@ void test_extractNum_given_string_3668_expect_number_3668_is_extracted() {
 
 
 void test_extractNum_given_string_1tree_expect_exception_ERR_INVALID_REGISTER_is_thrown() {
-  Tokenizer* tokenizer;
-  Token *token;
+  Tokenizer *tokenizer = NULL;
+  Token *token = NULL;
   Try{
     tokenizer = createTokenizer(" R1tree");
     token = getToken(tokenizer);
@@ -1331,8 +1331,8 @@ void test_extractNum_given_string_1tree_expect_exception_ERR_INVALID_REGISTER_is
 }
 
 void test_extractNum_given_string_t321_expect_exception_ERR_INVALID_REGISTER_is_thrown() {
-  Tokenizer* tokenizer;
-  Token *token;
+  Tokenizer *tokenizer = NULL;
+  Token *token = NULL;
   Try{
     tokenizer = createTokenizer(" Rt321");
     token = getToken(tokenizer);
@@ -1348,8 +1348,8 @@ void test_extractNum_given_string_t321_expect_exception_ERR_INVALID_REGISTER_is_
 }
 
 void test_extractNum_given_string_null_expect_exception_ERR_INVALID_REGISTER_is_thrown() {
-  Tokenizer* tokenizer;
-  Token *token;
+  Tokenizer *tokenizer = NULL;
+  Token *token = NULL;
   Try{
     tokenizer = createTokenizer("R");
     token = getToken(tokenizer);
@@ -1366,8 +1366,8 @@ void test_extractNum_given_string_null_expect_exception_ERR_INVALID_REGISTER_is_
 
 //just to test exception throwing
 void test_throwInvalidOperandException_given_token_expect_ERR_INVALID_OPERAND_is_thrown() {
-  Tokenizer* tokenizer;
-  Token *token;
+  Tokenizer *tokenizer = NULL;
+  Token *token = NULL;
   Try{
     tokenizer = createTokenizer(" hi");
     token = getToken(tokenizer);
@@ -1383,7 +1383,7 @@ void test_throwInvalidOperandException_given_token_expect_ERR_INVALID_OPERAND_is
 }
 
 void test_assembleAWithOperands_given_AWithIndirect_expect_opcode_0x46() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   int opcode;
   Try{
     tokenizer = createTokenizer("    A, @r0");
@@ -1399,7 +1399,7 @@ void test_assembleAWithOperands_given_AWithIndirect_expect_opcode_0x46() {
 }
 
 void test_assembleAWithOperands_given_AWithRegister_expect_opcode_0x9E() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   int opcode;
   Try{
     tokenizer = createTokenizer("a    , r6");
@@ -1414,7 +1414,7 @@ void test_assembleAWithOperands_given_AWithRegister_expect_opcode_0x9E() {
 }
 
 void test_assembleAWithOperands_given_AWithImmediate_expect_opcode_0x84C0() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   int opcode;
   Try{
     tokenizer = createTokenizer("a,    #0xC0");
@@ -1429,7 +1429,7 @@ void test_assembleAWithOperands_given_AWithImmediate_expect_opcode_0x84C0() {
 }
 
 void test_assembleAWithOperands_given_AWithDirect_expect_opcode_0x7538() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   int opcode;
   Try{
     tokenizer = createTokenizer("A, 0x38");
@@ -1444,7 +1444,7 @@ void test_assembleAWithOperands_given_AWithDirect_expect_opcode_0x7538() {
 }
 
 void test_assembleAWithOperands_given_missing_comma_expect_exception_ERR_INVALID_OPERAND_is_thrown() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   int opcode;
   Try{
     tokenizer = createTokenizer(" a r3");
@@ -1459,7 +1459,7 @@ void test_assembleAWithOperands_given_missing_comma_expect_exception_ERR_INVALID
 }
 
 void test_assembleAWithOperands_given_first_operand_not_Acc_expect_exception_ERR_INVALID_OPERAND_is_thrown() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   int opcode;
   Try{
     tokenizer = createTokenizer(" 0x56 ,@r1");
@@ -1474,7 +1474,7 @@ void test_assembleAWithOperands_given_first_operand_not_Acc_expect_exception_ERR
 }
 
 void test_assembleAWithOperands_given_correct_operand_combi_but_flag_is_not_set_expect_exception_ERR_INVALID_OPERAND_is_thrown() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   int opcode;
   Try{
     tokenizer = createTokenizer(" A , 0x54 ");
@@ -1489,7 +1489,7 @@ void test_assembleAWithOperands_given_correct_operand_combi_but_flag_is_not_set_
 }
 
 void test_assembleAWithOperands_given_indirect_but_not_register_expect_exception_ERR_EXPECTING_REGISTER_is_thrown() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   int opcode;
   Try{
     tokenizer = createTokenizer(" A , @0x55 ");
@@ -1504,7 +1504,7 @@ void test_assembleAWithOperands_given_indirect_but_not_register_expect_exception
 }
 
 void test_assembleAWithOperands_given_invalid_second_operand_expect_exception_ERR_INVALID_OPERAND_is_thrown() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   int opcode;
   Try{
     tokenizer = createTokenizer(" a     , HELLO ");
@@ -1519,7 +1519,7 @@ void test_assembleAWithOperands_given_invalid_second_operand_expect_exception_ER
 }
 
 void test_assembleAWithOperands_given_ind_aPlusDPTR_expect_exception_ERR_EXPECTING_REGISTER_is_thrown() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   int opcode;
   Try{
     //although @a+dptr as second operand is valid, but it is not assembled using this function
@@ -1539,7 +1539,7 @@ void test_assembleAWithOperands_given_ind_aPlusDPTR_expect_exception_ERR_EXPECTI
 }
 
 void test_assembleAWithOperands_given_extra_operand_expect_exception_ERR_EXTRA_PARAMETER_is_thrown() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   int opcode;
   Try{
     tokenizer = createTokenizer(" a , @r0 r1 ");
@@ -1554,7 +1554,7 @@ void test_assembleAWithOperands_given_extra_operand_expect_exception_ERR_EXTRA_P
 }
 
 void test_assembleDirectWithOperands_given_DirectWithImm_expect_opcode_0x93DEAA() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   int opcode;
   Try{
     tokenizer = createTokenizer("0xDE, #0xAA");
@@ -1568,7 +1568,7 @@ void test_assembleDirectWithOperands_given_DirectWithImm_expect_opcode_0x93DEAA(
 }
 
 void test_assembleDirectWithOperands_given_DirectWithA_expect_opcode_0x7294() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   int opcode;
   Try{
     tokenizer = createTokenizer("0x94 , a");
@@ -1582,7 +1582,7 @@ void test_assembleDirectWithOperands_given_DirectWithA_expect_opcode_0x7294() {
 }
 
 void test_assembleDirectWithOperands_given_correct_operand_combi_but_flag_not_set_expect_exception_ERR_INVALID_OPERAND_is_thrown() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   int opcode;
   Try{
     tokenizer = createTokenizer(" 0xD2, #98 ");
@@ -1597,7 +1597,7 @@ void test_assembleDirectWithOperands_given_correct_operand_combi_but_flag_not_se
 }
 
 void test_assembleDirectWithOperands_given_first_operand_not_direct_expect_exception_ERR_EXPECTING_INTEGER_is_thrown() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   int opcode;
   Try{
     tokenizer = createTokenizer(" A, #98 ");
@@ -1612,7 +1612,7 @@ void test_assembleDirectWithOperands_given_first_operand_not_direct_expect_excep
 }
 
 void test_assembleDirectWithOperands_given_correct_operands_but_missing_comma_expect_exception_ERR_INVALID_OPERAND_is_thrown() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   int opcode;
   Try{
     tokenizer = createTokenizer(" 0x88 #98 ");
@@ -1627,7 +1627,7 @@ void test_assembleDirectWithOperands_given_correct_operands_but_missing_comma_ex
 }
 
 void test_assembleDirectWithOperands_given_invalid_second_operand_expect_exception_ERR_INVALID_OPERAND_is_thrown() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   int opcode;
   Try{
     tokenizer = createTokenizer(" 0x88, ferrari789 ");
@@ -1642,7 +1642,7 @@ void test_assembleDirectWithOperands_given_invalid_second_operand_expect_excepti
 }
 
 void test_assembleDirectWithOperands_correct_operands_but_with_extra_parameter_expect_exception_ERR_EXTRA_PARAMETER_is_thrown() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   int opcode;
   Try{
     tokenizer = createTokenizer(" 0x88, A   R3");
@@ -1657,7 +1657,7 @@ void test_assembleDirectWithOperands_correct_operands_but_with_extra_parameter_e
 }
 
 void test_assembleDirectWithOperands_given_dir_with_dir_expect_exception_ERR_INVALID_OPERAND_is_thrown() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   int opcode;
   Try{
     //although operands like "dir, dir" is valid, but it is not assembled in this function,
@@ -1676,7 +1676,7 @@ void test_assembleDirectWithOperands_given_dir_with_dir_expect_exception_ERR_INV
 }
 
 void test_assembleCWithOperands_given_CWithBarBit_expect_opcode_0xD0CA() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   int opcode;
   Try{
     tokenizer = createTokenizer("C, /0xCA");
@@ -1691,7 +1691,7 @@ void test_assembleCWithOperands_given_CWithBarBit_expect_opcode_0xD0CA() {
 }
 
 void test_assembleCWithOperands_given_CWithBit_expect_opcode_0x829B() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   int opcode;
   Try{
     tokenizer = createTokenizer("C, 0x9B");
@@ -1706,7 +1706,7 @@ void test_assembleCWithOperands_given_CWithBit_expect_opcode_0x829B() {
 }
 
 void test_assembleCWithOperands_given_correct_operand_combi_but_flag_not_set_expect_exception_ERR_INVALID_OPERAND_is_thrown() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   int opcode;
   Try{
     tokenizer = createTokenizer(" C, /0xBB ");
@@ -1721,7 +1721,7 @@ void test_assembleCWithOperands_given_correct_operand_combi_but_flag_not_set_exp
 }
 
 void test_assembleCWithOperands_given_first_operand_not_C_expect_exception_ERR_INVALID_OPERAND_is_thrown() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   int opcode;
   Try{
     tokenizer = createTokenizer(" R1, /0xBB ");
@@ -1736,7 +1736,7 @@ void test_assembleCWithOperands_given_first_operand_not_C_expect_exception_ERR_I
 }
 
 void test_assembleCWithOperands_given_correct_operands_but_missing_comma_expect_exception_ERR_INVALID_OPERAND_is_thrown() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   int opcode;
   Try{
     tokenizer = createTokenizer(" C  0x30 ");
@@ -1751,7 +1751,7 @@ void test_assembleCWithOperands_given_correct_operands_but_missing_comma_expect_
 }
 
 void test_assembleCWithOperands_given_invalid_second_operand_expect_exception_ERR_INVALID_OPERAND_is_thrown() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   int opcode;
   Try{
     tokenizer = createTokenizer(" C, @R0 ");
@@ -1766,7 +1766,7 @@ void test_assembleCWithOperands_given_invalid_second_operand_expect_exception_ER
 }
 
 void test_assembleCWithOperands_given_correct_operands_but_with_extra_parameter_expect_exception_ERR_EXTRA_PARAMETER_is_thrown() {
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   int opcode;
   Try{
     tokenizer = createTokenizer(" C, 0x30 r3");
@@ -1784,7 +1784,7 @@ void test_assembleMOVInstruction_given_A_with_R3_expect_opcode_0xEB_stored_in_co
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("A  , r3");
     len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
@@ -1803,7 +1803,7 @@ void test_assembleMOVInstruction_given_A_with_0x56_expect_opcode_0xE556_stored_i
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  a  , 0x56");
     len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
@@ -1823,7 +1823,7 @@ void test_assembleMOVInstruction_given_A_with_indR0_expect_opcode_0xE6_stored_in
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  a  , @R0 ;this is a comment ");
     len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
@@ -1842,7 +1842,7 @@ void test_assembleMOVInstruction_given_A_with_imm0xAB_expect_opcode_0x74AB_store
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  a  , #0xAB");
     len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
@@ -1862,7 +1862,7 @@ void test_assembleMOVInstruction_given_R7_with_A_expect_opcode_0xFF_stored_in_co
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  r7 , a ");
     len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
@@ -1881,7 +1881,7 @@ void test_assembleMOVInstruction_given_R0_with_0xBA_expect_opcode_0xA8BA_stored_
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  r0 , 0xbA   ;COMMENT! ");
     len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
@@ -1901,7 +1901,7 @@ void test_assembleMOVInstruction_given_R6_with_immMINUS120_expect_opcode_0xA8BA_
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  R6   , #-120 ");
     len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
@@ -1921,7 +1921,7 @@ void test_assembleMOVInstruction_given_0xFA_with_A_expect_opcode_0xF5FA_stored_i
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  0xFA   , a; comment here ");
     len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
@@ -1941,7 +1941,7 @@ void test_assembleMOVInstruction_given_0x5B_with_R7_expect_opcode_0x8F5B_stored_
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  0x5B   , r7; comment here ");
     len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
@@ -1961,7 +1961,7 @@ void test_assembleMOVInstruction_given_0x90_with_0xB1_expect_opcode_0x85B190_sto
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  0x90   , 0xB1");
     len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
@@ -1982,7 +1982,7 @@ void test_assembleMOVInstruction_given_0xA0_with_indR1_expect_opcode_0x87A0_stor
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  0xA0   , @r1  ");
     len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
@@ -2002,7 +2002,7 @@ void test_assembleMOVInstruction_given_0x12_with_imm156_expect_opcode_0x75129C_s
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  0x12   , #156  ");
     len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
@@ -2023,7 +2023,7 @@ void test_assembleMOVInstruction_given_indR0_with_a_expect_opcode_0xF6_stored_in
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  @r0   , a  ");
     len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
@@ -2042,7 +2042,7 @@ void test_assembleMOVInstruction_given_indR1_with_0xBB_expect_opcode_0xA7BB_stor
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  @R1   , 0xBb  ");
     len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
@@ -2062,7 +2062,7 @@ void test_assembleMOVInstruction_given_indR1_with_immPLUS100_expect_opcode_0x776
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  @r1   , #+100 ;  ");
     len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
@@ -2082,7 +2082,7 @@ void test_assembleMOVInstruction_given_C_with_directBitAddr_expect_opcode_0xA22F
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  c   , 0x2F ;  ");
     len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
@@ -2102,7 +2102,7 @@ void test_assembleMOVInstruction_given_directBitAddr_with_C_expect_opcode_0x922F
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  0x2F  , C  ");
     len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
@@ -2122,7 +2122,7 @@ void test_assembleMOVInstruction_given_DPTR_with_imm16bit_expect_opcode_0x90DCBA
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  dPtr  , #0xDCBA  ");
     len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
@@ -2143,7 +2143,7 @@ void test_assembleMOVInstruction_given_A_with_invalid_operand_expect_exception_E
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  A, Abu");
     len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
@@ -2160,7 +2160,7 @@ void test_assembleMOVInstruction_given_reg_with_invalid_operand_expect_exception
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  R6 , DPTR");
     len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
@@ -2177,7 +2177,7 @@ void test_assembleMOVInstruction_given_dir_with_invalid_operand_expect_exception
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  0x66 , AB");
     len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
@@ -2194,7 +2194,7 @@ void test_assembleMOVInstruction_given_ind_with_invalid_operand_expect_exception
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  @r1 , R5");
     len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
@@ -2211,7 +2211,7 @@ void test_assembleMOVInstruction_given_c_with_invalid_operand_expect_exception_E
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  c , A");
     len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
@@ -2228,7 +2228,7 @@ void test_assembleMOVInstruction_given_DPTR_with_invalid_operand_expect_exceptio
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  DPTR , @r1");
     len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
@@ -2245,7 +2245,7 @@ void test_assembleMOVInstruction_given_invalid_first_operand_expect_exception_ER
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  hi, r3");
     len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
@@ -2262,7 +2262,7 @@ void test_assembleMOVXInstruction_given_A_with_indR1_expect_opcode_0xE3_stored_i
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  a  , @R1  ");
     len = assembleMOVXInstruction(tokenizer, NULL, &codePtr);
@@ -2281,7 +2281,7 @@ void test_assembleMOVXInstruction_given_A_with_indDPTR_expect_opcode_0xE0_stored
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  a  , @dpTR  ");
     len = assembleMOVXInstruction(tokenizer, NULL, &codePtr);
@@ -2300,7 +2300,7 @@ void test_assembleMOVXInstruction_given_indR0_with_A_expect_opcode_0xF2_stored_i
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  @r0 , a  ");
     len = assembleMOVXInstruction(tokenizer, NULL, &codePtr);
@@ -2319,7 +2319,7 @@ void test_assembleMOVXInstruction_given_indDPTR_with_A_expect_opcode_0xF0_stored
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  @DPtR , a  ");
     len = assembleMOVXInstruction(tokenizer, NULL, &codePtr);
@@ -2338,7 +2338,7 @@ void test_assembleMOVXInstruction_given_invalid_first_operand_expect_exception_E
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  R3, A");
     len = assembleMOVXInstruction(tokenizer, NULL, &codePtr);
@@ -2355,7 +2355,7 @@ void test_assembleMOVXInstruction_given_A_with_invalid_second_operand_expect_exc
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  A , 0x56");
     len = assembleMOVXInstruction(tokenizer, NULL, &codePtr);
@@ -2372,7 +2372,7 @@ void test_assembleMOVXInstruction_given_ind_but_is_not_dptr_or_reg_expect_except
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer(" @money , #63");
     len = assembleMOVXInstruction(tokenizer, NULL, &codePtr);
@@ -2389,7 +2389,7 @@ void test_assembleMOVXInstruction_given_ind_with_invalid_second_operand_expect_e
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer(" @dptr , #63");
     len = assembleMOVXInstruction(tokenizer, NULL, &codePtr);
@@ -2406,7 +2406,7 @@ void test_assembleMOVCInstruction_given_A_with_indAplusDPTR_expect_opcode_0x93_s
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  a  , @A +dpTR  ");
     len = assembleMOVCInstruction(tokenizer, NULL, &codePtr);
@@ -2425,7 +2425,7 @@ void test_assembleMOVCInstruction_given_A_with_indAplusPC_expect_opcode_0x83_sto
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  A  , @A + pC  ");
     len = assembleMOVCInstruction(tokenizer, NULL, &codePtr);
@@ -2444,7 +2444,7 @@ void test_assembleMOVCInstruction_given_A_with_invalid_operand_expect_exception_
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer(" a , R3");
     len = assembleMOVCInstruction(tokenizer, NULL, &codePtr);
@@ -2461,7 +2461,7 @@ void test_assembleMOVCInstruction_given_invalid_first_operand_expect_exception_E
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer(" 0x65 , @A+DPTR");
     len = assembleMOVCInstruction(tokenizer, NULL, &codePtr);
@@ -2479,7 +2479,7 @@ void test_assembleInstructionWithOnlyAccAsFirstOperand_given_instruction_xchd_ex
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 23;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("A  , @r1");
     len = assembleInstructionWithOnlyAccAsFirstOperand(tokenizer, &table, &codePtr);
@@ -2500,7 +2500,7 @@ void test_assembleInstructionWithOnlyAccAsFirstOperand_given_instruction_subb_ex
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 5656;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer(" a  , 0x86 ;comment");
     len = assembleInstructionWithOnlyAccAsFirstOperand(tokenizer, &table, &codePtr);
@@ -2522,7 +2522,7 @@ void test_assembleLogicalInstructionWithoutXRL_given_instruction_orl_C_expect_it
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer(" C , /0x43  ");
     len = assembleLogicalInstructionWithoutXRL(tokenizer, &table, &codePtr);
@@ -2544,7 +2544,7 @@ void test_assembleLogicalInstructionWithoutXRL_given_instruction_anl_A_expect_it
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer(" a, @r1  ");
     len = assembleLogicalInstructionWithoutXRL(tokenizer, &table, &codePtr);
@@ -2565,7 +2565,7 @@ void test_assembleLogicalInstructionWithoutXRL_given_instruction_anl_dir_expect_
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer(" 0x56, #200  ");
     len = assembleLogicalInstructionWithoutXRL(tokenizer, &table, &codePtr);
@@ -2588,7 +2588,7 @@ void test_assembleLogicalInstructionWithoutXRL_given_invalid_first_operand_expec
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer(" R3 , #-109  ");
     len = assembleLogicalInstructionWithoutXRL(tokenizer, &table, &codePtr);
@@ -2607,7 +2607,7 @@ void test_assembleXRLinstruction_given_instruction_xrl_dir_expect_it_is_assemble
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 2000;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer(" 0xBA , #-120  ");
     len = assembleXRLinstruction(tokenizer, &table, &codePtr);
@@ -2630,7 +2630,7 @@ void test_assembleXRLinstruction_given_instruction_xrl_A_expect_it_is_assembled_
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 2000;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer(" A , #+56  ");
     len = assembleXRLinstruction(tokenizer, &table, &codePtr);
@@ -2652,7 +2652,7 @@ void test_assembleXRLinstruction_given_invalid_first_operand_expect_ERR_INVALID_
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer(" C , 0x88  ");
     len = assembleXRLinstruction(tokenizer, &table, &codePtr);
@@ -2669,7 +2669,7 @@ void test_assembleJMPInstruction_given_ind_APlusDPTR_expect_it_is_assembled_and_
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer(" @a + dPTr ; comment  ");
     len = assembleJMPInstruction(tokenizer, NULL, &codePtr);
@@ -2688,7 +2688,7 @@ void test_assembleJMPInstruction_given_invalid_operand_expect_ERR_INVALID_OPERAN
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer(" @a + PC ; comment  ");
     len = assembleJMPInstruction(tokenizer, NULL, &codePtr);
@@ -2705,7 +2705,7 @@ void test_assembleBitWithRel_given_jb_bit_with_label_and_label_exists_expect_it_
   _8051Instructions table = {"jb", assembleBitWithRel, {0x20, 0}};
   int len;
   uint8_t *codePtr = codeMemory + 100;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   //second pass (Label is only assembled in second pass)
   muteOnNoLabel = 0;
 
@@ -2741,7 +2741,7 @@ void test_assembleBitWithRel_given_jbc_bit_with_label_and_label_exists_expect_it
   _8051Instructions table = {"jbc", assembleBitWithRel, {0x10, 0}};
   int len;
   uint8_t *codePtr = codeMemory + 400;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   muteOnNoLabel = 0;
 
   listPtr = doubleLinkedListCreateList();
@@ -2775,7 +2775,7 @@ void test_assembleBitWithRel_given_jbc_but_first_operand_is_NOT_integer_expect_E
   _8051Instructions table = {"jbc", assembleBitWithRel, {0x10, 0}};
   int len;
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
 
   Try{
     tokenizer = createTokenizer(" A, +12 ");
@@ -2792,7 +2792,7 @@ void test_assembleBitWithRel_given_jbc_but_first_operand_is_NOT_integer_expect_E
 void test_assembleDJNZInstruction_given_reg_with_label_and_label_exists_expect_it_is_assembled_and_written_into_codeMemory() {
   int len;
   uint8_t *codePtr = codeMemory + 0x3D;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   muteOnNoLabel = 0;
 
   listPtr = doubleLinkedListCreateList();
@@ -2824,7 +2824,7 @@ void test_assembleDJNZInstruction_given_reg_with_label_and_label_exists_expect_i
 void test_assembleDJNZInstruction_given_direct_with_label_and_label_exists_expect_it_is_assembled_and_written_into_codeMemory() {
   int len;
   uint8_t *codePtr = codeMemory + 0x95;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   muteOnNoLabel = 0;
 
   listPtr = doubleLinkedListCreateList();
@@ -2857,7 +2857,7 @@ void test_assembleDJNZInstruction_given_direct_with_label_and_label_exists_expec
 void test_assembleDJNZInstruction_given_invalid_first_operand_expect_ERR_INVALID_OPERAND_to_be_thrown() {
   int len;
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
 
   Try{
     tokenizer = createTokenizer(" A , DELAY ");
@@ -2874,7 +2874,7 @@ void test_assembleDJNZInstruction_given_invalid_first_operand_expect_ERR_INVALID
 void test_assembleDJNZInstruction_given_missing_comma_expect_ERR_INVALID_OPERAND_to_be_thrown() {
   int len;
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
 
   Try{
     tokenizer = createTokenizer(" R0  DELAY ");
@@ -2891,7 +2891,7 @@ void test_assembleDJNZInstruction_given_missing_comma_expect_ERR_INVALID_OPERAND
 void test_assembleDJNZInstruction_given_extra_parameter_expect_ERR_EXTRA_PARAMETER_to_be_thrown() {
   int len;
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   muteOnNoLabel = 0;
 
   listPtr = doubleLinkedListCreateList();
@@ -2915,7 +2915,7 @@ void test_assembleDJNZInstruction_given_extra_parameter_expect_ERR_EXTRA_PARAMET
 void test_assembleCJNEInstruction_given_A_DIR_with_label_and_label_exists_expect_it_is_assembled_and_written_into_codeMemory() {
   int len;
   uint8_t *codePtr = codeMemory + 0x0D;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   muteOnNoLabel = 0;
 
   listPtr = doubleLinkedListCreateList();
@@ -2945,7 +2945,7 @@ void test_assembleCJNEInstruction_given_A_DIR_with_label_and_label_exists_expect
 void test_assembleCJNEInstruction_given_A_IMM_with_label_and_label_exists_expect_it_is_assembled_and_written_into_codeMemory() {
   int len;
   uint8_t *codePtr = codeMemory + 0xE5;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   muteOnNoLabel = 0;
 
   listPtr = doubleLinkedListCreateList();
@@ -2975,7 +2975,7 @@ void test_assembleCJNEInstruction_given_A_IMM_with_label_and_label_exists_expect
 void test_assembleCJNEInstruction_given_reg_imm_with_label_and_label_exists_expect_it_is_assembled_and_written_into_codeMemory() {
   int len;
   uint8_t *codePtr = codeMemory + 0xAA;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   muteOnNoLabel = 0;
 
   listPtr = doubleLinkedListCreateList();
@@ -3005,7 +3005,7 @@ void test_assembleCJNEInstruction_given_reg_imm_with_label_and_label_exists_expe
 void test_assembleCJNEInstruction_given_ind_imm_with_label_and_label_exists_expect_it_is_assembled_and_written_into_codeMemory() {
   int len;
   uint8_t *codePtr = codeMemory + 120;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   muteOnNoLabel = 0;
 
   listPtr = doubleLinkedListCreateList();
@@ -3035,7 +3035,7 @@ void test_assembleCJNEInstruction_given_ind_imm_with_label_and_label_exists_expe
 void test_assembleCJNEInstruction_given_invalid_first_operand_expect_ERR_INVALID_OPERAND_to_be_thrown() {
   int len;
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
 
   Try{
     tokenizer = createTokenizer(" DPTR, #20, HERE ");
@@ -3052,7 +3052,7 @@ void test_assembleCJNEInstruction_given_invalid_first_operand_expect_ERR_INVALID
 void test_assembleCJNEInstruction_given_missing_comma_expect_ERR_INVALID_OPERAND_to_be_thrown() {
   int len;
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
 
   Try{
     tokenizer = createTokenizer(" A, 0x55 HERE ");
@@ -3069,7 +3069,7 @@ void test_assembleCJNEInstruction_given_missing_comma_expect_ERR_INVALID_OPERAND
 void test_assembleCJNEInstruction_given_extra_parameter_expect_ERR_EXTRA_PARAMETER_to_be_thrown() {
   int len;
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   muteOnNoLabel = 0;
 
   listPtr = doubleLinkedListCreateList();
@@ -3095,7 +3095,7 @@ void test_assembleSingleOperandWithLabel_given_jz_with_label_and_label_exists_ex
   {0x60, OPERAND_REL}};
   int len;
   uint8_t *codePtr = codeMemory + 3;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   //set to second pass (assembling is done at second pass, first pass is just to record the label into list)
   muteOnNoLabel = 0;
 
@@ -3132,7 +3132,7 @@ void test_assembleSingleOperandWithLabel_given_acall_with_label_and_label_exists
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 50;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   muteOnNoLabel = 0;
 
   listPtr = doubleLinkedListCreateList();
@@ -3165,7 +3165,7 @@ void test_assembleSingleOperandWithLabel_given_ljmp_with_label_and_label_exists_
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 100;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   muteOnNoLabel = 0;
 
   listPtr = doubleLinkedListCreateList();
@@ -3199,7 +3199,7 @@ void test_assembleSingleOperandWithLabel_given_ajmp_with_label_but_with_extra_pa
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 100;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   muteOnNoLabel = 0;
 
   listPtr = doubleLinkedListCreateList();
@@ -3229,7 +3229,7 @@ void test_assembleSingleOperandWithLabel_given_ajmp_A_expect_ERR_UNKNOWN_LABEL_i
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 100;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   muteOnNoLabel = 0;
 
   listPtr = doubleLinkedListCreateList();
@@ -3261,7 +3261,7 @@ void test_assembleSingleOperand_given_operand_ind_expect_it_is_assembled_correct
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 2123;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer(" @r1 ; comment ");
     len = assembleSingleOperand(tokenizer, &table, &codePtr);
@@ -3281,7 +3281,7 @@ void test_assembleSingleOperand_given_operand_ind_but_flag_not_set_expect_ERR_IN
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer(" @r0  ");
     len = assembleSingleOperand(tokenizer, &table, &codePtr);
@@ -3300,7 +3300,7 @@ void test_assembleSingleOperand_given_operand_reg_expect_it_is_assembled_correct
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 1;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer(" r7 ; ");
     len = assembleSingleOperand(tokenizer, &table, &codePtr);
@@ -3320,7 +3320,7 @@ void test_assembleSingleOperand_given_operand_reg_but_flag_not_set_expect_ERR_IN
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer(" r5  ");
     len = assembleSingleOperand(tokenizer, &table, &codePtr);
@@ -3339,7 +3339,7 @@ void test_assembleSingleOperand_given_operand_A_expect_it_is_assembled_correctly
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 1;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer(" A  ");
     len = assembleSingleOperand(tokenizer, &table, &codePtr);
@@ -3360,7 +3360,7 @@ void test_assembleSingleOperand_given_operand_A_for_rotate_instructions_expect_i
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 1;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer(" a  ");
     len = assembleSingleOperand(tokenizer, &table, &codePtr);
@@ -3380,7 +3380,7 @@ void test_assembleSingleOperand_given_operand_A_but_flag_not_set_expect_ERR_INVA
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer(" a  ");
     len = assembleSingleOperand(tokenizer, &table, &codePtr);
@@ -3399,7 +3399,7 @@ void test_assembleSingleOperand_given_operand_AB_expect_it_is_assembled_correctl
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 1;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer(" aB  ");
     len = assembleSingleOperand(tokenizer, &table, &codePtr);
@@ -3419,7 +3419,7 @@ void test_assembleSingleOperand_given_operand_AB_but_flag_not_set_expect_ERR_INV
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer(" AB  ");
     len = assembleSingleOperand(tokenizer, &table, &codePtr);
@@ -3437,7 +3437,7 @@ void test_assembleSingleOperand_given_operand_C_expect_it_is_assembled_correctly
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 1;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer(" c  ;comment  ");
     len = assembleSingleOperand(tokenizer, &table, &codePtr);
@@ -3457,7 +3457,7 @@ void test_assembleSingleOperand_given_operand_C_but_flag_not_set_expect_ERR_INVA
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer(" C ");
     len = assembleSingleOperand(tokenizer, &table, &codePtr);
@@ -3476,7 +3476,7 @@ void test_assembleSingleOperand_given_operand_DPTR_expect_it_is_assembled_correc
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 2;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer(" dPtr  ");
     len = assembleSingleOperand(tokenizer, &table, &codePtr);
@@ -3496,7 +3496,7 @@ void test_assembleSingleOperand_given_operand_DPTR_but_flag_not_set_expect_ERR_I
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer(" DPTR ");
     len = assembleSingleOperand(tokenizer, &table, &codePtr);
@@ -3515,7 +3515,7 @@ void test_assembleSingleOperand_given_operand_direct_expect_it_is_assembled_corr
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer(" 0xAB  ");
     len = assembleSingleOperand(tokenizer, &table, &codePtr);
@@ -3537,7 +3537,7 @@ void test_assembleSingleOperand_given_operand_direct_but_out_of_range_expect_ERR
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer(" 0xABC  ");
     len = assembleSingleOperand(tokenizer, &table, &codePtr);
@@ -3556,7 +3556,7 @@ void test_assembleSingleOperand_given_operand_bit_expect_it_is_assembled_correct
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 200;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer(" 0x2F  ");
     len = assembleSingleOperand(tokenizer, &table, &codePtr);
@@ -3578,7 +3578,7 @@ void test_assembleSingleOperand_given_operand_bit_but_out_of_range_expect_ERR_IN
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer(" 0xDEF  ");
     len = assembleSingleOperand(tokenizer, &table, &codePtr);
@@ -3596,7 +3596,7 @@ void test_assembleSingleOperand_given_operand_dir_for_stack_instructions_expect_
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 1979;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer(" 0xC0  ");
     len = assembleSingleOperand(tokenizer, &table, &codePtr);
@@ -3617,7 +3617,7 @@ void test_assembleSingleOperand_given_operand_dir_for_stack_instructions_but_out
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer(" 0x100  ");
     len = assembleSingleOperand(tokenizer, &table, &codePtr);
@@ -3635,7 +3635,7 @@ void test_assembleSingleOperand_given_invalid_single_operand_expect_ERR_INVALID_
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer(" zzzSleeping  ");
     len = assembleSingleOperand(tokenizer, &table, &codePtr);
@@ -3652,7 +3652,7 @@ void test_assembleInstruction_given_add_A_with_r7_expect_opcode_0x2f() {
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("add A, R7");
     len = assembleInstruction(tokenizer, &codePtr);
@@ -3670,7 +3670,7 @@ void test_assembleInstruction_given_add_A_with_direct_0xba_expect_opcode_0x25ba(
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 100;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("add A, 0xBA");
     len = assembleInstruction(tokenizer, &codePtr);
@@ -3689,7 +3689,7 @@ void test_assembleInstruction_given_mov_dir_with_imm_expect_opcode_0x75669A() {
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 250;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("Mov 0x66, #0x9A");
     len = assembleInstruction(tokenizer, &codePtr);
@@ -3709,7 +3709,7 @@ void test_assembleInstruction_given_add_A_with_indirect_R0_expect_opcode_0x26() 
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 55;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("add A, @R0");
     len = assembleInstruction(tokenizer, &codePtr);
@@ -3727,7 +3727,7 @@ void test_assembleInstruction_given_movx_indirect_with_A_expect_opcode_0xf3() {
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 123;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("MovX @r1 ,a");
     len = assembleInstruction(tokenizer, &codePtr);
@@ -3745,7 +3745,7 @@ void test_assembleInstruction_given_movc_a_with_aDPTR_expect_opcode_0x93() {
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 0x6A;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("MOvc a , @A+dPtR");
     len = assembleInstruction(tokenizer, &codePtr);
@@ -3763,7 +3763,7 @@ void test_assembleInstruction_given_mov_c_with_bit_expect_opcode_0xA27B() {
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 0xBFCC;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("mOv c, 0x7b");
     len = assembleInstruction(tokenizer, &codePtr);
@@ -3782,7 +3782,7 @@ void test_assembleInstruction_given_mov_indirect_with_direct_expect_opcode_0xA7B
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 0x65A;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("mOv @r1  , 0xBA  ;this will be seen as comment");
     len = assembleInstruction(tokenizer, &codePtr);
@@ -3801,7 +3801,7 @@ void test_assembleInstruction_given_mov_reg_with_imm_expect_opcode_0x78dd() {
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 0xD3D;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("mOv r0  , #0xDD");
     len = assembleInstruction(tokenizer, &codePtr);
@@ -3820,7 +3820,7 @@ void test_assembleInstruction_given_mov_dptr_with_imm_expect_opcode_0x90EEFF() {
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 0xFFE;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("mOv dPtR  , #0xEEFF");
     len = assembleInstruction(tokenizer, &codePtr);
@@ -3835,91 +3835,12 @@ void test_assembleInstruction_given_mov_dptr_with_imm_expect_opcode_0x90EEFF() {
   }
   freeTokenizer(tokenizer);
 }
-/*
-void test_assembleInstruction_given_cjne_ind_with_imm_expect_opcode_stored_in_code_memory_is_0xB7179C() {
-  int len;
-  uint8_t codeMemory[65536];
-  uint8_t *codePtr = codeMemory + 0x100;
-  Tokenizer* tokenizer;
-  Try{
-    tokenizer = createTokenizer("CjNe @r1 ,  #23 , -100");
-    len = assembleInstruction(tokenizer, &codePtr);
-    TEST_ASSERT_EQUAL(3, len);
-    TEST_ASSERT_EQUAL_HEX8(0xB7, codeMemory[0x100]);
-    TEST_ASSERT_EQUAL_HEX8(0x17, codeMemory[0x101]);
-    TEST_ASSERT_EQUAL_HEX8(0x9C, codeMemory[0x102]);
-    TEST_ASSERT_EQUAL(0x103, getCurrentAbsoluteAddr());
-  } Catch(e){
-    dumpTokenErrorMessage(e, __LINE__);
-    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
-  }
-  freeTokenizer(tokenizer);
-}
 
-void test_assembleInstruction_given_cjne_reg_with_imm_expect_opcode_0xBD9EC8() {
-  int len;
-  uint8_t codeMemory[65536];
-  uint8_t *codePtr = codeMemory + 0xF00F;
-  Tokenizer* tokenizer;
-  Try{
-    tokenizer = createTokenizer("cJnE R5 ,  #-98 , +200");
-    len = assembleInstruction(tokenizer, &codePtr);
-    TEST_ASSERT_EQUAL(3, len);
-    TEST_ASSERT_EQUAL_HEX8(0xBD, codeMemory[0xF00F]);
-    TEST_ASSERT_EQUAL_HEX8(0x9E, codeMemory[0xF010]);
-    TEST_ASSERT_EQUAL_HEX8(0xC8, codeMemory[0xF011]);
-    TEST_ASSERT_EQUAL(0xF012, getCurrentAbsoluteAddr());
-  } Catch(e){
-    dumpTokenErrorMessage(e, __LINE__);
-    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
-  }
-  freeTokenizer(tokenizer);
-}
-
-void test_assembleInstruction_given_djnz_dir_with_rel_expect_opcode_0xD5FA80() {
-  int len;
-  uint8_t codeMemory[65536];
-  uint8_t *codePtr = codeMemory + 30000;
-  Tokenizer* tokenizer;
-  Try{
-    tokenizer = createTokenizer("DjNz   0xFA  ,  -128");
-    len = assembleInstruction(tokenizer, &codePtr);
-    TEST_ASSERT_EQUAL(3, len);
-    TEST_ASSERT_EQUAL_HEX8(0xD5, codeMemory[30000]);
-    TEST_ASSERT_EQUAL_HEX8(0xFA, codeMemory[30001]);
-    TEST_ASSERT_EQUAL_HEX8(0x80, codeMemory[30002]);
-    TEST_ASSERT_EQUAL(30003, getCurrentAbsoluteAddr());
-  } Catch(e){
-    dumpTokenErrorMessage(e, __LINE__);
-    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
-  }
-  freeTokenizer(tokenizer);
-}
-
-void test_assembleInstruction_given_djnz_reg_with_rel_expect_opcode_0xDEFF() {
-  int len;
-  uint8_t codeMemory[65536];
-  uint8_t *codePtr = codeMemory + 0xF;
-  Tokenizer* tokenizer;
-  Try{
-    tokenizer = createTokenizer("DjNz   r6 ,  +255 ");
-    len = assembleInstruction(tokenizer, &codePtr);
-    TEST_ASSERT_EQUAL(2, len);
-    TEST_ASSERT_EQUAL_HEX8(0xDE, codeMemory[15]);
-    TEST_ASSERT_EQUAL_HEX8(0xFF, codeMemory[16]);
-    TEST_ASSERT_EQUAL(17, getCurrentAbsoluteAddr());
-  } Catch(e){
-    dumpTokenErrorMessage(e, __LINE__);
-    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
-  }
-  freeTokenizer(tokenizer);
-}
-*/
 void test_assembleInstruction_given_xch_a_with_reg_expect_opcode_0xC9() {
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 0xFF;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("   xCh a ,r1");
     len = assembleInstruction(tokenizer, &codePtr);
@@ -3937,7 +3858,7 @@ void test_assembleInstruction_given_xchd_a_with_indirect_reg_expect_opcode_0xD7(
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 0xCD;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("   xChD   a ,   @R1");
     len = assembleInstruction(tokenizer, &codePtr);
@@ -3955,7 +3876,7 @@ void test_assembleInstruction_given_swap_a_expect_opcode_0xC4() {
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 5321;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  sWAp A ");
     len = assembleInstruction(tokenizer, &codePtr);
@@ -3973,7 +3894,7 @@ void test_assembleInstruction_given_DA_a_expect_opcode_0xD4() {
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  da a ");
     len = assembleInstruction(tokenizer, &codePtr);
@@ -3991,7 +3912,7 @@ void test_assembleInstruction_given_MUL_AB_expect_opcode_0xA4() {
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 0xAA;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  mUL   Ab  ;multiply a with b ");
     len = assembleInstruction(tokenizer, &codePtr);
@@ -4009,7 +3930,7 @@ void test_assembleInstruction_given_DIV_AB_expect_opcode_0x84() {
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 0x99;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  dIv   aB ");
     len = assembleInstruction(tokenizer, &codePtr);
@@ -4027,7 +3948,7 @@ void test_assembleInstruction_given_setb_C_expect_opcode_0xD3() {
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 21;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  sEtb c  ");
     len = assembleInstruction(tokenizer, &codePtr);
@@ -4045,7 +3966,7 @@ void test_assembleInstruction_given_setb_bit_expect_opcode_0xD2B1() {
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 999;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  SetB  0xB1  ");
     len = assembleInstruction(tokenizer, &codePtr);
@@ -4064,7 +3985,7 @@ void test_assembleInstruction_given_clr_A_expect_opcode_0xE4() {
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  cLr a  ");
     len = assembleInstruction(tokenizer, &codePtr);
@@ -4082,7 +4003,7 @@ void test_assembleInstruction_given_clr_C_expect_opcode_0xC3() {
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 1000;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  clr c  ");
     len = assembleInstruction(tokenizer, &codePtr);
@@ -4100,7 +4021,7 @@ void test_assembleInstruction_given_clr_bit_expect_opcode_0xC294() {
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 2;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  clr 0x94  ");
     len = assembleInstruction(tokenizer, &codePtr);
@@ -4119,7 +4040,7 @@ void test_assembleInstruction_given_cpl_A_expect_opcode_0xF4() {
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 3003;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  cpL A  ");
     len = assembleInstruction(tokenizer, &codePtr);
@@ -4137,7 +4058,7 @@ void test_assembleInstruction_given_cpl_C_expect_opcode_0x84() {
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 4321;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  cpl c  ");
     len = assembleInstruction(tokenizer, &codePtr);
@@ -4155,7 +4076,7 @@ void test_assembleInstruction_given_cpl_bit_expect_opcode_0xB2DD() {
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 56789;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  cpl 0xDD  ");
     len = assembleInstruction(tokenizer, &codePtr);
@@ -4174,7 +4095,7 @@ void test_assembleInstruction_given_ajmp_addr11_expect_opcode_0xC1AB() {
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 0xBFF;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  aJMp 0x6AB  ");
     len = assembleInstruction(tokenizer, &codePtr);
@@ -4193,7 +4114,7 @@ void test_assembleInstruction_given_acall_addr11_expect_opcode_0xC1AB() {
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 0x765;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  aCAll 0x79a  ");
     len = assembleInstruction(tokenizer, &codePtr);
@@ -4212,7 +4133,7 @@ void test_assembleInstruction_given_LCALL_addr16_expect_opcode_0x12CD0A() {
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 800;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  lCaLL  0xCD0A ");
     len = assembleInstruction(tokenizer, &codePtr);
@@ -4232,7 +4153,7 @@ void test_assembleInstruction_given_LJMP_addr16_expect_opcode_0x02ABCD() {
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 1000;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  LjmP   0xABcd ");
     len = assembleInstruction(tokenizer, &codePtr);
@@ -4247,72 +4168,12 @@ void test_assembleInstruction_given_LJMP_addr16_expect_opcode_0x02ABCD() {
   }
   freeTokenizer(tokenizer);
 }
-/*
-void test_assembleInstruction_given_jb_bit_rel_expect_opcode_0x20A0F0() {
-  int len;
-  uint8_t codeMemory[65536];
-  uint8_t *codePtr = codeMemory + 0x1221;
-  Tokenizer* tokenizer;
-  Try{
-    tokenizer = createTokenizer("  JB  0xA0   , +240  ");
-    len = assembleInstruction(tokenizer, &codePtr);
-    TEST_ASSERT_EQUAL(3, len);
-    TEST_ASSERT_EQUAL_HEX8(0x20, codeMemory[0x1221]);
-    TEST_ASSERT_EQUAL_HEX8(0xA0, codeMemory[0x1222]);
-    TEST_ASSERT_EQUAL_HEX8(0xF0, codeMemory[0x1223]);
-    TEST_ASSERT_EQUAL(0x1224, getCurrentAbsoluteAddr());
-  } Catch(e){
-    dumpTokenErrorMessage(e, __LINE__);
-    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
-  }
-  freeTokenizer(tokenizer);
-}
 
-void test_assembleInstruction_given_jnb_bit_rel_expect_opcode_0x305A95() {
-  int len;
-  uint8_t codeMemory[65536];
-  uint8_t *codePtr = codeMemory + 365;
-  Tokenizer* tokenizer;
-  Try{
-    tokenizer = createTokenizer("  jNb 0x5A   , -107  ");
-    len = assembleInstruction(tokenizer, &codePtr);
-    TEST_ASSERT_EQUAL(3, len);
-    TEST_ASSERT_EQUAL_HEX8(0x30, codeMemory[365]);
-    TEST_ASSERT_EQUAL_HEX8(0x5A, codeMemory[366]);
-    TEST_ASSERT_EQUAL_HEX8(0x95, codeMemory[367]);
-    TEST_ASSERT_EQUAL(368, getCurrentAbsoluteAddr());
-  } Catch(e){
-    dumpTokenErrorMessage(e, __LINE__);
-    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
-  }
-  freeTokenizer(tokenizer);
-}
-
-void test_assembleInstruction_given_jbc_bit_rel_expect_opcode_0x10EECE() {
-  int len;
-  uint8_t codeMemory[65536];
-  uint8_t *codePtr = codeMemory + 0x55;
-  Tokenizer* tokenizer;
-  Try{
-    tokenizer = createTokenizer("  JBc  0xeE   , -50  ;comment  ");
-    len = assembleInstruction(tokenizer, &codePtr);
-    TEST_ASSERT_EQUAL(3, len);
-    TEST_ASSERT_EQUAL_HEX8(0x10, codeMemory[0x55]);
-    TEST_ASSERT_EQUAL_HEX8(0xEE, codeMemory[0x56]);
-    TEST_ASSERT_EQUAL_HEX8(0xCE, codeMemory[0x57]);
-    TEST_ASSERT_EQUAL(0x58, getCurrentAbsoluteAddr());
-  } Catch(e){
-    dumpTokenErrorMessage(e, __LINE__);
-    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
-  }
-  freeTokenizer(tokenizer);
-}
-*/
 void test_assembleInstruction_given_ret_expect_opcode_0x22_written_in_code_memory() {
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory + 8888;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  ReT ");
     len = assembleInstruction(tokenizer, &codePtr);
@@ -4330,7 +4191,7 @@ void test_assembleInstruction_given_nop_expect_opcode_0x00_written_in_code_memor
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  nOp ");
     len = assembleInstruction(tokenizer, &codePtr);
@@ -4348,7 +4209,7 @@ void test_assembleInstruction_given_reti_expect_opcode_0x32_written_in_code_memo
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
-  Tokenizer* tokenizer;
+  Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  rETi    ");
     len = assembleInstruction(tokenizer, &codePtr);

@@ -882,7 +882,7 @@ int writeCodeToCodeMemory(int opcode, uint8_t *codePtr) {
   return bytes;
 }
 
-int getInstructionBytes(int opcode) {
+inline int getInstructionBytes(int opcode) {
   if(opcode <= 0xFF)
     return 1;
   else if(opcode <= 0xFFFF)

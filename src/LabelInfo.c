@@ -14,7 +14,7 @@ LabelInfo *createLabelInfo(LabelInfo *info) {
 void freeLabelInfo(void *info) {
   if((LabelInfo *)info) {
     if(((LabelInfo *)info)->name)
-      memFree(((LabelInfo *)info)->name);
+      freeLabelName(((LabelInfo *)info)->name);
     memFree((LabelInfo *)info);
   }
 }
@@ -25,4 +25,9 @@ char *createLabelName(char *labelToCreate) {
   strncpy(labelName, labelToCreate, len);
   labelName[len] = '\0';
   return labelName;
+}
+
+void freeLabelName(void *labelName) {
+  if((char *)labelName)
+    memFree(labelName);
 }
