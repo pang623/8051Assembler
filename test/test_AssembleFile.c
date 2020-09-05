@@ -5,6 +5,7 @@
 #include "LabelInfo.h"
 #include "MemAlloc.h"
 #include "SaveCodeToBin.h"
+#include "TrimWhiteSpacesIfPresent.h"
 #include "Assembler8051.h"
 #include "ExceptionThrowing.h"
 

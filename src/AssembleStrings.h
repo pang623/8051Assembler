@@ -4,6 +4,7 @@
 #include "Assembler8051.h"
 #include "DoubleLinkedList.h"
 #include "LabelInfo.h"
+#include "TrimWhiteSpacesIfPresent.h"
 
 extern DoubleLinkedList *listPtr;
 extern int lineNumber;

@@ -12,6 +12,7 @@
 #include "AssembleStrings.h"
 #include "MemAlloc.h"
 #include "SaveCodeToBin.h"
+#include "TrimWhiteSpacesIfPresent.h"
 #include "CustomTestAssertion.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -61,7 +62,6 @@ void test_assembleInFileAndWriteToOutFile_given_asm_testCode2_as_input_file_expe
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
 }
-
 /*
 void test_assembleInstructions_given_func_ptr_expect_all_lines_in_asm_file_are_assembled_and_return_total_bytes_of_instructions() {
   int totalBytes;
@@ -119,6 +119,7 @@ void test_assembleInstructions_given_different_txt_file_containing_instruction_e
 }
 */
 
+//This function only take opcode up to 3 bytes as 8051 instructions is 3 bytes at most
 void test_getInstructionBytes_given_one_byte_opcode_expect_size_is_one_byte() {
   int bytes;
   Try{
@@ -1365,17 +1366,17 @@ void test_extractNum_given_string_null_expect_exception_ERR_INVALID_REGISTER_is_
 }
 
 //just to test exception throwing
-void test_throwInvalidOperandException_given_token_expect_ERR_INVALID_OPERAND_is_thrown() {
+void test_throwUnsupportedOperandException_given_token_expect_ERR_UNSUPPORTED_OPERAND_is_thrown() {
   Tokenizer *tokenizer = NULL;
   Token *token = NULL;
   Try{
     tokenizer = createTokenizer(" hi");
     token = getToken(tokenizer);
-    throwInvalidOperandException(token);
+    throwUnsupportedOperandException(token);
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   }Catch(e) {
     dumpTokenErrorMessage(e, __LINE__);
-    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+    TEST_ASSERT_EQUAL(ERR_UNSUPPORTED_OPERAND, e->errorCode);
     freeException(e);
   }
   freeToken(token);
@@ -1473,7 +1474,7 @@ void test_assembleAWithOperands_given_first_operand_not_Acc_expect_exception_ERR
   freeTokenizer(tokenizer);
 }
 
-void test_assembleAWithOperands_given_correct_operand_combi_but_flag_is_not_set_expect_exception_ERR_INVALID_OPERAND_is_thrown() {
+void test_assembleAWithOperands_given_correct_operand_combi_but_flag_is_not_set_expect_exception_ERR_UNSUPPORTED_OPERAND_is_thrown() {
   Tokenizer *tokenizer = NULL;
   int opcode;
   Try{
@@ -1482,7 +1483,7 @@ void test_assembleAWithOperands_given_correct_operand_combi_but_flag_is_not_set_
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+    TEST_ASSERT_EQUAL(ERR_UNSUPPORTED_OPERAND, e->errorCode);
     freeException(e);
   }
   freeTokenizer(tokenizer);
@@ -1581,7 +1582,7 @@ void test_assembleDirectWithOperands_given_DirectWithA_expect_opcode_0x7294() {
   freeTokenizer(tokenizer);
 }
 
-void test_assembleDirectWithOperands_given_correct_operand_combi_but_flag_not_set_expect_exception_ERR_INVALID_OPERAND_is_thrown() {
+void test_assembleDirectWithOperands_given_correct_operand_combi_but_flag_not_set_expect_exception_ERR_UNSUPPORTED_OPERAND_is_thrown() {
   Tokenizer *tokenizer = NULL;
   int opcode;
   Try{
@@ -1590,7 +1591,7 @@ void test_assembleDirectWithOperands_given_correct_operand_combi_but_flag_not_se
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+    TEST_ASSERT_EQUAL(ERR_UNSUPPORTED_OPERAND, e->errorCode);
     freeException(e);
   }
   freeTokenizer(tokenizer);
@@ -1705,7 +1706,7 @@ void test_assembleCWithOperands_given_CWithBit_expect_opcode_0x829B() {
   freeTokenizer(tokenizer);
 }
 
-void test_assembleCWithOperands_given_correct_operand_combi_but_flag_not_set_expect_exception_ERR_INVALID_OPERAND_is_thrown() {
+void test_assembleCWithOperands_given_correct_operand_combi_but_flag_not_set_expect_exception_ERR_UNSUPPORTED_OPERAND_is_thrown() {
   Tokenizer *tokenizer = NULL;
   int opcode;
   Try{
@@ -1714,7 +1715,7 @@ void test_assembleCWithOperands_given_correct_operand_combi_but_flag_not_set_exp
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+    TEST_ASSERT_EQUAL(ERR_UNSUPPORTED_OPERAND, e->errorCode);
     freeException(e);
   }
   freeTokenizer(tokenizer);
@@ -3276,7 +3277,7 @@ void test_assembleSingleOperand_given_operand_ind_expect_it_is_assembled_correct
   freeTokenizer(tokenizer);
 }
 
-void test_assembleSingleOperand_given_operand_ind_but_flag_not_set_expect_ERR_INVALID_OPERAND_is_thrown() {
+void test_assembleSingleOperand_given_operand_ind_but_flag_not_set_expect_ERR_UNSUPPORTED_OPERAND_is_thrown() {
   _8051Instructions table = {"da", assembleSingleOperand, {0xD0, OPERAND_A}};
   int len;
   uint8_t codeMemory[65536];
@@ -3288,7 +3289,7 @@ void test_assembleSingleOperand_given_operand_ind_but_flag_not_set_expect_ERR_IN
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+    TEST_ASSERT_EQUAL(ERR_UNSUPPORTED_OPERAND, e->errorCode);
     freeException(e);
   }
   freeTokenizer(tokenizer);
@@ -3315,7 +3316,7 @@ void test_assembleSingleOperand_given_operand_reg_expect_it_is_assembled_correct
   freeTokenizer(tokenizer);
 }
 
-void test_assembleSingleOperand_given_operand_reg_but_flag_not_set_expect_ERR_INVALID_OPERAND_is_thrown() {
+void test_assembleSingleOperand_given_operand_reg_but_flag_not_set_expect_ERR_UNSUPPORTED_OPERAND_is_thrown() {
   _8051Instructions table = {"div", assembleSingleOperand, {0x80, OPERAND_AB}};
   int len;
   uint8_t codeMemory[65536];
@@ -3327,7 +3328,7 @@ void test_assembleSingleOperand_given_operand_reg_but_flag_not_set_expect_ERR_IN
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+    TEST_ASSERT_EQUAL(ERR_UNSUPPORTED_OPERAND, e->errorCode);
     freeException(e);
   }
   freeTokenizer(tokenizer);
@@ -3375,7 +3376,7 @@ void test_assembleSingleOperand_given_operand_A_for_rotate_instructions_expect_i
   freeTokenizer(tokenizer);
 }
 
-void test_assembleSingleOperand_given_operand_A_but_flag_not_set_expect_ERR_INVALID_OPERAND_is_thrown() {
+void test_assembleSingleOperand_given_operand_A_but_flag_not_set_expect_ERR_UNSUPPORTED_OPERAND_is_thrown() {
   _8051Instructions table = {"div", assembleSingleOperand, {0x80, OPERAND_AB}};
   int len;
   uint8_t codeMemory[65536];
@@ -3387,7 +3388,7 @@ void test_assembleSingleOperand_given_operand_A_but_flag_not_set_expect_ERR_INVA
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+    TEST_ASSERT_EQUAL(ERR_UNSUPPORTED_OPERAND, e->errorCode);
     freeException(e);
   }
   freeTokenizer(tokenizer);
@@ -3414,7 +3415,7 @@ void test_assembleSingleOperand_given_operand_AB_expect_it_is_assembled_correctl
   freeTokenizer(tokenizer);
 }
 
-void test_assembleSingleOperand_given_operand_AB_but_flag_not_set_expect_ERR_INVALID_OPERAND_is_thrown() {
+void test_assembleSingleOperand_given_operand_AB_but_flag_not_set_expect_ERR_UNSUPPORTED_OPERAND_is_thrown() {
   _8051Instructions table = {"cpl", assembleSingleOperand, {0xF0, OPERAND_C | OPERAND_BIT | OPERAND_A}};
   int len;
   uint8_t codeMemory[65536];
@@ -3426,7 +3427,7 @@ void test_assembleSingleOperand_given_operand_AB_but_flag_not_set_expect_ERR_INV
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+    TEST_ASSERT_EQUAL(ERR_UNSUPPORTED_OPERAND, e->errorCode);
     freeException(e);
   }
   freeTokenizer(tokenizer);
@@ -3452,7 +3453,7 @@ void test_assembleSingleOperand_given_operand_C_expect_it_is_assembled_correctly
   freeTokenizer(tokenizer);
 }
 
-void test_assembleSingleOperand_given_operand_C_but_flag_not_set_expect_ERR_INVALID_OPERAND_is_thrown() {
+void test_assembleSingleOperand_given_operand_C_but_flag_not_set_expect_ERR_UNSUPPORTED_OPERAND_is_thrown() {
   _8051Instructions table = {"push", assembleSingleOperand, {0xC0, OPERAND_DIR_STACK}};
   int len;
   uint8_t codeMemory[65536];
@@ -3464,7 +3465,7 @@ void test_assembleSingleOperand_given_operand_C_but_flag_not_set_expect_ERR_INVA
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+    TEST_ASSERT_EQUAL(ERR_UNSUPPORTED_OPERAND, e->errorCode);
     freeException(e);
   }
   freeTokenizer(tokenizer);
@@ -3491,7 +3492,7 @@ void test_assembleSingleOperand_given_operand_DPTR_expect_it_is_assembled_correc
   freeTokenizer(tokenizer);
 }
 
-void test_assembleSingleOperand_given_operand_DPTR_but_flag_not_set_expect_ERR_INVALID_OPERAND_is_thrown() {
+void test_assembleSingleOperand_given_operand_DPTR_but_flag_not_set_expect_ERR_UNSUPPORTED_OPERAND_is_thrown() {
   _8051Instructions table = {"da", assembleSingleOperand, {0xD0, OPERAND_A}};
   int len;
   uint8_t codeMemory[65536];
@@ -3503,7 +3504,7 @@ void test_assembleSingleOperand_given_operand_DPTR_but_flag_not_set_expect_ERR_I
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+    TEST_ASSERT_EQUAL(ERR_UNSUPPORTED_OPERAND, e->errorCode);
     freeException(e);
   }
   freeTokenizer(tokenizer);
@@ -3625,6 +3626,24 @@ void test_assembleSingleOperand_given_operand_dir_for_stack_instructions_but_out
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INTEGER_OUT_OF_RANGE, e->errorCode);
+    freeException(e);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleSingleOperand_given_operand_dir_but_flag_not_set_expect_ERR_UNSUPPORTED_OPERAND_to_be_thrown() {
+  _8051Instructions table = {"da", assembleSingleOperand, {0xD0, OPERAND_A}};
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer *tokenizer = NULL;
+  Try{
+    tokenizer = createTokenizer(" 0x56  ");
+    len = assembleSingleOperand(tokenizer, &table, &codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    TEST_ASSERT_EQUAL(ERR_UNSUPPORTED_OPERAND, e->errorCode);
     freeException(e);
   }
   freeTokenizer(tokenizer);

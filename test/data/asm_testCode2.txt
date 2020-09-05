@@ -1,4 +1,4 @@
-MOV a, r1
-DA A
-ok: reti
-djnz r1, ok
+	MOV a, r1
+	DA A
+ok:	reti
+	djnz r1, ok

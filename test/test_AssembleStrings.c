@@ -8,6 +8,7 @@
 #include "Assembler8051.h"
 #include "ExceptionThrowing.h"
 #include "AssembleFile.h"
+#include "TrimWhiteSpacesIfPresent.h"
 
 void setUp(void)
 {

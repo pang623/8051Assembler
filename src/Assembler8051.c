@@ -75,7 +75,8 @@ int assembleInstructions(InstructionLineReader lineReader) {
     codeMemory[i] = 0;
 
   while((line = lineReader()) != NULL) {
-    if(isspace(*line)) {
+    trimWhiteSpacesIfPresent(line);
+    if(*line == '\0') {
       free(line);
       continue;
     }else {
@@ -514,22 +515,22 @@ int assembleSingleOperand(Tokenizer *tokenizer, _8051Instructions *info, uint8_t
     else if(info->data[1] & OPERAND_A)
       opcode = info->data[0] | 0x04;
     else
-      throwInvalidOperandException(token);
+      throwUnsupportedOperandException(token);
   }else if(isIdentifierTokenThenConsume(tokenizer, "AB")) {
     if(info->data[1] & OPERAND_AB)
       opcode = info->data[0] | 0x04;
     else
-      throwInvalidOperandException(token);
+      throwUnsupportedOperandException(token);
   }else if(isRegisterConsumeAndGetItsNumber(tokenizer, REGISTER_ADDRESSING, &regNum)) {
     if(info->data[1] & OPERAND_REG)
       opcode = (info->data[0] | 0x08) + regNum;
     else
-      throwInvalidOperandException(token);
+      throwUnsupportedOperandException(token);
   }else if(isIndRegisterThenGetItsNumberAndConsume(tokenizer, &regNum)) {
     if(info->data[1] & OPERAND_IND)
       opcode = (info->data[0] | 0x06) + regNum;
     else
-      throwInvalidOperandException(token);
+      throwUnsupportedOperandException(token);
   }else if(isIntegerTokenThenConsume(tokenizer, &addr, 0, 255)) {
     if(info->data[1] & OPERAND_DIR_STACK)
       opcode = (info->data[0] << 8) | ((uint8_t) addr);
@@ -539,18 +540,18 @@ int assembleSingleOperand(Tokenizer *tokenizer, _8051Instructions *info, uint8_t
       opcode = ((((info->data[0] ^ 0x40) | (((info->data[0] ^ 0x10) & 0x10) << 2))
                & (((info->data[0] & 0x10) << 1) | 0xDF)) | 0x02) << 8 | ((uint8_t) addr);
     else
-      throwInvalidOperandException(token);
+      throwUnsupportedOperandException(token);
   }else if(isIdentifierTokenThenConsume(tokenizer, "DPTR")) {
     if(info->data[1] & OPERAND_DPTR)
       opcode = 0xA3;
     else
-      throwInvalidOperandException(token);
+      throwUnsupportedOperandException(token);
   }else if(isIdentifierTokenThenConsume(tokenizer, "C")) {
     if(info->data[1] & OPERAND_C)
       opcode = (((info->data[0] ^ 0x40) | (((info->data[0] ^ 0x10) & 0x10) << 2))
                & (((info->data[0] & 0x10) << 1) | 0xDF)) | 0x03;
     else
-      throwInvalidOperandException(token);
+      throwUnsupportedOperandException(token);
   }else
     throwException(ERR_INVALID_OPERAND, token,
     "The operand '%s' entered is invalid", token->str);
@@ -576,24 +577,24 @@ int assembleAWithOperands(Tokenizer *tokenizer, int opcode, int flags) {
     if(flags & A_DIR)
       opcode = ((opcode | 0x05) << 8) | ((uint8_t) direct);
     else
-      throwInvalidOperandException(token);
+      throwUnsupportedOperandException(token);
   }else if(isRegisterConsumeAndGetItsNumber(tokenizer, REGISTER_ADDRESSING, &regNum)) {
     if(flags & A_REG)
       opcode = (opcode | 0x08) + regNum;
     else
-      throwInvalidOperandException(token);
+      throwUnsupportedOperandException(token);
   }else if(isOperatorTokenThenConsume(tokenizer, "#")) {
     if(flags & A_IMM) {
       verifyIsIntegerTokenThenConsume(tokenizer, &immediate, -128, 255);
       opcode = ((opcode | 0x04) << 8) | ((uint8_t) immediate);
     }else
-      throwInvalidOperandException(token);
+      throwUnsupportedOperandException(token);
   }else if(isOperatorTokenThenConsume(tokenizer, "@")) {
     if(flags & A_IND) {
       verifyIsRegisterConsumeAndGetItsNumber(tokenizer, INDIRECT_ADDRESSING, &regNum);
       opcode = (opcode | 0x06) + regNum;
     }else
-        throwInvalidOperandException(token);
+        throwUnsupportedOperandException(token);
   }else
     throwException(ERR_INVALID_OPERAND, token,
     "The operand '%s' inputted is not a valid operand", token->str);
@@ -617,13 +618,13 @@ int assembleDirectWithOperands(Tokenizer *tokenizer, int opcode, int flags) {
     if(flags & DIR_A)
       opcode = ((opcode | 0x02) << 8) | ((uint8_t) direct);
     else
-      throwInvalidOperandException(token);
+      throwUnsupportedOperandException(token);
   }else if(isOperatorTokenThenConsume(tokenizer, "#")) {
     if(flags & DIR_IMM) {
       verifyIsIntegerTokenThenConsume(tokenizer, &immediate, -128, 255);
       opcode = ((opcode | 0x03) << 16) | ((uint8_t) direct) << 8 | ((uint8_t) immediate);
     }else
-      throwInvalidOperandException(token);
+      throwUnsupportedOperandException(token);
   }else
     throwException(ERR_INVALID_OPERAND, token,
     "The operand '%s' inputted is not a valid operand", token->str);
@@ -647,13 +648,13 @@ int assembleCWithOperands(Tokenizer *tokenizer, int opcode, int flags) {
     if(flags & C_BIT)
       opcode = ((opcode | 0x02) << 8) | ((uint8_t) bitAddr);
     else
-      throwInvalidOperandException(token);
+      throwUnsupportedOperandException(token);
   }else if(isOperatorTokenThenConsume(tokenizer, "/")) {
     if(flags & C_BARBIT) {
       verifyIsIntegerTokenThenConsume(tokenizer, &bitAddr, 0, 255);
       opcode = ((opcode + 0x30) << 8) | ((uint8_t) bitAddr);
     }else
-      throwInvalidOperandException(token);
+      throwUnsupportedOperandException(token);
   }else
     throwException(ERR_INVALID_OPERAND, token,
     "The operand '%s' inputted is not a valid operand", token->str);
@@ -895,7 +896,7 @@ inline int getInstructionBytes(int opcode) {
 //but the flags for this operand is not set for that certain instruction
 //eg : xchd has only A, @Ri set of operands, if A, Rn or others is inputted,
 //this exception will be thrown
-void throwInvalidOperandException(Token *token) {
-   throwException(ERR_INVALID_OPERAND, token,
+void throwUnsupportedOperandException(Token *token) {
+   throwException(ERR_UNSUPPORTED_OPERAND, token,
    "Operand %s cannot be used here", token->str);
 }

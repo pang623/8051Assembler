@@ -13,14 +13,15 @@
 #include "AssembleStrings.h"
 #include "MemAlloc.h"
 #include "SaveCodeToBin.h"
+#include "TrimWhiteSpacesIfPresent.h"
 
 #define     getCurrentAbsoluteAddr()        (codePtr - codeMemory)
 #define     isIntegerToken(token)           (token->type == TOKEN_INTEGER_TYPE)
 #define     isIdentifierToken(token)        (token->type == TOKEN_IDENTIFIER_TYPE)
 
 //addressing mode
-#define     REGISTER_ADDRESSING         100
-#define     INDIRECT_ADDRESSING         200
+#define     REGISTER_ADDRESSING             100
+#define     INDIRECT_ADDRESSING             200
 
 typedef struct _8051Instructions _8051Instructions;
 typedef int (*funcPtr)(Tokenizer *tokenizer, _8051Instructions *instructionPtr, uint8_t **codePtrPtr);
@@ -63,7 +64,7 @@ int isImmediateThenGetsItsValueAndConsume(Tokenizer *tokenizer, int *value, int 
 void verifyIsImmediateThenGetsItsValueAndConsume(Tokenizer *tokenizer, int *value, int min, int max);
 int extractNum(char *start, Token *token);
 void checkExtraToken(Tokenizer *tokenizer);
-void throwInvalidOperandException(Token *token);
+void throwUnsupportedOperandException(Token *token);
 int writeCodeToCodeMemory(int opcode, uint8_t *codePtr);
 int getInstructionBytes(int opcode);
 void recordLabel(char *label, int index, int lineNo);
