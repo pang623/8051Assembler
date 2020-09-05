@@ -31,7 +31,7 @@ extern uint8_t codeMemory[];
 extern int muteOnNoLabel;
 extern int lineNumber;
 
-void test_assembleInFileAndWriteToOutFile_given_asm_testCode_as_input_file_expect_opcode_written_to_bin_file() {
+void test_assembleInFileAndWriteToOutFile_given_asm_testCode1_as_input_file_expect_opcode_written_to_bin_file() {
   int totalBytes;
   char *inFile = "./test/data/asm_testCode1.txt";
   char *outFile = "./test/data/asm_testCode1.bin";
@@ -47,7 +47,7 @@ void test_assembleInFileAndWriteToOutFile_given_asm_testCode_as_input_file_expec
 }
 
 //assemble another assembly txt file to see whether codeMemory will be reinitialized with new machine codes
-void test_assembleInFileAndWriteToOutFile_given_test_as_input_file_expect_opcode_written_to_bin_file() {
+void test_assembleInFileAndWriteToOutFile_given_asm_testCode2_as_input_file_expect_opcode_written_to_bin_file() {
   int totalBytes;
   char *inFile = "./test/data/asm_testCode2.txt";
   char *outFile = "./test/data/asm_testCode2.bin";

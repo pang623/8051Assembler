@@ -89,7 +89,7 @@ int assembleInstructions(InstructionLineReader lineReader) {
 }
 
 int assembleInstruction(Tokenizer *tokenizer, uint8_t **codePtrPtr) {
-  Token* token;
+  Token* token = NULL;
   int opcode, len;
   int i = 0;
   int iteration = 1;
@@ -105,6 +105,7 @@ int assembleInstruction(Tokenizer *tokenizer, uint8_t **codePtrPtr) {
       if(iteration == 1 && isOperatorTokenThenConsume(tokenizer, ":")) {
         if(muteOnNoLabel)
           recordLabel(token->str, (*codePtrPtr) - codeMemory, lineNumber);
+        freeToken(token);
         token = getToken(tokenizer);
         i = 0;
         iteration++;
@@ -136,7 +137,8 @@ int assembleInstruction(Tokenizer *tokenizer, uint8_t **codePtrPtr) {
 }
 
 void recordLabel(char *label, int index, int lineNo) {
-  LabelInfo info = {label, index, lineNo};
+  char *labelName = createLabelName(label);
+  LabelInfo info = {labelName, index, lineNo};
   LabelInfo *infoPtr = createLabelInfo(&info);
   LabelInfo *nextInfoPtr;
   ListItem *itemPtr = doubleLinkedListCreateListItem(infoPtr);
@@ -190,9 +192,10 @@ int getRelativeAddress(Tokenizer *tokenizer, int baseAddr, int min, int max) {
       addr = labelIndex - baseAddr;
   }else {
     pushBackToken(tokenizer, token);
-    if(isIntegerTokenThenConsume(tokenizer, &addr, min, max))
+    if(isIntegerTokenThenConsume(tokenizer, &addr, min, max)) {
+      freeToken(token);
       return addr;
-    else
+    }else
       throwException(ERR_INVALID_OPERAND, token,
       "Expecting a label or integer, but received '%s' instead", token->str);
   }
@@ -704,7 +707,7 @@ void verifyIsIntegerTokenThenConsume(Tokenizer *tokenizer, int *value, int min, 
 
 //consume token if is correct identifier token, else pushBack the token
 int isIdentifierTokenThenConsume(Tokenizer *tokenizer, char *identifier) {
-  Token *token;
+  Token *token = NULL;
   token = getToken(tokenizer);
   if(isIdentifierToken(token)) {
     if(stricmp(token->str, identifier)) {

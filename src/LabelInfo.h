@@ -11,5 +11,6 @@ struct LabelInfo {
 
 LabelInfo *createLabelInfo(LabelInfo *info);
 void freeLabelInfo(void *info);
+char *createLabelName(char *labelToCreate);
 
 #endif // LABELINFO_H

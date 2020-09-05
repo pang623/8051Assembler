@@ -1,6 +1,7 @@
 #include "LabelInfo.h"
 #include "MemAlloc.h"
 #include <stdio.h>
+#include <string.h>
 
 LabelInfo *createLabelInfo(LabelInfo *info) {
   LabelInfo *infoPtr = memAlloc(sizeof(LabelInfo));
@@ -11,6 +12,17 @@ LabelInfo *createLabelInfo(LabelInfo *info) {
 }
 
 void freeLabelInfo(void *info) {
-  if((LabelInfo *)info)
+  if((LabelInfo *)info) {
+    if(((LabelInfo *)info)->name)
+      memFree(((LabelInfo *)info)->name);
     memFree((LabelInfo *)info);
+  }
+}
+
+char *createLabelName(char *labelToCreate) {
+  int len = strlen(labelToCreate);
+  char *labelName = memAlloc(len + 1);
+  strncpy(labelName, labelToCreate, len);
+  labelName[len] = '\0';
+  return labelName;
 }
