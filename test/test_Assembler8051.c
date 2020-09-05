@@ -12,6 +12,7 @@
 #include "AssembleStrings.h"
 #include "MemAlloc.h"
 #include "SaveCodeToBin.h"
+#include "CustomTestAssertion.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -26,8 +27,41 @@ void tearDown(void)
 CEXCEPTION_T e;
 
 extern DoubleLinkedList *listPtr;
-extern int muteOnNoLabel;
 extern uint8_t codeMemory[];
+extern int muteOnNoLabel;
+extern int lineNumber;
+
+void test_assembleInFileAndWriteToOutFile_given_asm_testCode_as_input_file_expect_opcode_written_to_bin_file() {
+  int totalBytes;
+  char *inFile = "./test/data/asm_testCode1.txt";
+  char *outFile = "./test/data/asm_testCode1.bin";
+
+  Try{
+    totalBytes = assembleInFileAndWriteToOutFile(inFile, outFile);
+    TEST_ASSERT_EQUAL_BIN_FILE(codeMemory, outFile, totalBytes);
+  } Catch(e){
+    dumpTokenErrorMessage(e, lineNumber);
+    freeException(e);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+}
+
+//assemble another assembly txt file to see whether codeMemory will be reinitialized with new machine codes
+void test_assembleInFileAndWriteToOutFile_given_test_as_input_file_expect_opcode_written_to_bin_file() {
+  int totalBytes;
+  char *inFile = "./test/data/asm_testCode2.txt";
+  char *outFile = "./test/data/asm_testCode2.bin";
+
+  Try{
+    totalBytes = assembleInFileAndWriteToOutFile(inFile, outFile);
+    TEST_ASSERT_EQUAL_BIN_FILE(codeMemory, outFile, totalBytes);
+  } Catch(e){
+    dumpTokenErrorMessage(e, lineNumber);
+    freeException(e);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+}
+
 /*
 void test_assembleInstructions_given_func_ptr_expect_all_lines_in_asm_file_are_assembled_and_return_total_bytes_of_instructions() {
   int totalBytes;

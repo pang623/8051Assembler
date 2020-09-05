@@ -2,10 +2,12 @@
 #include "Exception.h"
 #include "AssembleStrings.h"
 #include "DoubleLinkedList.h"
-#include "MemAlloc.h"
 #include "LabelInfo.h"
+#include "MemAlloc.h"
+#include "SaveCodeToBin.h"
 #include "Assembler8051.h"
 #include "ExceptionThrowing.h"
+#include "AssembleFile.h"
 
 void setUp(void)
 {

@@ -1,15 +1,8 @@
 #include "AssembleFile.h"
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 FILE *fileHandler;
-
-int assembleInFileAndWriteToOutFile(char *inFile, char *outFile) {
-  int totalBytes = assembleFile(inFile);
-  saveCodeToBin(outFile, codeMemory, totalBytes);
-  return totalBytes;
-}
 
 int assembleFile(char *filename) {
   int totalBytes;

@@ -32,6 +32,7 @@ struct _8051Instructions {
   int data[3];
 };
 
+int assembleInFileAndWriteToOutFile(char *inFile, char *outFile);
 int assembleInstructions(InstructionLineReader lineReader);
 int assembleInstruction(Tokenizer *tokenizer, uint8_t **codePtrPtr);
 int assembleMOVInstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr);

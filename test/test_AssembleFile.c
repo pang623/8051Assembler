@@ -2,11 +2,10 @@
 #include "Exception.h"
 #include "AssembleFile.h"
 #include "DoubleLinkedList.h"
-#include "MemAlloc.h"
 #include "LabelInfo.h"
-#include "CustomTestAssertion.h"
-#include "Assembler8051.h"
+#include "MemAlloc.h"
 #include "SaveCodeToBin.h"
+#include "Assembler8051.h"
 #include "ExceptionThrowing.h"
 
 void setUp(void)
@@ -21,38 +20,6 @@ CEXCEPTION_T e;
 
 extern FILE *fileHandler;
 extern uint8_t codeMemory[];
-extern int lineNumber;
-
-void test_assembleInFileAndWriteToOutFile_given_asm_testCode_as_input_file_expect_opcode_written_to_bin_file() {
-  int totalBytes;
-  char *inFile = "./test/data/asm_testCode1.txt";
-  char *outFile = "./test/data/asm_testCode1.bin";
-
-  Try{
-    totalBytes = assembleInFileAndWriteToOutFile(inFile, outFile);
-    TEST_ASSERT_EQUAL_BIN_FILE(codeMemory, outFile, totalBytes);
-  } Catch(e){
-    dumpTokenErrorMessage(e, lineNumber);
-    freeException(e);
-    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
-  }
-}
-
-//assemble another assembly txt file to see whether codeMemory will be reinitialized with new machine codes
-void test_assembleInFileAndWriteToOutFile_given_test_as_input_file_expect_opcode_written_to_bin_file() {
-  int totalBytes;
-  char *inFile = "./test/data/asm_testCode2.txt";
-  char *outFile = "./test/data/asm_testCode2.bin";
-
-  Try{
-    totalBytes = assembleInFileAndWriteToOutFile(inFile, outFile);
-    TEST_ASSERT_EQUAL_BIN_FILE(codeMemory, outFile, totalBytes);
-  } Catch(e){
-    dumpTokenErrorMessage(e, lineNumber);
-    freeException(e);
-    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
-  }
-}
 
 //test fwd jump, backward jump, jump w/o label and absolute addressing with and w/o label
 void test_assembleFile_given_filename_expect_instructions_in_file_are_read_and_written_into_code_memory() {

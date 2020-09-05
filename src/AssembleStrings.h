@@ -5,9 +5,9 @@
 #include "DoubleLinkedList.h"
 #include "LabelInfo.h"
 
+extern DoubleLinkedList *listPtr;
 extern int lineNumber;
 extern int muteOnNoLabel;
-extern DoubleLinkedList *listPtr;
 
 int assembleStrings();
 char *getNextInstructionLineInString();

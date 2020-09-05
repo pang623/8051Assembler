@@ -58,6 +58,12 @@ DoubleLinkedList *listPtr;
 int lineNumber = 0;
 int muteOnNoLabel = 0;
 
+int assembleInFileAndWriteToOutFile(char *inFile, char *outFile) {
+  int totalBytes = assembleFile(inFile);
+  saveCodeToBin(outFile, codeMemory, totalBytes);
+  return totalBytes;
+}
+
 int assembleInstructions(InstructionLineReader lineReader) {
   Tokenizer *tokenizer;
   char *line;
