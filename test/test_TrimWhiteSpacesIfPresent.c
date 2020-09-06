@@ -19,7 +19,7 @@ void test_trimWhiteSpacesIfPresent_given_a_string_with_no_leading_whitespaces_ex
   strncpy(line, stringToCreate, len);
   line[len] = '\0';
 
-  trimWhiteSpacesIfPresent(line);
+  line = trimWhiteSpacesIfPresent(line);
   TEST_ASSERT_EQUAL_STRING("hello, good morning", line);
   free(line);
 }
@@ -32,7 +32,7 @@ void test_trimWhiteSpacesIfPresent_given_a_string_with_leading_whitespaces_expec
   strncpy(line, stringToCreate, len);
   line[len] = '\0';
 
-  trimWhiteSpacesIfPresent(line);
+  line = trimWhiteSpacesIfPresent(line);
   TEST_ASSERT_EQUAL_STRING("mov A, r0\n", line);
   free(line);
 }
@@ -46,7 +46,7 @@ void test_trimWhiteSpacesIfPresent_given_a_string_with_whitespaces_only_expect_a
   line[len] = '\0';
 
   TEST_ASSERT_EQUAL_STRING("\t\t\n", line);   //before trimming
-  trimWhiteSpacesIfPresent(line);
+  line = trimWhiteSpacesIfPresent(line);
   TEST_ASSERT_EQUAL_PTR('\0', *line);         //after trimming, string terminates with NULL, no whitespaces left
   free(line);
 }

@@ -65,7 +65,7 @@ int assembleInFileAndWriteToOutFile(char *inFile, char *outFile) {
 }
 
 int assembleInstructions(InstructionLineReader lineReader) {
-  Tokenizer *tokenizer;
+  Tokenizer *tokenizer = NULL;
   char *line;
   uint8_t *codePtr = codeMemory;
   uint8_t **codePtrPtr = &codePtr;
@@ -75,14 +75,14 @@ int assembleInstructions(InstructionLineReader lineReader) {
     codeMemory[i] = 0;
 
   while((line = lineReader()) != NULL) {
-    trimWhiteSpacesIfPresent(line);
+    line = trimWhiteSpacesIfPresent(line);
     if(*line == '\0') {
-      free(line);
+      memFree(line);
       continue;
     }else {
       tokenizer = createTokenizer(line);
       totalLen += assembleInstruction(tokenizer, codePtrPtr);
-      free(line);
+      memFree(line);
       freeTokenizer(tokenizer);
     }
   }

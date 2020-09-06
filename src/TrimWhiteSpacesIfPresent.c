@@ -1,7 +1,7 @@
 #include "TrimWhiteSpacesIfPresent.h"
 #include <ctype.h>
 
-void trimWhiteSpacesIfPresent(char *line) {
+char *trimWhiteSpacesIfPresent(char *line) {
   int index = 0;
   while(isspace(line[index])) {
     index++;
@@ -13,5 +13,7 @@ void trimWhiteSpacesIfPresent(char *line) {
       i++;
     }
    line[i] = '\0';
+   return line;
   }
+  return line;
 }

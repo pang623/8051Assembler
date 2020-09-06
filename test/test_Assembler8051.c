@@ -62,62 +62,6 @@ void test_assembleInFileAndWriteToOutFile_given_asm_testCode2_as_input_file_expe
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
 }
-/*
-void test_assembleInstructions_given_func_ptr_expect_all_lines_in_asm_file_are_assembled_and_return_total_bytes_of_instructions() {
-  int totalBytes;
-  char *filename = "./test/data/asm_testCode.txt";
-  fileHandler = fopen(filename, "r");
-  Try{
-    totalBytes = assembleInstructions(getNextInstructionLineInFile);
-    TEST_ASSERT_EQUAL(21, totalBytes);
-    TEST_ASSERT_EQUAL_HEX8(0x74, codeMemory[0]);
-    TEST_ASSERT_EQUAL_HEX8(0x8A, codeMemory[1]);
-    TEST_ASSERT_EQUAL_HEX8(0x75, codeMemory[2]);
-    TEST_ASSERT_EQUAL_HEX8(0x83, codeMemory[3]);
-    TEST_ASSERT_EQUAL_HEX8(0x12, codeMemory[4]);
-    TEST_ASSERT_EQUAL_HEX8(0x85, codeMemory[5]);
-    TEST_ASSERT_EQUAL_HEX8(0x83, codeMemory[6]);
-    TEST_ASSERT_EQUAL_HEX8(0xF4, codeMemory[7]);
-    TEST_ASSERT_EQUAL_HEX8(0x95, codeMemory[8]);
-    TEST_ASSERT_EQUAL_HEX8(0xF4, codeMemory[9]);
-    TEST_ASSERT_EQUAL_HEX8(0x62, codeMemory[10]);
-    TEST_ASSERT_EQUAL_HEX8(0x83, codeMemory[11]);
-    TEST_ASSERT_EQUAL_HEX8(0xC3, codeMemory[12]);
-    TEST_ASSERT_EQUAL_HEX8(0xF4, codeMemory[13]);
-    TEST_ASSERT_EQUAL_HEX8(0xD3, codeMemory[14]);
-    TEST_ASSERT_EQUAL_HEX8(0xDB, codeMemory[15]);
-    TEST_ASSERT_EQUAL_HEX8(0xF8, codeMemory[16]);
-    TEST_ASSERT_EQUAL_HEX8(0x2B, codeMemory[17]);
-    TEST_ASSERT_EQUAL_HEX8(0xB6, codeMemory[18]);
-    TEST_ASSERT_EQUAL_HEX8(0xE9, codeMemory[19]);
-    TEST_ASSERT_EQUAL_HEX8(0xF8, codeMemory[20]);
-    for(int i = 21; i < 65536; i++)
-      TEST_ASSERT_EQUAL(0, codeMemory[i]);
-  } Catch(e){
-    dumpTokenErrorMessage(e, __LINE__);
-    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
-  }
-  fclose(fileHandler);
-}
-
-void test_assembleInstructions_given_different_txt_file_containing_instruction_expect_codeMemory_is_written_with_new_machine_code() {
-  int totalBytes;
-  char *filename = "./test/data/test.txt";
-  fileHandler = fopen(filename, "r");
-  Try{
-    totalBytes = assembleInstructions(getNextInstructionLineInFile);
-    TEST_ASSERT_EQUAL(2, totalBytes);
-    TEST_ASSERT_EQUAL_HEX8(0x95, codeMemory[0]);
-    TEST_ASSERT_EQUAL_HEX8(0xf4, codeMemory[1]);
-    for(int i = 2; i < 65536; i++)
-      TEST_ASSERT_EQUAL(0, codeMemory[i]);
-  } Catch(e){
-    dumpTokenErrorMessage(e, __LINE__);
-    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
-  }
-  fclose(fileHandler);
-}
-*/
 
 //This function only take opcode up to 3 bytes as 8051 instructions is 3 bytes at most
 void test_getInstructionBytes_given_one_byte_opcode_expect_size_is_one_byte() {

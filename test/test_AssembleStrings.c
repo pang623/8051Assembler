@@ -29,8 +29,8 @@ extern int lineIndex;
 void test_assembleStrings_given_strings_of_instruction_expect_all_of_them_are_assembled_correctly() {
   int len;
   char *lines[] = {
-    "MOV R0, #0x10",
-    "MOV A, #0xFF",
+    "\t\t   MOV R0, #0x10",
+    "\t\t   MOV A, #0xFF",
     "AGAIN: RRC A",
     "JNC UPDATE_COUNT   ;forward jump",
     "INC R1",

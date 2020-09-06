@@ -1,6 +1,6 @@
 #ifndef TRIMWHITESPACESIFPRESENT_H
 #define TRIMWHITESPACESIFPRESENT_H
 
-void trimWhiteSpacesIfPresent(char *line);
+char *trimWhiteSpacesIfPresent(char *line);
 
 #endif // TRIMWHITESPACESIFPRESENT_H

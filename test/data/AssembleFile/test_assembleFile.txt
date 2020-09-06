@@ -1,13 +1,16 @@
-START: MOV R0, #0x10
-MOV A, #0xFF
-AGAIN: RRC A
-JNC UPDATE_COUNT	;forward jump
-INC R1
-UPDATE_COUNT: DEC R0
-CJNE R0, #0, AGAIN	;backward jump
-ACALL DELAY
+START:		MOV R0, #0x10
+		MOV A, #0xFF
+AGAIN:		RRC A
+		JNC UPDATE_COUNT	;forward jump
+		INC R1
+UPDATE_COUNT:	DEC R0
+		CJNE R0, #0, AGAIN	;backward jump
+		ACALL DELAY
 
-DELAY: NOP
-nop
-DJNZ R3, -4		;jump to DELAY
-AJMP 0x00		;PC = 0x00
+
+
+
+DELAY:		NOP
+		nop
+		DJNZ R3, -4		;jump to DELAY
+		AJMP 0x00		;PC = 0x00
