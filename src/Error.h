@@ -41,7 +41,8 @@
 #define ERR_UNKNOWN_LABEL           69
 #define ERR_DUPLICATE_LABEL         70
 #define ERR_ILLEGAL_LABEL           71
+#define ERR_TARGET_OUT_OF_RANGE     72
 
-#define ERR_UNSUPPORTED_OPERAND     72
+#define ERR_UNSUPPORTED_OPERAND     73
 
 #endif // Errors_H

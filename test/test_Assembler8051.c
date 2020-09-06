@@ -105,6 +105,7 @@ void test_recordLabel_given_labelinfo_expect_it_is_stored_into_list_correctly() 
   listPtr = doubleLinkedListCreateList();
   
   Try{
+    //current list is empty
     recordLabel("SKIP", 1, 2);
 
     infoPtr = listPtr->head->data;
@@ -114,6 +115,7 @@ void test_recordLabel_given_labelinfo_expect_it_is_stored_into_list_correctly() 
     TEST_ASSERT_EQUAL(2, infoPtr->lineNo);
     TEST_ASSERT_EQUAL(1, listPtr->count);
 
+    //current list has one item
     recordLabel("HERE", 4, 9);
 
     infoPtr = listPtr->head->data;
@@ -122,7 +124,8 @@ void test_recordLabel_given_labelinfo_expect_it_is_stored_into_list_correctly() 
     TEST_ASSERT_EQUAL(4, infoPtr->indexNo);
     TEST_ASSERT_EQUAL(9, infoPtr->lineNo);
     TEST_ASSERT_EQUAL(2, listPtr->count);
-
+    
+    //two items in the list
     TEST_ASSERT_EQUAL_PTR(NULL, listPtr->head->prev);
     TEST_ASSERT_EQUAL_PTR(NULL, listPtr->tail->next);
   } Catch(e){
@@ -208,7 +211,7 @@ void test_getLabelIndex_given_label_and_but_empty_list_expect_MINUSone_is_return
 
 void test_getRelativeAddress_given_label_as_token_and_label_exists_expect_relative_is_computed_and_returned() {
   int relative;
-  Tokenizer *tokenizer;
+  Tokenizer *tokenizer = NULL;
 
   //Set up linked list
   listPtr = doubleLinkedListCreateList();
@@ -236,8 +239,10 @@ void test_getRelativeAddress_given_label_as_token_and_label_exists_expect_relati
 
 void test_getRelativeAddress_given_integer_as_token_expect_relative_is_computed_and_returned() {
   int relative;
-  Tokenizer *tokenizer;
+  Tokenizer *tokenizer = NULL;
 
+  //if number is directly inputted as relative, the number itself is returned back as relative address
+  //provided the number is in range of -127 to 128
   tokenizer = createTokenizer("+100");
   
   Try{
@@ -253,7 +258,7 @@ void test_getRelativeAddress_given_integer_as_token_expect_relative_is_computed_
 
 void test_getRelativeAddress_given_integer_as_token_but_out_of_range_expect_ERR_INTEGER_OUT_OF_RANGE_is_thrown() {
   int relative;
-  Tokenizer *tokenizer;
+  Tokenizer *tokenizer = NULL;
   
   tokenizer = createTokenizer("200");
 
@@ -270,7 +275,7 @@ void test_getRelativeAddress_given_integer_as_token_but_out_of_range_expect_ERR_
 
 void test_getRelativeAddress_given_non_existent_label_as_token_expect_ERR_UNKNOWN_LABEL_is_thrown() {
   int relative;
-  Tokenizer *tokenizer;
+  Tokenizer *tokenizer = NULL;
 
   //Set up linked list
   listPtr = doubleLinkedListCreateList();
@@ -295,9 +300,9 @@ void test_getRelativeAddress_given_non_existent_label_as_token_expect_ERR_UNKNOW
   freeTokenizer(tokenizer);
 }
 
-void test_getRelativeAddress_given_label_as_token_but_out_of_branching_range_backwards_branch_expect_ERR_INTEGER_OUT_OF_RANGE_is_thrown() {
+void test_getRelativeAddress_given_label_as_token_but_out_of_branching_range_backwards_branch_expect_ERR_TARGET_OUT_OF_RANGE_is_thrown() {
   int relative;
-  Tokenizer *tokenizer;
+  Tokenizer *tokenizer = NULL;
 
   //Set up linked list
   listPtr = doubleLinkedListCreateList();
@@ -315,16 +320,16 @@ void test_getRelativeAddress_given_label_as_token_but_out_of_branching_range_bac
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    TEST_ASSERT_EQUAL(ERR_INTEGER_OUT_OF_RANGE, e->errorCode);
+    TEST_ASSERT_EQUAL(ERR_TARGET_OUT_OF_RANGE, e->errorCode);
     freeException(e);
   }
   free(listPtr);
   freeTokenizer(tokenizer);
 }
 
-void test_getRelativeAddress_given_label_as_token_but_out_of_branching_range_forward_branch_expect_ERR_INTEGER_OUT_OF_RANGE_is_thrown() {
+void test_getRelativeAddress_given_label_as_token_but_out_of_branching_range_forward_branch_expect_ERR_TARGET_OUT_OF_RANGE_is_thrown() {
   int relative;
-  Tokenizer *tokenizer;
+  Tokenizer *tokenizer = NULL;
 
   //Set up linked list
   listPtr = doubleLinkedListCreateList();
@@ -342,7 +347,7 @@ void test_getRelativeAddress_given_label_as_token_but_out_of_branching_range_for
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    TEST_ASSERT_EQUAL(ERR_INTEGER_OUT_OF_RANGE, e->errorCode);
+    TEST_ASSERT_EQUAL(ERR_TARGET_OUT_OF_RANGE, e->errorCode);
     freeException(e);
   }
   free(listPtr);
@@ -351,7 +356,7 @@ void test_getRelativeAddress_given_label_as_token_but_out_of_branching_range_for
 
 void test_getRelativeAddress_given_token_but_is_neither_label_nor_integer_expect_ERR_INVALID_OPERAND_is_thrown() {
   int relative;
-  Tokenizer *tokenizer;
+  Tokenizer *tokenizer = NULL;
   
   tokenizer = createTokenizer("@r1");
 
@@ -368,7 +373,7 @@ void test_getRelativeAddress_given_token_but_is_neither_label_nor_integer_expect
 
 void test_getAbsoluteAddress_given_label_as_token_and_label_exists_expect_absolute_is_computed_and_returned() {
   int absolute;
-  Tokenizer *tokenizer;
+  Tokenizer *tokenizer = NULL;
 
   //Set up linked list
   listPtr = doubleLinkedListCreateList();
@@ -511,10 +516,10 @@ void test_isIndRegisterThenGetItsNumberAndConsume_given_is_indReg_but_outOfRange
   freeTokenizer(tokenizer);
 }
 
-//@A+DPTR, @A+PC and @DPTR operands are only found in MOVX and MOVC instructions,
+//@A+DPTR, @A+PC and @DPTR operands are only found in JMP, MOVX and MOVC instructions,
 //all other instructions have only @Ri as operands, which also means when @ token is detected,
 //automatically the token next to it must be a register,
-//this function is not used in assembling MOVX and MOVC instruction (@Ri is not checked using this function for MOVX and MOVC)
+//this function is not used in assembling JMP, MOVX and MOVC instruction (@Ri is not checked using this function for JMP, MOVX and MOVC)
 void test_isIndRegisterThenGetItsNumberAndConsume_given_is_ind_but_not_register_expect_exception_ERR_EXPECTING_REGISTER_to_be_thrown() {
   Tokenizer *tokenizer = NULL;
   int number;
@@ -959,6 +964,26 @@ void test_isIntegerTokenThenConsume_given_is_integer_without_plus_sign_expect_to
   freeTokenizer(tokenizer);
 }
 
+void test_isIntegerTokenThenConsume_given_not_integer_expect_token_is_pushed_back_and_return_0() {
+  Tokenizer *tokenizer = NULL;
+  Token *token = NULL;
+  int value = 1000;
+  Try{
+    tokenizer = createTokenizer(" R3 integer");
+    int isTrue = isIntegerTokenThenConsume(tokenizer, &value, -128, 127);
+    token = getToken(tokenizer);
+    TEST_ASSERT_EQUAL(0, isTrue);
+    TEST_ASSERT_EQUAL_STRING("R3", token->str);
+    TEST_ASSERT_EQUAL(1000, value);
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    freeException(e);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeToken(token);
+  freeTokenizer(tokenizer);
+}
+
 void test_isIntegerTokenThenConsume_given_is_neg_integer_but_out_of_range_expect_ERR_INTEGER_OUT_OF_RANGE_exception_to_be_thrown() {
   Tokenizer *tokenizer = NULL;
   int value = 0xAA;
@@ -1004,11 +1029,26 @@ void test_isIntegerTokenThenConsume_given_is_pos_integer_without_sign_but_out_of
   freeTokenizer(tokenizer);
 }
 
-void test_isIntegerTokenThenConsume_given_sign_but_not_integer_expect_ERR_EXPECTING_INTEGER_to_be_thrown() {
+void test_isIntegerTokenThenConsume_given_negative_sign_but_not_integer_expect_ERR_EXPECTING_INTEGER_to_be_thrown() {
   Tokenizer *tokenizer = NULL;
   int value = 0xAA;
   Try{
     tokenizer = createTokenizer(" -abcdef xyz  ");
+    int isTrue = isIntegerTokenThenConsume(tokenizer, &value, -128, 255);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    TEST_ASSERT_EQUAL(ERR_EXPECTING_INTEGER, e->errorCode);
+    freeException(e);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_isIntegerTokenThenConsume_given_positive_sign_but_not_integer_expect_ERR_EXPECTING_INTEGER_to_be_thrown() {
+  Tokenizer *tokenizer = NULL;
+  int value = 0xAA;
+  Try{
+    tokenizer = createTokenizer(" +number abc  ");
     int isTrue = isIntegerTokenThenConsume(tokenizer, &value, -128, 255);
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
@@ -1042,7 +1082,7 @@ void test_verifyIsIntegerTokenThenConsume_given_not_integer_expect_exception_ERR
   Tokenizer *tokenizer = NULL;
   int value;
   Try{
-    tokenizer = createTokenizer("  +beef  or chicken");
+    tokenizer = createTokenizer("  beef  or chicken");
     verifyIsIntegerTokenThenConsume(tokenizer, &value, 0, 255);
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
@@ -1078,12 +1118,34 @@ void test_isRegisterConsumeAndGetItsNumber_given_not_register_expect_token_is_pu
   Token *token = NULL;
   int regNum = 7;
   Try{
+    //token is not even an identifier, definitely is not a register
     tokenizer = createTokenizer(" @abcd");
     int isTrue = isRegisterConsumeAndGetItsNumber(tokenizer, REGISTER_ADDRESSING, &regNum);
     token = getToken(tokenizer);
     TEST_ASSERT_EQUAL(0, isTrue);
     TEST_ASSERT_EQUAL_STRING("@", token->str);
     TEST_ASSERT_EQUAL(7, regNum);
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    freeException(e);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeToken(token);
+  freeTokenizer(tokenizer);
+}
+
+void test_isRegisterConsumeAndGetItsNumber_given_identifier_that_not_begin_with_r_expect_token_is_pushed_back_and_return_0() {
+  Tokenizer *tokenizer = NULL;
+  Token *token = NULL;
+  int regNum = 5;
+  Try{
+    //token is identifier but do not begin with 'r', indicating it is not register
+    tokenizer = createTokenizer(" hexagon A");
+    int isTrue = isRegisterConsumeAndGetItsNumber(tokenizer, REGISTER_ADDRESSING, &regNum);
+    token = getToken(tokenizer);
+    TEST_ASSERT_EQUAL(0, isTrue);
+    TEST_ASSERT_EQUAL_STRING("hexagon", token->str);
+    TEST_ASSERT_EQUAL(5, regNum);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     freeException(e);
@@ -1190,20 +1252,7 @@ void test_checkExtraToken_given_null_token_expect_no_exception_is_thrown() {
 void test_checkExtraToken_given_newline_token_expect_no_exception_is_thrown() {
   Tokenizer *tokenizer = NULL;
   Try{
-    tokenizer = createTokenizer("  \n   ");
-    checkExtraToken(tokenizer);
-  } Catch(e){
-    dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
-    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
-  }
-  freeTokenizer(tokenizer);
-}
-
-void test_checkExtraToken_given_tab_token_expect_no_exception_is_thrown() {
-  Tokenizer *tokenizer = NULL;
-  Try{
-    tokenizer = createTokenizer("  \t   ");
+    tokenizer = createTokenizer("\n");
     checkExtraToken(tokenizer);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
@@ -1240,13 +1289,31 @@ void test_checkExtraToken_given_not_whitespace_expect_exception_ERR_EXTRA_PARAME
   freeTokenizer(tokenizer);
 }
 
+void test_checkExtraToken_given_extra_token_after_tab_expect_exception_ERR_EXTRA_PARAMETER_is_thrown() {
+  Tokenizer *tokenizer = NULL;
+  Try{
+    //consider this scenario, "mov a, r0\t\tHELLO"
+    //tokenizer skip whitespaces, in this case it skip the tab
+    //when get token, token 'HELLO' will be fetched
+    //thus it is considered an extra token
+    tokenizer = createTokenizer("  \t\tHELLO   ");
+    checkExtraToken(tokenizer);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    TEST_ASSERT_EQUAL(ERR_EXTRA_PARAMETER, e->errorCode);
+    freeException(e);
+  }
+  freeTokenizer(tokenizer);
+}
+
 void test_extractNum_given_string_3668_expect_number_3668_is_extracted() {
   Tokenizer *tokenizer = NULL;
   Token *token = NULL;
   Try{
     tokenizer = createTokenizer("tree3668");
     token = getToken(tokenizer);
-    int num = extractNum(token->str + 4, token);
+    int num = extractNum(token->str + 4);
     TEST_ASSERT_EQUAL(3668, num);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
@@ -1257,53 +1324,52 @@ void test_extractNum_given_string_3668_expect_number_3668_is_extracted() {
   freeTokenizer(tokenizer);
 }
 
-
-void test_extractNum_given_string_1tree_expect_exception_ERR_INVALID_REGISTER_is_thrown() {
+void test_extractNum_given_string_1tree_expect_MINUSone_is_returned() {
   Tokenizer *tokenizer = NULL;
   Token *token = NULL;
   Try{
     tokenizer = createTokenizer(" R1tree");
     token = getToken(tokenizer);
-    int num = extractNum(token->str + 1, token);
-    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+    int num = extractNum(token->str + 1);
+    TEST_ASSERT_EQUAL(-1, num);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    TEST_ASSERT_EQUAL(ERR_INVALID_REGISTER, e->errorCode);
     freeException(e);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeToken(token);
   freeTokenizer(tokenizer);
 }
 
-void test_extractNum_given_string_t321_expect_exception_ERR_INVALID_REGISTER_is_thrown() {
+void test_extractNum_given_string_t321_expect_MINUSone_is_returned() {
   Tokenizer *tokenizer = NULL;
   Token *token = NULL;
   Try{
     tokenizer = createTokenizer(" Rt321");
     token = getToken(tokenizer);
-    int num = extractNum(token->str + 1, token);
-    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+    int num = extractNum(token->str + 1);
+    TEST_ASSERT_EQUAL(-1, num);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    TEST_ASSERT_EQUAL(ERR_INVALID_REGISTER, e->errorCode);
     freeException(e);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeToken(token);
   freeTokenizer(tokenizer);
 }
 
-void test_extractNum_given_string_null_expect_exception_ERR_INVALID_REGISTER_is_thrown() {
+void test_extractNum_given_string_null_expect_MINUSone_is_returned() {
   Tokenizer *tokenizer = NULL;
   Token *token = NULL;
   Try{
     tokenizer = createTokenizer("R");
     token = getToken(tokenizer);
-    int num = extractNum(token->str + 1, token);
-    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+    int num = extractNum(token->str + 1);
+    TEST_ASSERT_EQUAL(-1, num);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    TEST_ASSERT_EQUAL(ERR_INVALID_REGISTER, e->errorCode);
     freeException(e);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeToken(token);
   freeTokenizer(tokenizer);

@@ -141,7 +141,7 @@ void recordLabel(char *label, int index, int lineNo) {
   char *labelName = createLabelName(label);
   LabelInfo info = {labelName, index, lineNo};
   LabelInfo *infoPtr = createLabelInfo(&info);
-  LabelInfo *nextInfoPtr;
+  LabelInfo *nextInfoPtr = NULL;
   ListItem *itemPtr = doubleLinkedListCreateListItem(infoPtr);
   ListItem *nextItem = listPtr->head;
   if(nextItem == NULL)
@@ -160,7 +160,7 @@ void recordLabel(char *label, int index, int lineNo) {
 }
 
 int getLabelIndex(char *label) {
-  LabelInfo *infoPtr;
+  LabelInfo *infoPtr = NULL;
   ListItem *nextItem = listPtr->head;
   if(nextItem == NULL)
     return -1;
@@ -181,7 +181,7 @@ int getAbsoluteAddress(Tokenizer *tokenizer, int min, int max) {
 }
 
 int getRelativeAddress(Tokenizer *tokenizer, int baseAddr, int min, int max) {
-  Token *token;
+  Token *token = NULL;
   int labelIndex, addr = 0;
 
   token = getToken(tokenizer);
@@ -200,7 +200,7 @@ int getRelativeAddress(Tokenizer *tokenizer, int baseAddr, int min, int max) {
       "Expecting a label or integer, but received '%s' instead", token->str);
   }
   if(addr < min || addr > max)
-    throwException(ERR_INTEGER_OUT_OF_RANGE, token,
+    throwException(ERR_TARGET_OUT_OF_RANGE, token,
     "Label '%s' is out of the branching range", token->str);
   freeToken(token);
   return addr;
@@ -428,7 +428,7 @@ int assembleInstructionWithOnlyAccAsFirstOperand(Tokenizer *tokenizer, _8051Inst
 
 //orl, anl
 int assembleLogicalInstructionWithoutXRL(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr) {
-  Token *token;
+  Token *token = NULL;
   int value, opcode, len;
   uint8_t *codePtr = *codePtrPtr;
 
@@ -450,7 +450,7 @@ int assembleLogicalInstructionWithoutXRL(Tokenizer *tokenizer, _8051Instructions
 }
 
 int assembleXRLinstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr) {
-  Token *token;
+  Token *token = NULL;
   int value, opcode, len;
   uint8_t *codePtr = *codePtrPtr;
 
@@ -774,9 +774,13 @@ void verifyIsOperatorTokenThenConsume(Tokenizer *tokenizer, char *Operator) {
 
 //consume token if is register and get reg num, else pushback token and return 0
 //does not throw exception if its not register
+//identifier token begin with 'r' is identified as register
+//register validity is determined by the successful extraction of its register number
+//if -1 is received, register is then invalid
 //return 1 if register is valid and in range
 int isRegisterConsumeAndGetItsNumber(Tokenizer *tokenizer, int addrMode, int *number) {
   Token *token = NULL;
+  int regNum;
   token = getToken(tokenizer);
 
   if(token->type != TOKEN_IDENTIFIER_TYPE || (!(tolower(token->str[0]) == 'r'))) {
@@ -784,7 +788,11 @@ int isRegisterConsumeAndGetItsNumber(Tokenizer *tokenizer, int addrMode, int *nu
     return 0;
   }
 
-  *number = extractNum(token->str + 1, token);
+  if((regNum = extractNum(token->str + 1)) == -1)
+    throwException(ERR_INVALID_REGISTER, token,
+    "An invalid register '%s' is inputted", token->str);
+  else
+    *number = regNum;
 
   if(addrMode == REGISTER_ADDRESSING) {
     if(*number > 7)
@@ -812,7 +820,7 @@ void verifyIsRegisterConsumeAndGetItsNumber(Tokenizer *tokenizer, int addrMode, 
 }
 
 //if @ token is detected, it is consumed and the token next to it must be register, else throwException
-//if @ is not detected, it will NOT throwException and token is pushed back
+//if @ is not detected, it will NOT throwException and token is pushed back, indicating it is not indirect
 int isIndRegisterThenGetItsNumberAndConsume(Tokenizer *tokenizer, int *number) {
   int regNum = 0;
 
@@ -825,7 +833,7 @@ int isIndRegisterThenGetItsNumberAndConsume(Tokenizer *tokenizer, int *number) {
 }
 
 //if # token is detected, it is consumed and the token next to it must be integer, else throw exception
-//if # is not detected, it will NOT throwException and token is pushed back
+//if # is not detected, it will NOT throwException and token is pushed back, indicating it is not immediate
 int isImmediateThenGetsItsValueAndConsume(Tokenizer *tokenizer, int *value, int min, int max) {
   int immediate = 0;
 
@@ -849,13 +857,12 @@ void verifyIsImmediateThenGetsItsValueAndConsume(Tokenizer *tokenizer, int *valu
     *value = immediate;
 }
 
-int extractNum(char *start, Token *token) {
+int extractNum(char *start) {
   int num;
   char *end;
   num = strtol(start, &end, 10);
-  if ( (start[0] == end[0]) || (end[0]) )
-    throwException(ERR_INVALID_REGISTER, token,
-    "An invalid register '%s' is inputted", token->str);
+  if( (start[0] == end[0]) || (end[0]) )
+    return -1;
   else
     return num;
 }
@@ -863,10 +870,13 @@ int extractNum(char *start, Token *token) {
 void checkExtraToken(Tokenizer *tokenizer) {
   Token *token = NULL;
   token = getToken(tokenizer);
-  if(token->type != TOKEN_NULL_TYPE && token->type != TOKEN_NEWLINE_TYPE && (strcmp(token->str, ";")))
-    throwException(ERR_EXTRA_PARAMETER, token,
-    "Does not expect an extra parameter '%s'", token->str);
-  else
+  if(token->type != TOKEN_NULL_TYPE && token->type != TOKEN_NEWLINE_TYPE) {
+    if(strcmp(token->str, ";"))
+      throwException(ERR_EXTRA_PARAMETER, token,
+      "Does not expect an extra parameter '%s'", token->str);
+    else
+      freeToken(token);
+  }else
     freeToken(token);
 }
 
@@ -883,7 +893,7 @@ int writeCodeToCodeMemory(int opcode, uint8_t *codePtr) {
   return bytes;
 }
 
-inline int getInstructionBytes(int opcode) {
+int getInstructionBytes(int opcode) {
   if(opcode <= 0xFF)
     return 1;
   else if(opcode <= 0xFFFF)

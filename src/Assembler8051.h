@@ -62,7 +62,7 @@ void verifyIsRegisterConsumeAndGetItsNumber(Tokenizer *tokenizer, int addrMode, 
 int isIndRegisterThenGetItsNumberAndConsume(Tokenizer *tokenizer, int *number);
 int isImmediateThenGetsItsValueAndConsume(Tokenizer *tokenizer, int *value, int min, int max);
 void verifyIsImmediateThenGetsItsValueAndConsume(Tokenizer *tokenizer, int *value, int min, int max);
-int extractNum(char *start, Token *token);
+int extractNum(char *start);
 void checkExtraToken(Tokenizer *tokenizer);
 void throwUnsupportedOperandException(Token *token);
 int writeCodeToCodeMemory(int opcode, uint8_t *codePtr);
