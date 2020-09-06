@@ -2821,6 +2821,23 @@ void test_assembleJMPInstruction_given_ind_APlusDPTR_expect_it_is_assembled_and_
   freeTokenizer(tokenizer);
 }
 
+void test_assembleJMPInstruction_given_ind_APlusDPTR_with_extra_token_expect_ERR_EXTRA_PARAMETER_is_thrown() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer *tokenizer = NULL;
+  Try{
+    tokenizer = createTokenizer(" @a + dPTr   EXTRA");
+    len = assembleJMPInstruction(tokenizer, NULL, &codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    TEST_ASSERT_EQUAL(ERR_EXTRA_PARAMETER, e->errorCode);
+    freeException(e);
+  }
+  freeTokenizer(tokenizer);
+}
+
 void test_assembleJMPInstruction_given_invalid_operand_expect_ERR_INVALID_OPERAND_is_thrown() {
   int len;
   uint8_t codeMemory[65536];
@@ -2921,6 +2938,42 @@ void test_assembleBitWithRel_given_jbc_but_first_operand_is_NOT_integer_expect_E
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_EXPECTING_INTEGER, e->errorCode);
+    freeException(e);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleBitWithRel_given_jnb_valid_operands_but_no_comma_expect_ERR_INVALID_OPERAND_is_thrown() {
+  _8051Instructions table = {"jnb", assembleBitWithRel, {0x30, 0}};
+  int len;
+  uint8_t *codePtr = codeMemory;
+  Tokenizer *tokenizer = NULL;
+  
+  Try{
+    tokenizer = createTokenizer("  0x56 -100 ");
+    len = assembleBitWithRel(tokenizer, &table, &codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+    freeException(e);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleBitWithRel_given_jnb_valid_operands_but_with_extra_token_expect_ERR_EXTRA_PARAMETER_is_thrown() {
+  _8051Instructions table = {"jnb", assembleBitWithRel, {0x30, 0}};
+  int len;
+  uint8_t *codePtr = codeMemory;
+  Tokenizer *tokenizer = NULL;
+  
+  Try{
+    tokenizer = createTokenizer("  0x56, -100 TURING ");
+    len = assembleBitWithRel(tokenizer, &table, &codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    TEST_ASSERT_EQUAL(ERR_EXTRA_PARAMETER, e->errorCode);
     freeException(e);
   }
   freeTokenizer(tokenizer);
@@ -3186,13 +3239,30 @@ void test_assembleCJNEInstruction_given_invalid_first_operand_expect_ERR_INVALID
   freeTokenizer(tokenizer);
 }
 
-void test_assembleCJNEInstruction_given_missing_comma_expect_ERR_INVALID_OPERAND_to_be_thrown() {
+void test_assembleCJNEInstruction_given_missing_second_comma_expect_ERR_INVALID_OPERAND_to_be_thrown() {
   int len;
   uint8_t *codePtr = codeMemory;
   Tokenizer *tokenizer = NULL;
 
   Try{
     tokenizer = createTokenizer(" A, 0x55 HERE ");
+    len = assembleCJNEInstruction(tokenizer, NULL, &codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+    freeException(e);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleCJNEInstruction_given_missing_first_comma_expect_ERR_INVALID_OPERAND_to_be_thrown() {
+  int len;
+  uint8_t *codePtr = codeMemory;
+  Tokenizer *tokenizer = NULL;
+
+  Try{
+    tokenizer = createTokenizer(" R3 0x55, THERE ");
     len = assembleCJNEInstruction(tokenizer, NULL, &codePtr);
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){

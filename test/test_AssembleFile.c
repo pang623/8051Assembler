@@ -22,6 +22,20 @@ CEXCEPTION_T e;
 extern FILE *fileHandler;
 extern uint8_t codeMemory[];
 
+//extra token in one of the instruction, expect exception thrown
+void test_assembleFile_given_filename_but_instruction_with_extra_token_expect_ERR_EXTRA_PARAMETER_is_thrown() {
+  int totalBytes;
+  char *filename = "./test/data/AssembleFile/test_assembleFile_Error.txt";
+  Try{
+    totalBytes = assembleFile(filename);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, lineNumber);
+    TEST_ASSERT_EQUAL(ERR_EXTRA_PARAMETER, e->errorCode);
+    freeException(e);
+  }
+}
+
 //test fwd jump, backward jump, jump w/o label and absolute addressing with and w/o label
 void test_assembleFile_given_filename_expect_instructions_in_file_are_read_and_written_into_code_memory() {
   int totalBytes;

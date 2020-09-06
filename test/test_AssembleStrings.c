@@ -175,7 +175,7 @@ void test_assembleStrings_given_strings_of_instruction_with_repeated_label_expec
   char *lines[] = {
     "MOV A, R3",
     "JMP @A+DPTR",
-    "AGAIN: RRC A",
+    "AGAIN: RRC A\t",
     "JNB 0x65, HERE",
     "INC R1",
     "AGAIN: DEC R0    ;label 'AGAIN' defined at line 3",

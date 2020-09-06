@@ -1,0 +1,9 @@
+	Mov r7, #0x0A
+	Mov r0, #0x20	EXTRATOKENHERE
+	Mov dptr, #0x1020
+
+Nxt:	Mov a, @r0
+	Movx @dptr, a
+	Inc r0
+	Inc dptr
+	Djnz r7, nxt
