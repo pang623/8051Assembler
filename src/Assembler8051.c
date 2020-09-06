@@ -94,7 +94,7 @@ int assembleInstruction(Tokenizer *tokenizer, uint8_t **codePtrPtr) {
   int opcode, len;
   int i = 0;
   int iteration = 1;
-  _8051Instructions *instructionPtr;
+  _8051Instructions *instructionPtr = NULL;
 
   token = getToken(tokenizer);
   if(token->type != TOKEN_IDENTIFIER_TYPE)

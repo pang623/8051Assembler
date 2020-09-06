@@ -3873,6 +3873,7 @@ void test_assembleSingleOperand_given_invalid_single_operand_expect_ERR_INVALID_
   freeTokenizer(tokenizer);
 }
 
+//sample tests
 void test_assembleInstruction_given_add_A_with_r7_expect_opcode_0x2f() {
   int len;
   uint8_t codeMemory[65536];
@@ -4445,5 +4446,153 @@ void test_assembleInstruction_given_reti_expect_opcode_0x32_written_in_code_memo
     dumpTokenErrorMessage(e, __LINE__);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleInstruction_given_first_token_not_identifier_expect_ERR_EXPECTING_IDENTIFIER_to_be_thrown() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer *tokenizer = NULL;
+  Try{
+    tokenizer = createTokenizer("  !!XYZ: cpl a    ");
+    len = assembleInstruction(tokenizer, &codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    TEST_ASSERT_EQUAL(ERR_EXPECTING_IDENTIFIER, e->errorCode);
+    freeException(e);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleInstruction_given_invalid_instruction_expect_ERR_INVALID_INSTRUCTION_to_be_thrown() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer *tokenizer = NULL;
+  Try{
+    tokenizer = createTokenizer("  LEA 0x56    ");
+    len = assembleInstruction(tokenizer, &codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    TEST_ASSERT_EQUAL(ERR_INVALID_INSTRUCTION, e->errorCode);
+    freeException(e);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleInstruction_given_instruction_mnemonic_used_as_label_expect_ERR_ILLEGAL_LABEL_to_be_thrown() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer *tokenizer = NULL;
+  Try{
+    tokenizer = createTokenizer("  MOV: ADD A, R0    ");
+    len = assembleInstruction(tokenizer, &codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    TEST_ASSERT_EQUAL(ERR_ILLEGAL_LABEL, e->errorCode);
+    freeException(e);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleInstruction_given_two_label_is_used_in_one_instruction_expect_ERR_INVALID_INSTRUCTION_to_be_thrown() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer *tokenizer = NULL;
+  Try{
+    //in this case, AGAIN is seen as an invalid instruction, because token after the first colon is always an instruction mnemonic
+    tokenizer = createTokenizer("  START: AGAIN: ADD A, R0    ");
+    len = assembleInstruction(tokenizer, &codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    TEST_ASSERT_EQUAL(ERR_INVALID_INSTRUCTION, e->errorCode);
+    freeException(e);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleInstruction_given_colon_after_an_instruction_expect_ERR_INVALID_OPERAND_to_be_thrown() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer *tokenizer = NULL;
+  Try{
+    //in this case, ADD is a valid instruction, the colon after it is considered an invalid operand
+    //ADD is not seen as a label here, thus illegal label is definitely not thrown
+    tokenizer = createTokenizer("  AGAIN: ADD: A, R0    ");
+    len = assembleInstruction(tokenizer, &codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+    freeException(e);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleInstruction_given_instruction_with_label_on_first_pass_expect_label_is_recorded_to_list_and_instruction_is_assembled() {
+  int len;
+  LabelInfo *infoPtr = NULL;
+  uint8_t *codePtr = codeMemory;
+  Tokenizer *tokenizer = NULL;
+  listPtr = doubleLinkedListCreateList();
+  //on the first pass, recording of the label is done
+  muteOnNoLabel = 1;
+  //this instruction is assumed as in line 1
+  lineNumber = 1;
+  Try{
+    tokenizer = createTokenizer("  START: CPL A    ");
+    len = assembleInstruction(tokenizer, &codePtr);
+    TEST_ASSERT_EQUAL(1, len);
+    TEST_ASSERT_EQUAL_HEX8(0xF4, codeMemory[0]);
+    TEST_ASSERT_EQUAL(1, getCurrentAbsoluteAddr());
+    
+    infoPtr = listPtr->head->data;
+    TEST_ASSERT_EQUAL_STRING("START", infoPtr->name);
+    TEST_ASSERT_EQUAL(0, infoPtr->indexNo);
+    TEST_ASSERT_EQUAL(1, infoPtr->lineNo);
+    TEST_ASSERT_EQUAL(1, listPtr->count);
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  for(int i = 0; i < 65536; i++)
+    codeMemory[i] = 0;
+  doubleLinkedListFreeList(listPtr, freeLabelInfo);
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleInstruction_given_instruction_with_label_on_second_pass_expect_no_recording_of_label_is_done_and_instruction_is_assembled() {
+  int len;
+  uint8_t *codePtr = codeMemory;
+  Tokenizer *tokenizer = NULL;
+  listPtr = doubleLinkedListCreateList();
+  //on the second pass, no recording of label is done
+  muteOnNoLabel = 0;
+
+  Try{
+    tokenizer = createTokenizer("  START: CPL A    ");
+    len = assembleInstruction(tokenizer, &codePtr);
+    TEST_ASSERT_EQUAL(1, len);
+    TEST_ASSERT_EQUAL_HEX8(0xF4, codeMemory[0]);
+    TEST_ASSERT_EQUAL(1, getCurrentAbsoluteAddr());
+    
+    //label is not recorded on second pass, list is empty
+    TEST_ASSERT_NULL(listPtr->head);
+    TEST_ASSERT_NULL(listPtr->tail);
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  for(int i = 0; i < 65536; i++)
+    codeMemory[i] = 0;
+  free(listPtr);
   freeTokenizer(tokenizer);
 }
