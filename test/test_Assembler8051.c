@@ -2925,9 +2925,36 @@ void test_assembleBitWithRel_given_jbc_bit_with_label_and_label_exists_expect_it
   freeTokenizer(tokenizer);
 }
 
+void test_assembleBitWithRel_given_jnb_bit_with_label_on_first_pass_expect_it_is_assembled_with_relative_address_left_blank_and_written_into_codeMemory() {
+  _8051Instructions table = {"jnb", assembleBitWithRel, {0x30, 0}};
+  int len;
+  uint8_t *codePtr = codeMemory + 500;
+  Tokenizer *tokenizer = NULL;
+  //at first pass, opcode for relative is left blank, as only label recording is done at first pass
+  muteOnNoLabel = 1;
+
+  Try{
+    tokenizer = createTokenizer(" 0x56, DELAY ");
+    len = assembleBitWithRel(tokenizer, &table, &codePtr);
+    TEST_ASSERT_EQUAL(3, len);
+    TEST_ASSERT_EQUAL_HEX8(0x30, codeMemory[500]);
+    TEST_ASSERT_EQUAL_HEX8(0x56, codeMemory[501]);
+    TEST_ASSERT_EQUAL_HEX8(0x00, codeMemory[502]);      //relative address left blank at first pass
+    TEST_ASSERT_EQUAL(503, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    freeException(e);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  for(int i = 0; i < 65536; i++)
+    codeMemory[i] = 0;
+  freeTokenizer(tokenizer);
+}
+
 void test_assembleBitWithRel_given_jbc_but_first_operand_is_NOT_integer_expect_ERR_EXPECTING_INTEGER_is_thrown() {
   _8051Instructions table = {"jbc", assembleBitWithRel, {0x10, 0}};
   int len;
+  uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
   Tokenizer *tokenizer = NULL;
 
@@ -2946,6 +2973,7 @@ void test_assembleBitWithRel_given_jbc_but_first_operand_is_NOT_integer_expect_E
 void test_assembleBitWithRel_given_jnb_valid_operands_but_no_comma_expect_ERR_INVALID_OPERAND_is_thrown() {
   _8051Instructions table = {"jnb", assembleBitWithRel, {0x30, 0}};
   int len;
+  uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
   Tokenizer *tokenizer = NULL;
   
@@ -2964,8 +2992,11 @@ void test_assembleBitWithRel_given_jnb_valid_operands_but_no_comma_expect_ERR_IN
 void test_assembleBitWithRel_given_jnb_valid_operands_but_with_extra_token_expect_ERR_EXTRA_PARAMETER_is_thrown() {
   _8051Instructions table = {"jnb", assembleBitWithRel, {0x30, 0}};
   int len;
+  uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
   Tokenizer *tokenizer = NULL;
+  //extra token is only checked at second pass
+  muteOnNoLabel = 0;
   
   Try{
     tokenizer = createTokenizer("  0x56, -100 TURING ");
@@ -3041,6 +3072,30 @@ void test_assembleDJNZInstruction_given_direct_with_label_and_label_exists_expec
   for(int i = 0; i < 65536; i++)
     codeMemory[i] = 0;
   free(listPtr);
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleDJNZInstruction_given_reg_with_label_on_first_pass_expect_it_is_assembled_with_relative_address_left_blank_and_written_into_codeMemory() {
+  int len;
+  uint8_t *codePtr = codeMemory + 199;
+  Tokenizer *tokenizer = NULL;
+  //at first pass, opcode for relative is left blank, as only label recording is done at first pass
+  muteOnNoLabel = 1;
+
+  Try{
+    tokenizer = createTokenizer(" r5, NOW ");
+    len = assembleDJNZInstruction(tokenizer, NULL, &codePtr);
+    TEST_ASSERT_EQUAL(2, len);
+    TEST_ASSERT_EQUAL_HEX8(0xDD, codeMemory[199]);
+    TEST_ASSERT_EQUAL_HEX8(0x00, codeMemory[200]);      //relative address left blank at first pass
+    TEST_ASSERT_EQUAL(201, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    freeException(e);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  for(int i = 0; i < 65536; i++)
+    codeMemory[i] = 0;
   freeTokenizer(tokenizer);
 }
 
@@ -3222,6 +3277,31 @@ void test_assembleCJNEInstruction_given_ind_imm_with_label_and_label_exists_expe
   freeTokenizer(tokenizer);
 }
 
+void test_assembleCJNEInstruction_given_ind_imm_with_label_on_first_pass_expect_it_is_assembled_with_relative_address_left_blank_and_written_into_codeMemory() {
+  int len;
+  uint8_t *codePtr = codeMemory + 120;
+  Tokenizer *tokenizer = NULL;
+  //at first pass, opcode for relative is left blank, as only label recording is done at first pass
+  muteOnNoLabel = 1;
+
+  Try{
+    tokenizer = createTokenizer(" @r1, #200, NEXT ");
+    len = assembleCJNEInstruction(tokenizer, NULL, &codePtr);
+    TEST_ASSERT_EQUAL(3, len);
+    TEST_ASSERT_EQUAL_HEX8(0xB7, codeMemory[120]);
+    TEST_ASSERT_EQUAL_HEX8(0xC8, codeMemory[121]);
+    TEST_ASSERT_EQUAL_HEX8(0x00, codeMemory[122]);      //relative address left blank at first pass
+    TEST_ASSERT_EQUAL(123, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    freeException(e);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  for(int i = 0; i < 65536; i++)
+    codeMemory[i] = 0;
+  freeTokenizer(tokenizer);
+}
+
 void test_assembleCJNEInstruction_given_invalid_first_operand_expect_ERR_INVALID_OPERAND_to_be_thrown() {
   int len;
   uint8_t *codePtr = codeMemory;
@@ -3397,6 +3477,32 @@ void test_assembleSingleOperandWithLabel_given_ljmp_with_label_and_label_exists_
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   free(listPtr);
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleSingleOperandWithLabel_given_lcall_with_label_on_first_pass_expect_it_is_assembled_with_relative_address_left_blank_and_written_into_codeMemory() {
+  _8051Instructions table = {"lcall", assembleSingleOperandWithLabel, {0x10, OPERAND_DIR16}};
+  int len;
+  uint8_t *codePtr = codeMemory + 250;
+  Tokenizer *tokenizer = NULL;
+  //at first pass, opcode for relative is left blank, as only label recording is done at first pass
+  muteOnNoLabel = 1;
+
+  Try{
+    tokenizer = createTokenizer(" LOOP ");
+    len = assembleSingleOperandWithLabel(tokenizer, &table, &codePtr);
+    TEST_ASSERT_EQUAL(3, len);
+    TEST_ASSERT_EQUAL_HEX8(0x12, codeMemory[250]);
+    TEST_ASSERT_EQUAL_HEX8(0x00, codeMemory[251]);      //relative address left blank at first pass
+    TEST_ASSERT_EQUAL_HEX8(0x00, codeMemory[252]);      //relative address left blank at first pass
+    TEST_ASSERT_EQUAL(253, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    freeException(e);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  for(int i = 0; i < 65536; i++)
+    codeMemory[i] = 0;
   freeTokenizer(tokenizer);
 }
 
