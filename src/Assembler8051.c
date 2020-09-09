@@ -66,7 +66,7 @@ int assembleInFileAndWriteToOutFile(char *inFile, char *outFile) {
 
 int assembleInstructions(InstructionLineReader lineReader) {
   Tokenizer *tokenizer = NULL;
-  char *line;
+  char *line, *instructionLine;
   uint8_t *codePtr = codeMemory;
   uint8_t **codePtrPtr = &codePtr;
   int totalLen = 0;
@@ -75,12 +75,12 @@ int assembleInstructions(InstructionLineReader lineReader) {
     codeMemory[i] = 0;
 
   while((line = lineReader()) != NULL) {
-    line = trimWhiteSpacesIfPresent(line);
-    if(*line == '\0') {
+    instructionLine = skipWhiteSpaces(line);
+    if(isspace(*instructionLine) || *instructionLine == '\0') {
       memFree(line);
       continue;
     }else {
-      tokenizer = createTokenizer(line);
+      tokenizer = createTokenizer(instructionLine);
       totalLen += assembleInstruction(tokenizer, codePtrPtr);
       memFree(line);
       freeTokenizer(tokenizer);
@@ -98,7 +98,7 @@ int assembleInstruction(Tokenizer *tokenizer, uint8_t **codePtrPtr) {
 
   token = getToken(tokenizer);
   if(token->type != TOKEN_IDENTIFIER_TYPE)
-    throwException(ERR_EXPECTING_IDENTIFIER, token,
+    throwException(ERR_EXPECTING_IDENTIFIER, token, 0,
     "Expecting an identifier here, but received '%s' instead", token->str);
 
   while(stricmp(token->str, instructionsTable[i].instruction)) {
@@ -111,13 +111,13 @@ int assembleInstruction(Tokenizer *tokenizer, uint8_t **codePtrPtr) {
         i = 0;
         iteration++;
       }else
-        throwException(ERR_INVALID_INSTRUCTION, token,
+        throwException(ERR_INVALID_INSTRUCTION, token, 0,
         "An invalid instruction '%s' is inputted", token->str);
     }else
       i++;
   }
   if(iteration == 1 && isOperatorTokenThenConsume(tokenizer, ":")) {
-    throwException(ERR_ILLEGAL_LABEL, token,
+    throwException(ERR_ILLEGAL_LABEL, token, 0,
     "Instruction mnemonic '%s' cannot be used as a label", token->str);
   }else {
     instructionPtr = &instructionsTable[i];
@@ -142,20 +142,20 @@ void recordLabel(char *label, int index, int lineNo) {
   LabelInfo info = {labelName, index, lineNo};
   LabelInfo *infoPtr = createLabelInfo(&info);
   LabelInfo *nextInfoPtr = NULL;
-  ListItem *itemPtr = doubleLinkedListCreateListItem(infoPtr);
+  ListItem *itemPtr = linkedListCreateListItem(infoPtr);
   ListItem *nextItem = listPtr->head;
   if(nextItem == NULL)
-    doubleLinkedListAddItemToHead(listPtr, itemPtr);
+    linkedListAddItemToHead(itemPtr, listPtr);
   else {
     while(nextItem) {
       nextInfoPtr = nextItem->data;
       if(stricmp(label, nextInfoPtr->name))
         nextItem = nextItem->next;
       else
-        throwException(ERR_DUPLICATE_LABEL, NULL,
+        throwException(ERR_DUPLICATE_LABEL, NULL, 0,
         "Label '%s' appeared before at line %d, but is defined again at line %d", label, nextInfoPtr->lineNo, lineNo);
     }
-    doubleLinkedListAddItemToHead(listPtr, itemPtr);
+    linkedListAddItemToHead(itemPtr, listPtr);
   }
 }
 
@@ -187,7 +187,7 @@ int getRelativeAddress(Tokenizer *tokenizer, int baseAddr, int min, int max) {
   token = getToken(tokenizer);
   if(isIdentifierToken(token)) {
     if((labelIndex = getLabelIndex(token->str)) < 0)
-      throwException(ERR_UNKNOWN_LABEL, token,
+      throwException(ERR_UNKNOWN_LABEL, token, 0,
       "Label '%s' is not found in this program", token->str);
     else
       addr = labelIndex - baseAddr;
@@ -196,11 +196,11 @@ int getRelativeAddress(Tokenizer *tokenizer, int baseAddr, int min, int max) {
     if(isIntegerTokenThenConsume(tokenizer, &addr, min, max))
       return addr;
     else
-      throwException(ERR_INVALID_OPERAND, token,
+      throwException(ERR_INVALID_OPERAND, token, 0,
       "Expecting a label or integer, but received '%s' instead", token->str);
   }
   if(addr < min || addr > max)
-    throwException(ERR_TARGET_OUT_OF_RANGE, token,
+    throwException(ERR_TARGET_OUT_OF_RANGE, token, 0,
     "Label '%s' is out of the branching range", token->str);
   freeToken(token);
   return addr;
@@ -441,7 +441,7 @@ int assembleLogicalInstructionWithoutXRL(Tokenizer *tokenizer, _8051Instructions
   else if(isIntegerToken(token))
     opcode = assembleDirectWithOperands(tokenizer, info->data[0], info->data[1]);
   else
-    throwException(ERR_INVALID_OPERAND, token,
+    throwException(ERR_INVALID_OPERAND, token, 0,
     "Expecting an 'A', 'C' or integer, received %s instead", token->str);
 
   len = writeCodeToCodeMemory(opcode, codePtr);
@@ -461,7 +461,7 @@ int assembleXRLinstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_
   else if(isIntegerToken(token))
     opcode = assembleDirectWithOperands(tokenizer, info->data[0], info->data[1]);
   else
-    throwException(ERR_INVALID_OPERAND, token,
+    throwException(ERR_INVALID_OPERAND, token, 0,
     "Expecting an 'A' or integer, received %s instead", token->str);
 
   len = writeCodeToCodeMemory(opcode, codePtr);
@@ -553,7 +553,7 @@ int assembleSingleOperand(Tokenizer *tokenizer, _8051Instructions *info, uint8_t
     else
       throwUnsupportedOperandException(token);
   }else
-    throwException(ERR_INVALID_OPERAND, token,
+    throwException(ERR_INVALID_OPERAND, token, 0,
     "The operand '%s' entered is invalid", token->str);
 
   freeToken(token);
@@ -596,7 +596,7 @@ int assembleAWithOperands(Tokenizer *tokenizer, int opcode, int flags) {
     }else
         throwUnsupportedOperandException(token);
   }else
-    throwException(ERR_INVALID_OPERAND, token,
+    throwException(ERR_INVALID_OPERAND, token, 0,
     "The operand '%s' inputted is not a valid operand", token->str);
 
   freeToken(token);
@@ -626,7 +626,7 @@ int assembleDirectWithOperands(Tokenizer *tokenizer, int opcode, int flags) {
     }else
       throwUnsupportedOperandException(token);
   }else
-    throwException(ERR_INVALID_OPERAND, token,
+    throwException(ERR_INVALID_OPERAND, token, 0,
     "The operand '%s' inputted is not a valid operand", token->str);
 
   freeToken(token);
@@ -656,7 +656,7 @@ int assembleCWithOperands(Tokenizer *tokenizer, int opcode, int flags) {
     }else
       throwUnsupportedOperandException(token);
   }else
-    throwException(ERR_INVALID_OPERAND, token,
+    throwException(ERR_INVALID_OPERAND, token, 0,
     "The operand '%s' inputted is not a valid operand", token->str);
 
   freeToken(token);
@@ -678,14 +678,14 @@ int isIntegerTokenThenConsume(Tokenizer *tokenizer, int *val, int min, int max) 
     if(isIntegerToken(token))
       number = ((IntegerToken *)token)->value;
     else
-      throwException(ERR_EXPECTING_INTEGER, token,
+      throwException(ERR_EXPECTING_INTEGER, token, 0,
       "Expecting integer, but received %s instead", token->str);
   }else if(isOperatorTokenThenConsume(tokenizer, "-")) {
     token = getToken(tokenizer);
     if(isIntegerToken(token))
       number = (~(((IntegerToken* )token)->value)) + 1;
     else
-      throwException(ERR_EXPECTING_INTEGER, token,
+      throwException(ERR_EXPECTING_INTEGER, token, 0,
       "Expecting integer, but received %s instead", token->str);
   }else {
     token = getToken(tokenizer);
@@ -697,7 +697,7 @@ int isIntegerTokenThenConsume(Tokenizer *tokenizer, int *val, int min, int max) 
     }
   }
   if(number < min || number > max)
-    throwException(ERR_INTEGER_OUT_OF_RANGE, token,
+    throwException(ERR_INTEGER_OUT_OF_RANGE, token, 0,
     "Expecting integer of range %d to %d, received %d instead", min, max, number);
   freeToken(token);
   *val = number;
@@ -710,7 +710,7 @@ void verifyIsIntegerTokenThenConsume(Tokenizer *tokenizer, int *value, int min, 
   int val = 0;
   if(!isIntegerTokenThenConsume(tokenizer, &val, min, max)) {
     token = getToken(tokenizer);
-    throwException(ERR_EXPECTING_INTEGER, token,
+    throwException(ERR_EXPECTING_INTEGER, token, 0,
     "Expecting integer, but received %s instead", token->str);
   }else
     *value = val;
@@ -739,7 +739,7 @@ void verifyIsIdentifierTokenThenConsume(Tokenizer *tokenizer, char *identifier) 
   Token *token = NULL;
   if(!isIdentifierTokenThenConsume(tokenizer, identifier)) {
     token = getToken(tokenizer);
-    throwException(ERR_INVALID_OPERAND, token,
+    throwException(ERR_INVALID_OPERAND, token, 0,
     "Expecting '%s' as identifier, but received %s instead", identifier, token->str);
   }
 }
@@ -767,7 +767,7 @@ void verifyIsOperatorTokenThenConsume(Tokenizer *tokenizer, char *Operator) {
   Token *token = NULL;
   if(!isOperatorTokenThenConsume(tokenizer, Operator)) {
     token = getToken(tokenizer);
-    throwException(ERR_INVALID_OPERAND, token,
+    throwException(ERR_INVALID_OPERAND, token, 0,
     "Expecting '%s' as operator, but received %s instead", Operator, token->str);
   }
 }
@@ -789,18 +789,18 @@ int isRegisterConsumeAndGetItsNumber(Tokenizer *tokenizer, int addrMode, int *nu
   }
 
   if((regNum = extractNum(token->str + 1)) == -1)
-    throwException(ERR_INVALID_REGISTER, token,
+    throwException(ERR_INVALID_REGISTER, token, 0,
     "An invalid register '%s' is inputted", token->str);
   else
     *number = regNum;
 
   if(addrMode == REGISTER_ADDRESSING) {
     if(*number > 7)
-      throwException(ERR_REG_OUT_OF_RANGE, token,
+      throwException(ERR_REG_OUT_OF_RANGE, token, 0,
       "Register %s is out of range, expecting register of R0-R7", token->str);
   }else if(addrMode == INDIRECT_ADDRESSING) {
     if(*number > 1)
-      throwException(ERR_INDIRECT_OUT_OF_RANGE, token,
+      throwException(ERR_INDIRECT_OUT_OF_RANGE, token, 0,
       "Register indirect %s is out of range, expecting register of R0-R1", token->str);
   }
   freeToken(token);
@@ -813,7 +813,7 @@ void verifyIsRegisterConsumeAndGetItsNumber(Tokenizer *tokenizer, int addrMode, 
   int n = 0;
   if(!isRegisterConsumeAndGetItsNumber(tokenizer, addrMode, &n)) {
     token = getToken(tokenizer);
-    throwException(ERR_EXPECTING_REGISTER, token,
+    throwException(ERR_EXPECTING_REGISTER, token, 0,
     "Expecting a register, but received %s instead", token->str);
   }else
     *number = n;
@@ -851,7 +851,7 @@ void verifyIsImmediateThenGetsItsValueAndConsume(Tokenizer *tokenizer, int *valu
   Token *token = NULL;
   if(!isImmediateThenGetsItsValueAndConsume(tokenizer, &immediate, min, max)) {
     token = getToken(tokenizer);
-    throwException(ERR_EXPECTING_IMMEDIATE, token,
+    throwException(ERR_EXPECTING_IMMEDIATE, token, 0,
     "Expecting immediate, but received %s instead", token->str);
   }else
     *value = immediate;
@@ -872,7 +872,7 @@ void checkExtraToken(Tokenizer *tokenizer) {
   token = getToken(tokenizer);
   if(token->type != TOKEN_NULL_TYPE && token->type != TOKEN_NEWLINE_TYPE) {
     if(strcmp(token->str, ";"))
-      throwException(ERR_EXTRA_PARAMETER, token,
+      throwException(ERR_EXTRA_PARAMETER, token, 0,
       "Does not expect an extra parameter '%s'", token->str);
     else
       freeToken(token);
@@ -907,6 +907,6 @@ int getInstructionBytes(int opcode) {
 //eg : xchd has only A, @Ri set of operands, if A, Rn or others is inputted,
 //this exception will be thrown
 void throwUnsupportedOperandException(Token *token) {
-   throwException(ERR_UNSUPPORTED_OPERAND, token,
+   throwException(ERR_UNSUPPORTED_OPERAND, token, 0,
    "Operand %s cannot be used here", token->str);
 }

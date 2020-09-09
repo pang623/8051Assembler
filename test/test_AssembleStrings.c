@@ -8,7 +8,8 @@
 #include "Assembler8051.h"
 #include "ExceptionThrowing.h"
 #include "AssembleFile.h"
-#include "TrimWhiteSpacesIfPresent.h"
+#include "Tokenizer.h"
+#include "Token.h"
 
 void setUp(void)
 {

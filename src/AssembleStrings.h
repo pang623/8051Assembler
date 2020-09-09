@@ -4,7 +4,10 @@
 #include "Assembler8051.h"
 #include "DoubleLinkedList.h"
 #include "LabelInfo.h"
-#include "TrimWhiteSpacesIfPresent.h"
+#include "Tokenizer.h"
+#include "Token.h"
+#include "CExceptionConfig.h"
+#include "CException.h"
 
 extern DoubleLinkedList *listPtr;
 extern int lineNumber;

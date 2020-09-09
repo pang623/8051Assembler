@@ -6,7 +6,7 @@ FILE *fileHandler;
 
 int assembleFile(char *filename) {
   int totalBytes;
-  listPtr = doubleLinkedListCreateList();
+  listPtr = linkedListCreateList();
   if((fileHandler = fopen(filename, "r")) == NULL) {
     printf("Error opening file!\n");
     exit(-1);
@@ -23,7 +23,7 @@ int assembleFile(char *filename) {
   totalBytes = assembleInstructions(getNextInstructionLineInFile);
 
   fclose(fileHandler);
-  doubleLinkedListFreeList(listPtr, freeLabelInfo);
+  linkedListFreeList(listPtr, freeLabelInfo);
   return totalBytes;
 }
 

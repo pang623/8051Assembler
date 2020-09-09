@@ -1,0 +1,25 @@
+#ifndef ERROR8051_H
+#define ERROR8051_H
+
+#define ERR_INVALID_INSTRUCTION     20
+#define ERR_INVALID_OPERAND         21
+#define ERR_INVALID_REGISTER        22
+
+#define ERR_EXPECTING_INTEGER       62
+#define ERR_EXPECTING_REGISTER      90
+#define ERR_EXPECTING_IMMEDIATE     64
+#define ERR_EXPECTING_IDENTIFIER    65
+
+#define ERR_INTEGER_OUT_OF_RANGE    66
+#define ERR_REG_OUT_OF_RANGE        67
+#define ERR_INDIRECT_OUT_OF_RANGE   68
+
+#define ERR_UNKNOWN_LABEL           69
+#define ERR_DUPLICATE_LABEL         70
+#define ERR_ILLEGAL_LABEL           71
+#define ERR_TARGET_OUT_OF_RANGE     72
+
+#define ERR_UNSUPPORTED_OPERAND     73
+#define ERR_EXTRA_PARAMETER         74
+
+#endif // ERROR8051_H

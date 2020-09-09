@@ -6,9 +6,10 @@
 #include "AssembleStrings.h"
 #include "SaveCodeToBin.h"
 #include "ExceptionThrowing.h"
-#include "mock_TrimWhiteSpacesIfPresent.h"
 #include "mock_DummyLineReader.h"
 #include "mock_MemAlloc.h"
+#include "CExceptionConfig.h"
+#include "CException.h"
 
 void setUp(void)
 {
@@ -31,26 +32,16 @@ void test_assembleInstructions_through_mocking_expect_expected_functions_are_cal
     "xrl 0x56, A",
     NULL
   };
-  char *trimmedLines[] = {
-    "add a, r0",
-    "xchd a, @r0\n",
-    "",
-    "xrl 0x56, A",
-    NULL
-  };
+
   Try{
     dummyLineReader_IgnoreAndReturn(lines[0]);
-    trimWhiteSpacesIfPresent_ExpectAndReturn(lines[0], trimmedLines[0]);
-    memFree_Expect(trimmedLines[0]);
+    memFree_Expect(lines[0]);
     dummyLineReader_IgnoreAndReturn(lines[1]);
-    trimWhiteSpacesIfPresent_ExpectAndReturn(lines[1], trimmedLines[1]);
-    memFree_Expect(trimmedLines[1]);
+    memFree_Expect(lines[1]);
     dummyLineReader_IgnoreAndReturn(lines[2]);
-    trimWhiteSpacesIfPresent_ExpectAndReturn(lines[2], trimmedLines[2]);
-    memFree_Expect(trimmedLines[2]);
+    memFree_Expect(lines[2]);
     dummyLineReader_IgnoreAndReturn(lines[3]);
-    trimWhiteSpacesIfPresent_ExpectAndReturn(lines[3], trimmedLines[3]);
-    memFree_Expect(trimmedLines[3]);
+    memFree_Expect(lines[3]);
     dummyLineReader_IgnoreAndReturn(lines[4]);
     totalBytes = assembleInstructions(dummyLineReader);
     TEST_ASSERT_EQUAL(4, totalBytes);
@@ -78,18 +69,12 @@ void test_assembleInstructions_given_initialised_code_memory_expect_code_memory_
     "CPL A",
     NULL
   };
-  char *trimmedLines[] = {
-    "DA a",
-    "CPL A",
-    NULL
-  };
+
   Try{
     dummyLineReader_IgnoreAndReturn(lines[0]);
-    trimWhiteSpacesIfPresent_ExpectAndReturn(lines[0], trimmedLines[0]);
-    memFree_Expect(trimmedLines[0]);
+    memFree_Expect(lines[0]);
     dummyLineReader_IgnoreAndReturn(lines[1]);
-    trimWhiteSpacesIfPresent_ExpectAndReturn(lines[1], trimmedLines[1]);
-    memFree_Expect(trimmedLines[1]);
+    memFree_Expect(lines[1]);
     dummyLineReader_IgnoreAndReturn(lines[2]);
     totalBytes = assembleInstructions(dummyLineReader);
     TEST_ASSERT_EQUAL(2, totalBytes);

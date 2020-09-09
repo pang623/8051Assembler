@@ -6,7 +6,7 @@
 # This sample, therefore, only demonstrates running a collection of unit tests.
 
 :project:
-  :use_exceptions: FALSE
+  :use_exceptions: TRUE
   :use_test_preprocessor: TRUE
   :use_auxiliary_dependencies: TRUE
   :build_root: build
@@ -35,9 +35,10 @@
     - -:test/support
   :source:
     - src/**
+    - Tokenizer/src/**
   :support:
     - test/support
-  :libraries: [lib/x64_10_1_0]
+  :libraries: []
 
 :defines:
   # in order to add common defines:
@@ -93,7 +94,7 @@
   :placement: :end
   :flag: "-l${1}"
   :path_flag: "-L ${1}"
-  :system: [Tokenizer]    # for example, you might list 'm' to grab the math library
+  :system: []    # for example, you might list 'm' to grab the math library
   :test: []
   :release: []
 

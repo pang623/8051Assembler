@@ -8,7 +8,7 @@ char **instructionLines;
 
 int assembleStrings() {
   int totalBytes;
-  listPtr = doubleLinkedListCreateList();
+  listPtr = linkedListCreateList();
   
   for(int pass = 1; pass != 3; pass++) {
     lineNumber = 0;
@@ -16,7 +16,7 @@ int assembleStrings() {
     muteOnNoLabel = !(pass - 1);
     totalBytes = assembleInstructions(getNextInstructionLineInString);
   }
-  doubleLinkedListFreeList(listPtr, freeLabelInfo);
+  linkedListFreeList(listPtr, freeLabelInfo);
   return totalBytes;
 }
 

@@ -5,9 +5,12 @@
 #include "LabelInfo.h"
 #include "MemAlloc.h"
 #include "SaveCodeToBin.h"
-#include "TrimWhiteSpacesIfPresent.h"
 #include "Assembler8051.h"
 #include "ExceptionThrowing.h"
+#include "Tokenizer.h"
+#include "Token.h"
+#include "CExceptionConfig.h"
+#include "CException.h"
 
 void setUp(void)
 {
@@ -20,6 +23,7 @@ void tearDown(void)
 CEXCEPTION_T e;
 
 extern FILE *fileHandler;
+extern int lineNumber;
 extern uint8_t codeMemory[];
 
 //extra token in one of the instruction, expect exception thrown
@@ -66,7 +70,7 @@ void test_assembleFile_given_filename_expect_instructions_in_file_are_read_and_w
     for(int i = 20; i < 65536; i++)
       TEST_ASSERT_EQUAL(0, codeMemory[i]);
   } Catch(e){
-    dumpTokenErrorMessage(e, __LINE__);
+    dumpTokenErrorMessage(e, lineNumber);
     freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }

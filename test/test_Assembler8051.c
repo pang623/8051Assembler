@@ -2,17 +2,18 @@
 #include "Token.h"
 #include "Tokenizer.h"
 #include "Assembler8051.h"
-#include "Error.h"
+#include "Errors.h"
+#include "Error8051.h"
 #include "Flags.h"
 #include "Exception.h"
 #include "ExceptionThrowing.h"
+#include "CExceptionConfig.h"
+#include "CException.h"
 #include "DoubleLinkedList.h"
 #include "LabelInfo.h"
 #include "AssembleFile.h"
-#include "AssembleStrings.h"
 #include "MemAlloc.h"
 #include "SaveCodeToBin.h"
-#include "TrimWhiteSpacesIfPresent.h"
 #include "CustomTestAssertion.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,6 +37,22 @@ void test_assembleInFileAndWriteToOutFile_given_asm_testCode1_as_input_file_expe
   int totalBytes;
   char *inFile = "./test/data/asm_testCode1.txt";
   char *outFile = "./test/data/asm_testCode1.bin";
+
+  Try{
+    totalBytes = assembleInFileAndWriteToOutFile(inFile, outFile);
+    TEST_ASSERT_EQUAL_BIN_FILE(codeMemory, outFile, totalBytes);
+  } Catch(e){
+    dumpTokenErrorMessage(e, lineNumber);
+    freeException(e);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+}
+
+//assemble another assembly txt file to see whether codeMemory will be reinitialized with new machine codes
+void test_assembleInFileAndWriteToOutFile_given_allInstructions_test_as_input_file_expect_opcode_written_to_bin_file() {
+  int totalBytes;
+  char *inFile = "./test/data/allInstructions_test.txt";
+  char *outFile = "./test/data/allInstructions_test.bin";
 
   Try{
     totalBytes = assembleInFileAndWriteToOutFile(inFile, outFile);
@@ -102,7 +119,7 @@ void test_getInstructionBytes_given_three_byte_opcode_expect_size_is_three_byte(
 
 void test_recordLabel_given_labelinfo_expect_it_is_stored_into_list_correctly() {
   LabelInfo *infoPtr;
-  listPtr = doubleLinkedListCreateList();
+  listPtr = linkedListCreateList();
   
   Try{
     //current list is empty
@@ -133,11 +150,11 @@ void test_recordLabel_given_labelinfo_expect_it_is_stored_into_list_correctly() 
     freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
-  doubleLinkedListFreeList(listPtr, freeLabelInfo);
+  linkedListFreeList(listPtr, freeLabelInfo);
 }
 
 void test_recordLabel_given_duplicate_label_expect_ERR_DUPLICATE_LABEL_is_thrown() {
-  listPtr = doubleLinkedListCreateList();
+  listPtr = linkedListCreateList();
 
   Try{
     recordLabel("SKIP", 1, 2);
@@ -149,12 +166,12 @@ void test_recordLabel_given_duplicate_label_expect_ERR_DUPLICATE_LABEL_is_thrown
     TEST_ASSERT_EQUAL(ERR_DUPLICATE_LABEL, e->errorCode);
     freeException(e);
   }
-  doubleLinkedListFreeList(listPtr, freeLabelInfo);
+  linkedListFreeList(listPtr, freeLabelInfo);
 }
 
 void test_getLabelIndex_given_label_and_label_exists_in_list_expect_index_of_the_label_is_returned() {
   int index;
-  listPtr = doubleLinkedListCreateList();
+  listPtr = linkedListCreateList();
   LabelInfo info1 = {"NOW", 3, 4};
   LabelInfo info2 = {"END", 5, 6};
   ListItem item1 = {NULL, NULL, &info1};
@@ -175,7 +192,7 @@ void test_getLabelIndex_given_label_and_label_exists_in_list_expect_index_of_the
 
 void test_getLabelIndex_given_label_and_but_label_not_exists_in_list_expect_MINUSone_is_returned() {
   int index;
-  listPtr = doubleLinkedListCreateList();
+  listPtr = linkedListCreateList();
   LabelInfo info1 = {"NOW", 1, 2};
   LabelInfo info2 = {"END", 5, 6};
   ListItem item1 = {NULL, NULL, &info1};
@@ -196,7 +213,7 @@ void test_getLabelIndex_given_label_and_but_label_not_exists_in_list_expect_MINU
 
 void test_getLabelIndex_given_label_and_but_empty_list_expect_MINUSone_is_returned() {
   int index;
-  listPtr = doubleLinkedListCreateList();
+  listPtr = linkedListCreateList();
   
   Try{
     index = getLabelIndex("THERE");
@@ -214,7 +231,7 @@ void test_getRelativeAddress_given_label_as_token_and_label_exists_expect_relati
   Tokenizer *tokenizer = NULL;
 
   //Set up linked list
-  listPtr = doubleLinkedListCreateList();
+  listPtr = linkedListCreateList();
   LabelInfo info1 = {"NOW", 1, 2};
   LabelInfo info2 = {"END", 5, 6};
   ListItem item1 = {NULL, NULL, &info1};
@@ -278,7 +295,7 @@ void test_getRelativeAddress_given_non_existent_label_as_token_expect_ERR_UNKNOW
   Tokenizer *tokenizer = NULL;
 
   //Set up linked list
-  listPtr = doubleLinkedListCreateList();
+  listPtr = linkedListCreateList();
   LabelInfo info1 = {"NOW", 1, 2};
   LabelInfo info2 = {"END", 5, 6};
   ListItem item1 = {NULL, NULL, &info1};
@@ -305,7 +322,7 @@ void test_getRelativeAddress_given_label_as_token_but_out_of_branching_range_bac
   Tokenizer *tokenizer = NULL;
 
   //Set up linked list
-  listPtr = doubleLinkedListCreateList();
+  listPtr = linkedListCreateList();
   LabelInfo info1 = {"NOW", 50, 100};
   LabelInfo info2 = {"END", 23, 50};
   ListItem item1 = {NULL, NULL, &info1};
@@ -332,7 +349,7 @@ void test_getRelativeAddress_given_label_as_token_but_out_of_branching_range_for
   Tokenizer *tokenizer = NULL;
 
   //Set up linked list
-  listPtr = doubleLinkedListCreateList();
+  listPtr = linkedListCreateList();
   LabelInfo info1 = {"NOW", 150, 200};
   LabelInfo info2 = {"END", 23, 50};
   ListItem item1 = {NULL, NULL, &info1};
@@ -376,7 +393,7 @@ void test_getAbsoluteAddress_given_label_as_token_and_label_exists_expect_absolu
   Tokenizer *tokenizer = NULL;
 
   //Set up linked list
-  listPtr = doubleLinkedListCreateList();
+  listPtr = linkedListCreateList();
   LabelInfo info1 = {"NOW", 1, 2};
   LabelInfo info2 = {"HERE", 0x9A9B, 500};
   ListItem item1 = {NULL, NULL, &info1};
@@ -2864,7 +2881,7 @@ void test_assembleBitWithRel_given_jb_bit_with_label_and_label_exists_expect_it_
   muteOnNoLabel = 0;
 
   //Set up labels in linked list
-  listPtr = doubleLinkedListCreateList();
+  listPtr = linkedListCreateList();
   LabelInfo info1 = {"REPEAT", 200, 100};
   LabelInfo info2 = {"HERE", 2, 4};
   ListItem item1 = {NULL, NULL, &info1};
@@ -2898,7 +2915,7 @@ void test_assembleBitWithRel_given_jbc_bit_with_label_and_label_exists_expect_it
   Tokenizer *tokenizer = NULL;
   muteOnNoLabel = 0;
 
-  listPtr = doubleLinkedListCreateList();
+  listPtr = linkedListCreateList();
   LabelInfo info1 = {"REPEAT", 20, 10};
   LabelInfo info2 = {"LOOP", 275, 150};
   ListItem item1 = {NULL, NULL, &info1};
@@ -3016,7 +3033,7 @@ void test_assembleDJNZInstruction_given_reg_with_label_and_label_exists_expect_i
   Tokenizer *tokenizer = NULL;
   muteOnNoLabel = 0;
 
-  listPtr = doubleLinkedListCreateList();
+  listPtr = linkedListCreateList();
   LabelInfo info1 = {"AGAIN", 54, 30};
   LabelInfo info2 = {"LOOP", 275, 150};
   ListItem item1 = {NULL, NULL, &info1};
@@ -3048,7 +3065,7 @@ void test_assembleDJNZInstruction_given_direct_with_label_and_label_exists_expec
   Tokenizer *tokenizer = NULL;
   muteOnNoLabel = 0;
 
-  listPtr = doubleLinkedListCreateList();
+  listPtr = linkedListCreateList();
   LabelInfo info1 = {"DELAY", 0x79, 100};
   LabelInfo info2 = {"LOOP", 275, 150};
   ListItem item1 = {NULL, NULL, &info1};
@@ -3122,7 +3139,7 @@ void test_assembleDJNZInstruction_given_missing_comma_expect_ERR_INVALID_OPERAND
   Tokenizer *tokenizer = NULL;
 
   Try{
-    tokenizer = createTokenizer(" R0  DELAY ");
+    tokenizer = createTokenizer(" R0  DELAY\n ");
     len = assembleDJNZInstruction(tokenizer, NULL, &codePtr);
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
@@ -3139,7 +3156,7 @@ void test_assembleDJNZInstruction_given_extra_parameter_expect_ERR_EXTRA_PARAMET
   Tokenizer *tokenizer = NULL;
   muteOnNoLabel = 0;
 
-  listPtr = doubleLinkedListCreateList();
+  listPtr = linkedListCreateList();
   LabelInfo info1 = {"DELAY", 0x79, 100};
   ListItem item1 = {NULL, NULL, &info1};
   doubleLinkedListAddItemToHead(listPtr, &item1);
@@ -3163,7 +3180,7 @@ void test_assembleCJNEInstruction_given_A_DIR_with_label_and_label_exists_expect
   Tokenizer *tokenizer = NULL;
   muteOnNoLabel = 0;
 
-  listPtr = doubleLinkedListCreateList();
+  listPtr = linkedListCreateList();
   LabelInfo info1 = {"STOP", 0x58, 50};
   ListItem item1 = {NULL, NULL, &info1};
   doubleLinkedListAddItemToHead(listPtr, &item1);
@@ -3193,7 +3210,7 @@ void test_assembleCJNEInstruction_given_A_IMM_with_label_and_label_exists_expect
   Tokenizer *tokenizer = NULL;
   muteOnNoLabel = 0;
 
-  listPtr = doubleLinkedListCreateList();
+  listPtr = linkedListCreateList();
   LabelInfo info1 = {"HALT", 0xDD, 170};
   ListItem item1 = {NULL, NULL, &info1};
   doubleLinkedListAddItemToHead(listPtr, &item1);
@@ -3223,7 +3240,7 @@ void test_assembleCJNEInstruction_given_reg_imm_with_label_and_label_exists_expe
   Tokenizer *tokenizer = NULL;
   muteOnNoLabel = 0;
 
-  listPtr = doubleLinkedListCreateList();
+  listPtr = linkedListCreateList();
   LabelInfo info1 = {"DELAY2", 0x99, 100};
   ListItem item1 = {NULL, NULL, &info1};
   doubleLinkedListAddItemToHead(listPtr, &item1);
@@ -3253,7 +3270,7 @@ void test_assembleCJNEInstruction_given_ind_imm_with_label_and_label_exists_expe
   Tokenizer *tokenizer = NULL;
   muteOnNoLabel = 0;
 
-  listPtr = doubleLinkedListCreateList();
+  listPtr = linkedListCreateList();
   LabelInfo info1 = {"NEXT", 43, 100};
   ListItem item1 = {NULL, NULL, &info1};
   doubleLinkedListAddItemToHead(listPtr, &item1);
@@ -3359,7 +3376,7 @@ void test_assembleCJNEInstruction_given_extra_parameter_expect_ERR_EXTRA_PARAMET
   Tokenizer *tokenizer = NULL;
   muteOnNoLabel = 0;
 
-  listPtr = doubleLinkedListCreateList();
+  listPtr = linkedListCreateList();
   LabelInfo info1 = {"DELAY", 0x79, 100};
   ListItem item1 = {NULL, NULL, &info1};
   doubleLinkedListAddItemToHead(listPtr, &item1);
@@ -3387,7 +3404,7 @@ void test_assembleSingleOperandWithLabel_given_jz_with_label_and_label_exists_ex
   muteOnNoLabel = 0;
 
   //set up linked list
-  listPtr = doubleLinkedListCreateList();
+  listPtr = linkedListCreateList();
   LabelInfo info1 = {"NOW", 50, 100};
   LabelInfo info2 = {"END", 23, 50};
   ListItem item1 = {NULL, NULL, &info1};
@@ -3422,7 +3439,7 @@ void test_assembleSingleOperandWithLabel_given_acall_with_label_and_label_exists
   Tokenizer *tokenizer = NULL;
   muteOnNoLabel = 0;
 
-  listPtr = doubleLinkedListCreateList();
+  listPtr = linkedListCreateList();
   LabelInfo info1 = {"WHERE", 0x51A, 100};
   LabelInfo info2 = {"HERE", 23, 50};
   ListItem item1 = {NULL, NULL, &info1};
@@ -3455,7 +3472,7 @@ void test_assembleSingleOperandWithLabel_given_ljmp_with_label_and_label_exists_
   Tokenizer *tokenizer = NULL;
   muteOnNoLabel = 0;
 
-  listPtr = doubleLinkedListCreateList();
+  listPtr = linkedListCreateList();
   LabelInfo info1 = {"LOOP", 0x678A, 200};
   LabelInfo info2 = {"HERE", 23, 50};
   ListItem item1 = {NULL, NULL, &info1};
@@ -3515,7 +3532,7 @@ void test_assembleSingleOperandWithLabel_given_ajmp_with_label_but_with_extra_pa
   Tokenizer *tokenizer = NULL;
   muteOnNoLabel = 0;
 
-  listPtr = doubleLinkedListCreateList();
+  listPtr = linkedListCreateList();
   LabelInfo info1 = {"LOOP", 0x678A, 200};
   LabelInfo info2 = {"HERE", 23, 50};
   ListItem item1 = {NULL, NULL, &info1};
@@ -3545,7 +3562,7 @@ void test_assembleSingleOperandWithLabel_given_ajmp_A_expect_ERR_UNKNOWN_LABEL_i
   Tokenizer *tokenizer = NULL;
   muteOnNoLabel = 0;
 
-  listPtr = doubleLinkedListCreateList();
+  listPtr = linkedListCreateList();
   LabelInfo info1 = {"LOOP", 0x678A, 200};
   LabelInfo info2 = {"HERE", 23, 50};
   ListItem item1 = {NULL, NULL, &info1};
@@ -4648,7 +4665,7 @@ void test_assembleInstruction_given_instruction_with_label_on_first_pass_expect_
   LabelInfo *infoPtr = NULL;
   uint8_t *codePtr = codeMemory;
   Tokenizer *tokenizer = NULL;
-  listPtr = doubleLinkedListCreateList();
+  listPtr = linkedListCreateList();
   //on the first pass, recording of the label is done
   muteOnNoLabel = 1;
   //this instruction is assumed as in line 1
@@ -4671,7 +4688,7 @@ void test_assembleInstruction_given_instruction_with_label_on_first_pass_expect_
   }
   for(int i = 0; i < 65536; i++)
     codeMemory[i] = 0;
-  doubleLinkedListFreeList(listPtr, freeLabelInfo);
+  linkedListFreeList(listPtr, freeLabelInfo);
   freeTokenizer(tokenizer);
 }
 
@@ -4679,7 +4696,7 @@ void test_assembleInstruction_given_instruction_with_label_on_second_pass_expect
   int len;
   uint8_t *codePtr = codeMemory;
   Tokenizer *tokenizer = NULL;
-  listPtr = doubleLinkedListCreateList();
+  listPtr = linkedListCreateList();
   //on the second pass, no recording of label is done
   muteOnNoLabel = 0;
 

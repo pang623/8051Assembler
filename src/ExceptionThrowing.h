@@ -1,9 +1,11 @@
 #ifndef EXCEPTIONTHROWING_H
 #define EXCEPTIONTHROWING_H
 
-#include "Error.h"
+#include "Error8051.h"
+#include "Errors.h"
 #include "Token.h"
 #include "Tokenizer.h"
+#include "CExceptionConfig.h"
 #include "CException.h"
 #include "Exception.h"
 

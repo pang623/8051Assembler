@@ -3,17 +3,18 @@
 
 #include "Exception.h"
 #include "ExceptionThrowing.h"
-#include "Error.h"
+#include "Errors.h"
+#include "Error8051.h"
 #include "Flags.h"
 #include "Token.h"
 #include "Tokenizer.h"
 #include "DoubleLinkedList.h"
 #include "LabelInfo.h"
 #include "AssembleFile.h"
-#include "AssembleStrings.h"
 #include "MemAlloc.h"
 #include "SaveCodeToBin.h"
-#include "TrimWhiteSpacesIfPresent.h"
+#include "CExceptionConfig.h"
+#include "CException.h"
 
 #define     getCurrentAbsoluteAddr()        (codePtr - codeMemory)
 #define     isIntegerToken(token)           (token->type == TOKEN_INTEGER_TYPE)

@@ -1,6 +1,7 @@
 #include "unity.h"
 #include "ExceptionThrowing.h"
-#include "Error.h"
+#include "Error8051.h"
+#include "Errors.h"
 #include "Token.h"
 #include "Tokenizer.h"
 #include "CException.h"
