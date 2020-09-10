@@ -1,4 +1,5 @@
 #include "unity.h"
+#include "Exception.h"
 #include "SaveCodeToBin.h"
 #include "CustomTestAssertion.h"
 

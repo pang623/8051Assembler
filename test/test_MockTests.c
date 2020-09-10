@@ -1,4 +1,5 @@
 #include "unity.h"
+#include "Exception.h"
 #include "Assembler8051.h"
 #include "DoubleLinkedList.h"
 #include "LabelInfo.h"

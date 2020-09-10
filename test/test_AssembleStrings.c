@@ -1,5 +1,6 @@
-#include "unity.h"
 #include "Exception.h"
+#include "unity.h"
+#include "CException.h"
 #include "AssembleStrings.h"
 #include "DoubleLinkedList.h"
 #include "LabelInfo.h"
@@ -10,6 +11,7 @@
 #include "AssembleFile.h"
 #include "Tokenizer.h"
 #include "Token.h"
+#include "TokenizerExceptionThrowing.h"
 
 void setUp(void)
 {

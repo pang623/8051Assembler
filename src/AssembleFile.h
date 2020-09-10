@@ -5,7 +5,7 @@
 #include "DoubleLinkedList.h"
 #include "LabelInfo.h"
 #include "Tokenizer.h"
-#include "CExceptionConfig.h"
+#include "TokenizerExceptionThrowing.h"
 #include "CException.h"
 #include "Exception.h"
 

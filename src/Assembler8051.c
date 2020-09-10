@@ -196,7 +196,7 @@ int getRelativeAddress(Tokenizer *tokenizer, int baseAddr, int min, int max) {
     if(isIntegerTokenThenConsume(tokenizer, &addr, min, max))
       return addr;
     else
-      throwException(ERR_INVALID_OPERAND, token, 0,
+      throwException(ERR_INVALID_OPERAND, (Token *)(tokenizer->list->head->data), 0,
       "Expecting a label or integer, but received '%s' instead", token->str);
   }
   if(addr < min || addr > max)

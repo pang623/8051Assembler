@@ -1,14 +1,14 @@
+#include "Exception.h"
+#include "ExceptionThrowing.h"
 #include "unity.h"
+#include "CException.h"
 #include "Token.h"
 #include "Tokenizer.h"
 #include "Assembler8051.h"
 #include "Errors.h"
 #include "Error8051.h"
 #include "Flags.h"
-#include "Exception.h"
-#include "ExceptionThrowing.h"
-#include "CExceptionConfig.h"
-#include "CException.h"
+#include "TokenizerExceptionThrowing.h"
 #include "DoubleLinkedList.h"
 #include "LabelInfo.h"
 #include "AssembleFile.h"
@@ -176,8 +176,8 @@ void test_getLabelIndex_given_label_and_label_exists_in_list_expect_index_of_the
   LabelInfo info2 = {"END", 5, 6};
   ListItem item1 = {NULL, NULL, &info1};
   ListItem item2 = {NULL, NULL, &info2};
-  doubleLinkedListAddItemToHead(listPtr, &item1);
-  doubleLinkedListAddItemToHead(listPtr, &item2);
+  linkedListAddItemToHead(&item1, listPtr);
+  linkedListAddItemToHead(&item2, listPtr);
   
   Try{
     index = getLabelIndex("NOW");
@@ -197,8 +197,8 @@ void test_getLabelIndex_given_label_and_but_label_not_exists_in_list_expect_MINU
   LabelInfo info2 = {"END", 5, 6};
   ListItem item1 = {NULL, NULL, &info1};
   ListItem item2 = {NULL, NULL, &info2};
-  doubleLinkedListAddItemToHead(listPtr, &item1);
-  doubleLinkedListAddItemToHead(listPtr, &item2);
+  linkedListAddItemToHead(&item1, listPtr);
+  linkedListAddItemToHead(&item2, listPtr);
   
   Try{
     index = getLabelIndex("SKIP");
@@ -236,8 +236,8 @@ void test_getRelativeAddress_given_label_as_token_and_label_exists_expect_relati
   LabelInfo info2 = {"END", 5, 6};
   ListItem item1 = {NULL, NULL, &info1};
   ListItem item2 = {NULL, NULL, &info2};
-  doubleLinkedListAddItemToHead(listPtr, &item1);
-  doubleLinkedListAddItemToHead(listPtr, &item2);
+  linkedListAddItemToHead(&item1, listPtr);
+  linkedListAddItemToHead(&item2, listPtr);
 
   //label "NOW" is read
   tokenizer = createTokenizer("NOW");
@@ -300,8 +300,8 @@ void test_getRelativeAddress_given_non_existent_label_as_token_expect_ERR_UNKNOW
   LabelInfo info2 = {"END", 5, 6};
   ListItem item1 = {NULL, NULL, &info1};
   ListItem item2 = {NULL, NULL, &info2};
-  doubleLinkedListAddItemToHead(listPtr, &item1);
-  doubleLinkedListAddItemToHead(listPtr, &item2);
+  linkedListAddItemToHead(&item1, listPtr);
+  linkedListAddItemToHead(&item2, listPtr);
   
   tokenizer = createTokenizer("HERE");
 
@@ -327,8 +327,8 @@ void test_getRelativeAddress_given_label_as_token_but_out_of_branching_range_bac
   LabelInfo info2 = {"END", 23, 50};
   ListItem item1 = {NULL, NULL, &info1};
   ListItem item2 = {NULL, NULL, &info2};
-  doubleLinkedListAddItemToHead(listPtr, &item1);
-  doubleLinkedListAddItemToHead(listPtr, &item2);
+  linkedListAddItemToHead(&item1, listPtr);
+  linkedListAddItemToHead(&item2, listPtr);
   
   tokenizer = createTokenizer("END");
 
@@ -354,8 +354,8 @@ void test_getRelativeAddress_given_label_as_token_but_out_of_branching_range_for
   LabelInfo info2 = {"END", 23, 50};
   ListItem item1 = {NULL, NULL, &info1};
   ListItem item2 = {NULL, NULL, &info2};
-  doubleLinkedListAddItemToHead(listPtr, &item1);
-  doubleLinkedListAddItemToHead(listPtr, &item2);
+  linkedListAddItemToHead(&item1, listPtr);
+  linkedListAddItemToHead(&item2, listPtr);
   
   tokenizer = createTokenizer("NOW");
 
@@ -398,8 +398,8 @@ void test_getAbsoluteAddress_given_label_as_token_and_label_exists_expect_absolu
   LabelInfo info2 = {"HERE", 0x9A9B, 500};
   ListItem item1 = {NULL, NULL, &info1};
   ListItem item2 = {NULL, NULL, &info2};
-  doubleLinkedListAddItemToHead(listPtr, &item1);
-  doubleLinkedListAddItemToHead(listPtr, &item2);
+  linkedListAddItemToHead(&item1, listPtr);
+  linkedListAddItemToHead(&item2, listPtr);
 
   tokenizer = createTokenizer("HERE");
   
@@ -2886,8 +2886,8 @@ void test_assembleBitWithRel_given_jb_bit_with_label_and_label_exists_expect_it_
   LabelInfo info2 = {"HERE", 2, 4};
   ListItem item1 = {NULL, NULL, &info1};
   ListItem item2 = {NULL, NULL, &info2};
-  doubleLinkedListAddItemToHead(listPtr, &item1);
-  doubleLinkedListAddItemToHead(listPtr, &item2);
+  linkedListAddItemToHead(&item1, listPtr);
+  linkedListAddItemToHead(&item2, listPtr);
 
   Try{
     tokenizer = createTokenizer(" 0x5B, REPEAT ");
@@ -2920,8 +2920,8 @@ void test_assembleBitWithRel_given_jbc_bit_with_label_and_label_exists_expect_it
   LabelInfo info2 = {"LOOP", 275, 150};
   ListItem item1 = {NULL, NULL, &info1};
   ListItem item2 = {NULL, NULL, &info2};
-  doubleLinkedListAddItemToHead(listPtr, &item1);
-  doubleLinkedListAddItemToHead(listPtr, &item2);
+  linkedListAddItemToHead(&item1, listPtr);
+  linkedListAddItemToHead(&item2, listPtr);
 
   Try{
     tokenizer = createTokenizer(" 0xDA, LOOP ");
@@ -3038,8 +3038,8 @@ void test_assembleDJNZInstruction_given_reg_with_label_and_label_exists_expect_i
   LabelInfo info2 = {"LOOP", 275, 150};
   ListItem item1 = {NULL, NULL, &info1};
   ListItem item2 = {NULL, NULL, &info2};
-  doubleLinkedListAddItemToHead(listPtr, &item1);
-  doubleLinkedListAddItemToHead(listPtr, &item2);
+  linkedListAddItemToHead(&item1, listPtr);
+  linkedListAddItemToHead(&item2, listPtr);
 
   Try{
     tokenizer = createTokenizer(" r7, AGAIN ");
@@ -3070,8 +3070,8 @@ void test_assembleDJNZInstruction_given_direct_with_label_and_label_exists_expec
   LabelInfo info2 = {"LOOP", 275, 150};
   ListItem item1 = {NULL, NULL, &info1};
   ListItem item2 = {NULL, NULL, &info2};
-  doubleLinkedListAddItemToHead(listPtr, &item1);
-  doubleLinkedListAddItemToHead(listPtr, &item2);
+  linkedListAddItemToHead(&item1, listPtr);
+  linkedListAddItemToHead(&item2, listPtr);
 
   Try{
     tokenizer = createTokenizer(" 0x5B, DELAY ");
@@ -3159,7 +3159,7 @@ void test_assembleDJNZInstruction_given_extra_parameter_expect_ERR_EXTRA_PARAMET
   listPtr = linkedListCreateList();
   LabelInfo info1 = {"DELAY", 0x79, 100};
   ListItem item1 = {NULL, NULL, &info1};
-  doubleLinkedListAddItemToHead(listPtr, &item1);
+  linkedListAddItemToHead(&item1, listPtr);
 
   Try{
     tokenizer = createTokenizer(" R1, DELAY AB ");
@@ -3183,7 +3183,7 @@ void test_assembleCJNEInstruction_given_A_DIR_with_label_and_label_exists_expect
   listPtr = linkedListCreateList();
   LabelInfo info1 = {"STOP", 0x58, 50};
   ListItem item1 = {NULL, NULL, &info1};
-  doubleLinkedListAddItemToHead(listPtr, &item1);
+  linkedListAddItemToHead(&item1, listPtr);
 
   Try{
     tokenizer = createTokenizer(" a, 0x6F, STOP ");
@@ -3213,7 +3213,7 @@ void test_assembleCJNEInstruction_given_A_IMM_with_label_and_label_exists_expect
   listPtr = linkedListCreateList();
   LabelInfo info1 = {"HALT", 0xDD, 170};
   ListItem item1 = {NULL, NULL, &info1};
-  doubleLinkedListAddItemToHead(listPtr, &item1);
+  linkedListAddItemToHead(&item1, listPtr);
 
   Try{
     tokenizer = createTokenizer(" a, #-55, HALT ");
@@ -3243,7 +3243,7 @@ void test_assembleCJNEInstruction_given_reg_imm_with_label_and_label_exists_expe
   listPtr = linkedListCreateList();
   LabelInfo info1 = {"DELAY2", 0x99, 100};
   ListItem item1 = {NULL, NULL, &info1};
-  doubleLinkedListAddItemToHead(listPtr, &item1);
+  linkedListAddItemToHead(&item1, listPtr);
 
   Try{
     tokenizer = createTokenizer(" R7, #99, DELAY2 ");
@@ -3273,7 +3273,7 @@ void test_assembleCJNEInstruction_given_ind_imm_with_label_and_label_exists_expe
   listPtr = linkedListCreateList();
   LabelInfo info1 = {"NEXT", 43, 100};
   ListItem item1 = {NULL, NULL, &info1};
-  doubleLinkedListAddItemToHead(listPtr, &item1);
+  linkedListAddItemToHead(&item1, listPtr);
 
   Try{
     tokenizer = createTokenizer(" @r1, #+200, NEXT ");
@@ -3379,7 +3379,7 @@ void test_assembleCJNEInstruction_given_extra_parameter_expect_ERR_EXTRA_PARAMET
   listPtr = linkedListCreateList();
   LabelInfo info1 = {"DELAY", 0x79, 100};
   ListItem item1 = {NULL, NULL, &info1};
-  doubleLinkedListAddItemToHead(listPtr, &item1);
+  linkedListAddItemToHead(&item1, listPtr);
 
   Try{
     tokenizer = createTokenizer(" A, #0xE1, DELAY R5");
@@ -3409,8 +3409,8 @@ void test_assembleSingleOperandWithLabel_given_jz_with_label_and_label_exists_ex
   LabelInfo info2 = {"END", 23, 50};
   ListItem item1 = {NULL, NULL, &info1};
   ListItem item2 = {NULL, NULL, &info2};
-  doubleLinkedListAddItemToHead(listPtr, &item1);
-  doubleLinkedListAddItemToHead(listPtr, &item2);
+  linkedListAddItemToHead(&item1, listPtr);
+  linkedListAddItemToHead(&item2, listPtr);
 
   Try{
     tokenizer = createTokenizer("NOW ;comment ");
@@ -3444,8 +3444,8 @@ void test_assembleSingleOperandWithLabel_given_acall_with_label_and_label_exists
   LabelInfo info2 = {"HERE", 23, 50};
   ListItem item1 = {NULL, NULL, &info1};
   ListItem item2 = {NULL, NULL, &info2};
-  doubleLinkedListAddItemToHead(listPtr, &item1);
-  doubleLinkedListAddItemToHead(listPtr, &item2);
+  linkedListAddItemToHead(&item1, listPtr);
+  linkedListAddItemToHead(&item2, listPtr);
 
   Try{
     tokenizer = createTokenizer(" WHERE ");
@@ -3477,8 +3477,8 @@ void test_assembleSingleOperandWithLabel_given_ljmp_with_label_and_label_exists_
   LabelInfo info2 = {"HERE", 23, 50};
   ListItem item1 = {NULL, NULL, &info1};
   ListItem item2 = {NULL, NULL, &info2};
-  doubleLinkedListAddItemToHead(listPtr, &item1);
-  doubleLinkedListAddItemToHead(listPtr, &item2);
+  linkedListAddItemToHead(&item1, listPtr);
+  linkedListAddItemToHead(&item2, listPtr);
 
   Try{
     tokenizer = createTokenizer(" LOOP ");
@@ -3537,8 +3537,8 @@ void test_assembleSingleOperandWithLabel_given_ajmp_with_label_but_with_extra_pa
   LabelInfo info2 = {"HERE", 23, 50};
   ListItem item1 = {NULL, NULL, &info1};
   ListItem item2 = {NULL, NULL, &info2};
-  doubleLinkedListAddItemToHead(listPtr, &item1);
-  doubleLinkedListAddItemToHead(listPtr, &item2);
+  linkedListAddItemToHead(&item1, listPtr);
+  linkedListAddItemToHead(&item2, listPtr);
 
   Try{
     tokenizer = createTokenizer(" HERE R1 ");
@@ -3567,8 +3567,8 @@ void test_assembleSingleOperandWithLabel_given_ajmp_A_expect_ERR_UNKNOWN_LABEL_i
   LabelInfo info2 = {"HERE", 23, 50};
   ListItem item1 = {NULL, NULL, &info1};
   ListItem item2 = {NULL, NULL, &info2};
-  doubleLinkedListAddItemToHead(listPtr, &item1);
-  doubleLinkedListAddItemToHead(listPtr, &item2);
+  linkedListAddItemToHead(&item1, listPtr);
+  linkedListAddItemToHead(&item2, listPtr);
 
   Try{
     //A is considered a label here, as absolute branch instructions can only accept label or integer

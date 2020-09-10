@@ -9,7 +9,7 @@
 #include "ExceptionThrowing.h"
 #include "Tokenizer.h"
 #include "Token.h"
-#include "CExceptionConfig.h"
+#include "TokenizerExceptionThrowing.h"
 #include "CException.h"
 
 void setUp(void)

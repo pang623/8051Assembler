@@ -13,7 +13,7 @@
 #include "AssembleFile.h"
 #include "MemAlloc.h"
 #include "SaveCodeToBin.h"
-#include "CExceptionConfig.h"
+#include "TokenizerExceptionThrowing.h"
 #include "CException.h"
 
 #define     getCurrentAbsoluteAddr()        (codePtr - codeMemory)
