@@ -1333,6 +1333,7 @@ void test_throwUnsupportedOperandException_given_token_expect_ERR_UNSUPPORTED_OP
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_UNSUPPORTED_OPERAND, e->errorCode);
   }
+  freeToken(token);
   freeTokenizer(tokenizer);
 }
 
