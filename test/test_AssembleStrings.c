@@ -1,6 +1,5 @@
-#include "Exception.h"
 #include "unity.h"
-#include "CException.h"
+#include "Exception.h"
 #include "AssembleStrings.h"
 #include "DoubleLinkedList.h"
 #include "LabelInfo.h"
@@ -62,7 +61,6 @@ void test_assembleStrings_given_strings_of_instruction_expect_all_of_them_are_as
       TEST_ASSERT_EQUAL(0, codeMemory[i]);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
 }
@@ -101,7 +99,6 @@ void test_assembleStrings_given_strings_of_instruction_with_base_addr_same_as_br
       TEST_ASSERT_EQUAL(0, codeMemory[i]);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
 }
@@ -127,7 +124,6 @@ void test_assembleStrings_given_strings_of_instruction_but_jump_to_an_undefined_
   } Catch(e){
     dumpTokenErrorMessage(e, lineNumber);
     TEST_ASSERT_EQUAL(ERR_UNKNOWN_LABEL, e->errorCode);
-    freeException(e);
   }
 }
 
@@ -167,7 +163,6 @@ void test_assembleStrings_given_strings_of_instruction_and_jump_without_label_ex
       TEST_ASSERT_EQUAL(0, codeMemory[i]);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
 }
@@ -193,7 +188,6 @@ void test_assembleStrings_given_strings_of_instruction_with_repeated_label_expec
   } Catch(e){
     dumpTokenErrorMessage(e, lineNumber);
     TEST_ASSERT_EQUAL(ERR_DUPLICATE_LABEL, e->errorCode);
-    freeException(e);
   }
 }
 
@@ -218,7 +212,6 @@ void test_assembleStrings_given_strings_of_instruction_with_instruction_mnemonic
   } Catch(e){
     dumpTokenErrorMessage(e, lineNumber);
     TEST_ASSERT_EQUAL(ERR_ILLEGAL_LABEL, e->errorCode);
-    freeException(e);
   }
 }
 
@@ -244,7 +237,6 @@ void test_assembleStrings_given_strings_of_instruction_with_two_label_in_a_line_
   } Catch(e){
     dumpTokenErrorMessage(e, lineNumber);
     TEST_ASSERT_EQUAL(ERR_INVALID_INSTRUCTION, e->errorCode);
-    freeException(e);
   }
 }
 
@@ -271,7 +263,6 @@ void test_assembleStrings_given_strings_of_instruction_with_colon_after_an_instr
   } Catch(e){
     dumpTokenErrorMessage(e, lineNumber);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
-    freeException(e);
   }
 }
 
@@ -311,6 +302,5 @@ void test_getNextInstructionLineInString_expect_next_instruction_line_is_read_fr
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
-    freeException(e);
   }
 }

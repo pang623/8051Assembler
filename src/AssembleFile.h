@@ -4,10 +4,6 @@
 #include "Assembler8051.h"
 #include "DoubleLinkedList.h"
 #include "LabelInfo.h"
-#include "Tokenizer.h"
-#include "TokenizerExceptionThrowing.h"
-#include "CException.h"
-#include "Exception.h"
 
 extern DoubleLinkedList *listPtr;
 extern int lineNumber;

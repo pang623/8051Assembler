@@ -2,13 +2,8 @@
 #define ASSEMBLESTRINGS_H
 
 #include "Assembler8051.h"
-#include "Exception.h"
 #include "DoubleLinkedList.h"
 #include "LabelInfo.h"
-#include "Tokenizer.h"
-#include "Token.h"
-#include "TokenizerExceptionThrowing.h"
-#include "CException.h"
 
 extern DoubleLinkedList *listPtr;
 extern int lineNumber;

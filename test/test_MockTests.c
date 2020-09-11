@@ -12,7 +12,6 @@
 #include "SaveCodeToBin.h"
 #include "mock_DummyLineReader.h"
 #include "mock_MemAlloc.h"
-#include "CException.h"
 
 void setUp(void)
 {

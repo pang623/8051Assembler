@@ -13,8 +13,6 @@
 #include "AssembleFile.h"
 #include "MemAlloc.h"
 #include "SaveCodeToBin.h"
-#include "TokenizerExceptionThrowing.h"
-#include "CException.h"
 
 #define     getCurrentAbsoluteAddr()        (codePtr - codeMemory)
 #define     isIntegerToken(token)           (token->type == TOKEN_INTEGER_TYPE)

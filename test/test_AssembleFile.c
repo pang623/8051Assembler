@@ -10,7 +10,6 @@
 #include "Tokenizer.h"
 #include "Token.h"
 #include "TokenizerExceptionThrowing.h"
-#include "CException.h"
 
 void setUp(void)
 {
@@ -36,7 +35,6 @@ void test_assembleFile_given_filename_but_instruction_with_extra_token_expect_ER
   } Catch(e){
     dumpTokenErrorMessage(e, lineNumber);
     TEST_ASSERT_EQUAL(ERR_EXTRA_PARAMETER, e->errorCode);
-    freeException(e);
   }
 }
 
@@ -71,7 +69,6 @@ void test_assembleFile_given_filename_expect_instructions_in_file_are_read_and_w
       TEST_ASSERT_EQUAL(0, codeMemory[i]);
   } Catch(e){
     dumpTokenErrorMessage(e, lineNumber);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
 }
@@ -123,7 +120,6 @@ void test_getNextInstructionLineInFile_expect_next_instruction_line_is_read_from
     free(instructionLine);
   }Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   fclose(fileHandler);

@@ -1,7 +1,6 @@
+#include "unity.h"
 #include "Exception.h"
 #include "ExceptionThrowing.h"
-#include "unity.h"
-#include "CException.h"
 #include "Token.h"
 #include "Tokenizer.h"
 #include "Assembler8051.h"
@@ -43,7 +42,6 @@ void test_assembleInFileAndWriteToOutFile_given_asm_testCode1_as_input_file_expe
     TEST_ASSERT_EQUAL_BIN_FILE(codeMemory, outFile, totalBytes);
   } Catch(e){
     dumpTokenErrorMessage(e, lineNumber);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
 }
@@ -59,7 +57,6 @@ void test_assembleInFileAndWriteToOutFile_given_allInstructions_test_as_input_fi
     TEST_ASSERT_EQUAL_BIN_FILE(codeMemory, outFile, totalBytes);
   } Catch(e){
     dumpTokenErrorMessage(e, lineNumber);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
 }
@@ -75,7 +72,6 @@ void test_assembleInFileAndWriteToOutFile_given_asm_testCode2_as_input_file_expe
     TEST_ASSERT_EQUAL_BIN_FILE(codeMemory, outFile, totalBytes);
   } Catch(e){
     dumpTokenErrorMessage(e, lineNumber);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
 }
@@ -88,7 +84,6 @@ void test_getInstructionBytes_given_one_byte_opcode_expect_size_is_one_byte() {
     TEST_ASSERT_EQUAL(1, bytes);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
 }
@@ -100,7 +95,6 @@ void test_getInstructionBytes_given_two_byte_opcode_expect_size_is_two_byte() {
     TEST_ASSERT_EQUAL(2, bytes);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
 }
@@ -112,7 +106,6 @@ void test_getInstructionBytes_given_three_byte_opcode_expect_size_is_three_byte(
     TEST_ASSERT_EQUAL(3, bytes);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
 }
@@ -247,7 +240,6 @@ void test_getRelativeAddress_given_label_as_token_and_label_exists_expect_relati
     TEST_ASSERT_EQUAL(-29, relative);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   free(listPtr);
@@ -267,7 +259,6 @@ void test_getRelativeAddress_given_integer_as_token_expect_relative_is_computed_
     TEST_ASSERT_EQUAL(100, relative);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -285,7 +276,6 @@ void test_getRelativeAddress_given_integer_as_token_but_out_of_range_expect_ERR_
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INTEGER_OUT_OF_RANGE, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -311,7 +301,6 @@ void test_getRelativeAddress_given_non_existent_label_as_token_expect_ERR_UNKNOW
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_UNKNOWN_LABEL, e->errorCode);
-    freeException(e);
   }
   free(listPtr);
   freeTokenizer(tokenizer);
@@ -338,7 +327,6 @@ void test_getRelativeAddress_given_label_as_token_but_out_of_branching_range_bac
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_TARGET_OUT_OF_RANGE, e->errorCode);
-    freeException(e);
   }
   free(listPtr);
   freeTokenizer(tokenizer);
@@ -365,7 +353,6 @@ void test_getRelativeAddress_given_label_as_token_but_out_of_branching_range_for
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_TARGET_OUT_OF_RANGE, e->errorCode);
-    freeException(e);
   }
   free(listPtr);
   freeTokenizer(tokenizer);
@@ -383,7 +370,6 @@ void test_getRelativeAddress_given_token_but_is_neither_label_nor_integer_expect
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -408,7 +394,6 @@ void test_getAbsoluteAddress_given_label_as_token_and_label_exists_expect_absolu
     TEST_ASSERT_EQUAL_HEX16(0x9A9B, absolute);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   free(listPtr);
@@ -425,7 +410,6 @@ void test_writeCodeToCodeMemory_given_opcode_0x7B_expect_opcode_stored_in_code_m
     TEST_ASSERT_EQUAL_HEX8(0x7B, codeMemory[10]);         //opcode is stored at address 10
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
 }
@@ -441,7 +425,6 @@ void test_writeCodeToCodeMemory_given_opcode_0xABCD_expect_opcode_stored_in_code
     TEST_ASSERT_EQUAL_HEX8(0xCD, codeMemory[0xAC]);       //opcode is stored at address 0xAC
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
 }
@@ -458,7 +441,6 @@ void test_writeCodeToCodeMemory_given_opcode_0x9BA12C_expect_opcode_stored_in_co
     TEST_ASSERT_EQUAL_HEX8(0x2C, codeMemory[202]);        //opcode is stored at address 202
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
 }
@@ -476,7 +458,6 @@ void test_isIndRegisterThenGetItsNumberAndConsume_given_indR0_token_expect_numbe
     TEST_ASSERT_EQUAL(1, isTrue);                         //token is indirect, so function returns true
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeToken(token);
@@ -496,7 +477,6 @@ void test_isIndRegisterThenGetItsNumberAndConsume_given_not_indirect_expect_numb
     TEST_ASSERT_EQUAL(0, isTrue);                         //function returns false since token is not indirect
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeToken(token);
@@ -513,7 +493,6 @@ void test_isIndRegisterThenGetItsNumberAndConsume_given_is_indReg_but_invalidReg
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_REGISTER, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -528,7 +507,6 @@ void test_isIndRegisterThenGetItsNumberAndConsume_given_is_indReg_but_outOfRange
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INDIRECT_OUT_OF_RANGE, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -547,7 +525,6 @@ void test_isIndRegisterThenGetItsNumberAndConsume_given_is_ind_but_not_register_
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_EXPECTING_REGISTER, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -566,7 +543,6 @@ void test_isImmediateThenGetsItsValueAndConsume_given_negative_imm8bit_expect_va
     TEST_ASSERT_EQUAL(1, isTrue);                         //token is immediate, so function returns true
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeToken(token);
@@ -587,7 +563,6 @@ void test_isImmediateThenGetsItsValueAndConsume_given_imm16bit_expect_value_extr
     TEST_ASSERT_EQUAL(1, isTrue);                         //token is immediate, so function returns true
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeToken(token);
@@ -608,7 +583,6 @@ void test_isImmediateThenGetsItsValueAndConsume_given_negative_imm16bit_expect_v
     TEST_ASSERT_EQUAL(1, isTrue);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeToken(token);
@@ -629,7 +603,6 @@ void test_isImmediateThenGetsItsValueAndConsume_given_imm8bit_with_plus_sign_exp
     TEST_ASSERT_EQUAL(1, isTrue);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeToken(token);
@@ -649,7 +622,6 @@ void test_isImmediateThenGetsItsValueAndConsume_given_not_imm_expect_value_is_no
     TEST_ASSERT_EQUAL(0, isTrue);                         //function returns false since token is not immediate
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeToken(token);
@@ -666,7 +638,6 @@ void test_isImmediateThenGetsItsValueAndConsume_given_is_imm_but_outOfRange_expe
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INTEGER_OUT_OF_RANGE, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -684,7 +655,6 @@ void test_isImmediateThenGetsItsValueAndConsume_given_is_imm_but_not_integer_exp
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_EXPECTING_INTEGER, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -701,7 +671,6 @@ void test_verifyIsImmediateThenGetsItsValueAndConsume_given_is_imm_expect_value_
     TEST_ASSERT_EQUAL_STRING("hehe", token->str);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeToken(token);
@@ -718,7 +687,6 @@ void test_verifyIsImmediateThenGetsItsValueAndConsume_given_not_imm_expect_excep
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_EXPECTING_IMMEDIATE, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -734,7 +702,6 @@ void test_isOperatorTokenThenConsume_given_is_correct_operator_expect_token_is_c
     TEST_ASSERT_EQUAL_STRING("r0", token->str);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeToken(token);
@@ -752,7 +719,6 @@ void test_isOperatorTokenThenConsume_given_wrong_operator_expect_token_is_pushed
     TEST_ASSERT_EQUAL_STRING("$", token->str);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeToken(token);
@@ -770,7 +736,6 @@ void test_isOperatorTokenThenConsume_given_not_operator_expect_token_is_pushed_b
     TEST_ASSERT_EQUAL_STRING("doom", token->str);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeToken(token);
@@ -787,7 +752,6 @@ void test_verifyIsOperatorTokenThenConsume_given_is_correct_operator_expect_toke
     TEST_ASSERT_EQUAL_STRING("#", token->str);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeToken(token);
@@ -803,7 +767,6 @@ void test_verifyIsOperatorTokenThenConsume_given_wrong_operator_expect_exception
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -817,7 +780,6 @@ void test_verifyIsOperatorTokenThenConsume_given_not_operator_expect_exception_E
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -833,7 +795,6 @@ void test_isIdentifierTokenThenConsume_given_is_correct_identifier_expect_token_
     TEST_ASSERT_EQUAL_STRING("x1y2z", token->str);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeToken(token);
@@ -851,7 +812,6 @@ void test_isIdentifierTokenThenConsume_given_wrong_identifier_expect_token_is_pu
     TEST_ASSERT_EQUAL_STRING("good", token->str);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeToken(token);
@@ -869,7 +829,6 @@ void test_isIdentifierTokenThenConsume_given_not_identifier_expect_token_is_push
     TEST_ASSERT_EQUAL_STRING("9987", token->str);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeToken(token);
@@ -886,7 +845,6 @@ void test_verifyIsIdentifierTokenThenConsume_given_is_correct_identifier_expect_
     TEST_ASSERT_EQUAL_STRING("isgood2", token->str);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeToken(token);
@@ -902,7 +860,6 @@ void test_verifyIsIdentifierTokenThenConsume_given_wrong_identifier_expect_excep
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -916,7 +873,6 @@ void test_verifyIsIdentifierTokenThenConsume_given_not_identifier_expect_excepti
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -934,7 +890,6 @@ void test_isIntegerTokenThenConsume_given_is_neg_integer_expect_token_is_consume
     TEST_ASSERT_EQUAL(-32678, value);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeToken(token);
@@ -954,7 +909,6 @@ void test_isIntegerTokenThenConsume_given_is_integer_with_plus_sign_expect_token
     TEST_ASSERT_EQUAL(12345, value);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeToken(token);
@@ -974,7 +928,6 @@ void test_isIntegerTokenThenConsume_given_is_integer_without_plus_sign_expect_to
     TEST_ASSERT_EQUAL(120, value);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeToken(token);
@@ -994,7 +947,6 @@ void test_isIntegerTokenThenConsume_given_not_integer_expect_token_is_pushed_bac
     TEST_ASSERT_EQUAL(1000, value);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeToken(token);
@@ -1011,7 +963,6 @@ void test_isIntegerTokenThenConsume_given_is_neg_integer_but_out_of_range_expect
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INTEGER_OUT_OF_RANGE, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -1026,7 +977,6 @@ void test_isIntegerTokenThenConsume_given_is_pos_integer_but_out_of_range_expect
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INTEGER_OUT_OF_RANGE, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -1041,7 +991,6 @@ void test_isIntegerTokenThenConsume_given_is_pos_integer_without_sign_but_out_of
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INTEGER_OUT_OF_RANGE, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -1056,7 +1005,6 @@ void test_isIntegerTokenThenConsume_given_negative_sign_but_not_integer_expect_E
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_EXPECTING_INTEGER, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -1071,7 +1019,6 @@ void test_isIntegerTokenThenConsume_given_positive_sign_but_not_integer_expect_E
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_EXPECTING_INTEGER, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -1088,7 +1035,6 @@ void test_verifyIsIntegerTokenThenConsume_given_is_integer_expect_token_is_consu
     TEST_ASSERT_EQUAL(0x789, value);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeToken(token);
@@ -1105,7 +1051,6 @@ void test_verifyIsIntegerTokenThenConsume_given_not_integer_expect_exception_ERR
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_EXPECTING_INTEGER, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -1123,7 +1068,6 @@ void test_isRegisterConsumeAndGetItsNumber_given_is_register_of_valid_range_expe
     TEST_ASSERT_EQUAL(5, regNum);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeToken(token);
@@ -1144,7 +1088,6 @@ void test_isRegisterConsumeAndGetItsNumber_given_not_register_expect_token_is_pu
     TEST_ASSERT_EQUAL(7, regNum);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeToken(token);
@@ -1165,7 +1108,6 @@ void test_isRegisterConsumeAndGetItsNumber_given_identifier_that_not_begin_with_
     TEST_ASSERT_EQUAL(5, regNum);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeToken(token);
@@ -1183,7 +1125,6 @@ void test_isRegisterConsumeAndGetItsNumber_given_is_register_with_indirect_addre
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INDIRECT_OUT_OF_RANGE, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -1199,7 +1140,6 @@ void test_isRegisterConsumeAndGetItsNumber_given_is_register_with_register_addre
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_REG_OUT_OF_RANGE, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -1214,7 +1154,6 @@ void test_isRegisterConsumeAndGetItsNumber_given_invalid_register_expect_excepti
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_REGISTER, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -1231,7 +1170,6 @@ void test_verifyIsRegisterConsumeAndGetItsNumber_given_is_register_of_valid_rang
     TEST_ASSERT_EQUAL(1, regNum);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeToken(token);
@@ -1248,7 +1186,6 @@ void test_verifyIsRegisterConsumeAndGetItsNumber_given_not_register_expect_excep
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_EXPECTING_REGISTER, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -1260,7 +1197,6 @@ void test_checkExtraToken_given_null_token_expect_no_exception_is_thrown() {
     checkExtraToken(tokenizer);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -1273,7 +1209,6 @@ void test_checkExtraToken_given_newline_token_expect_no_exception_is_thrown() {
     checkExtraToken(tokenizer);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -1286,7 +1221,6 @@ void test_checkExtraToken_given_semicolon_token_expect_no_exception_is_thrown() 
     checkExtraToken(tokenizer);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -1301,7 +1235,6 @@ void test_checkExtraToken_given_not_whitespace_expect_exception_ERR_EXTRA_PARAME
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_EXTRA_PARAMETER, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -1319,7 +1252,6 @@ void test_checkExtraToken_given_extra_token_after_tab_expect_exception_ERR_EXTRA
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_EXTRA_PARAMETER, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -1334,7 +1266,6 @@ void test_extractNum_given_string_3668_expect_number_3668_is_extracted() {
     TEST_ASSERT_EQUAL(3668, num);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeToken(token);
@@ -1351,7 +1282,6 @@ void test_extractNum_given_string_1tree_expect_MINUSone_is_returned() {
     TEST_ASSERT_EQUAL(-1, num);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeToken(token);
@@ -1368,7 +1298,6 @@ void test_extractNum_given_string_t321_expect_MINUSone_is_returned() {
     TEST_ASSERT_EQUAL(-1, num);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeToken(token);
@@ -1385,7 +1314,6 @@ void test_extractNum_given_string_null_expect_MINUSone_is_returned() {
     TEST_ASSERT_EQUAL(-1, num);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeToken(token);
@@ -1404,7 +1332,6 @@ void test_throwUnsupportedOperandException_given_token_expect_ERR_UNSUPPORTED_OP
   }Catch(e) {
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_UNSUPPORTED_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -1419,7 +1346,6 @@ void test_assembleAWithOperands_given_AWithIndirect_expect_opcode_0x46() {
     TEST_ASSERT_EQUAL_HEX8(0x46, opcode);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -1434,7 +1360,6 @@ void test_assembleAWithOperands_given_AWithRegister_expect_opcode_0x9E() {
     TEST_ASSERT_EQUAL_HEX8(0x9E, opcode);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -1449,7 +1374,6 @@ void test_assembleAWithOperands_given_AWithImmediate_expect_opcode_0x84C0() {
     TEST_ASSERT_EQUAL_HEX16(0x84C0, opcode);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -1464,7 +1388,6 @@ void test_assembleAWithOperands_given_AWithDirect_expect_opcode_0x7538() {
     TEST_ASSERT_EQUAL_HEX16(0x7538, opcode);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -1480,7 +1403,6 @@ void test_assembleAWithOperands_given_missing_comma_expect_exception_ERR_INVALID
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -1495,7 +1417,6 @@ void test_assembleAWithOperands_given_first_operand_not_Acc_expect_exception_ERR
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -1510,7 +1431,6 @@ void test_assembleAWithOperands_given_a_with_dir_but_flag_is_not_set_expect_exce
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_UNSUPPORTED_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -1525,7 +1445,6 @@ void test_assembleAWithOperands_given_a_with_reg_but_flag_is_not_set_expect_exce
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_UNSUPPORTED_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -1540,7 +1459,6 @@ void test_assembleAWithOperands_given_a_with_ind_but_flag_is_not_set_expect_exce
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_UNSUPPORTED_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -1555,7 +1473,6 @@ void test_assembleAWithOperands_given_a_with_imm_but_flag_is_not_set_expect_exce
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_UNSUPPORTED_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -1570,7 +1487,6 @@ void test_assembleAWithOperands_given_indirect_but_not_register_expect_exception
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_EXPECTING_REGISTER, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -1585,7 +1501,6 @@ void test_assembleAWithOperands_given_invalid_second_operand_expect_exception_ER
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -1605,7 +1520,6 @@ void test_assembleAWithOperands_given_ind_aPlusDPTR_expect_exception_ERR_EXPECTI
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_EXPECTING_REGISTER, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -1620,7 +1534,6 @@ void test_assembleAWithOperands_given_extra_operand_expect_exception_ERR_EXTRA_P
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_EXTRA_PARAMETER, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -1663,7 +1576,6 @@ void test_assembleDirectWithOperands_given_dir_with_imm_but_flag_not_set_expect_
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_UNSUPPORTED_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -1678,7 +1590,6 @@ void test_assembleDirectWithOperands_given_dir_with_A_but_flag_not_set_expect_ex
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_UNSUPPORTED_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -1693,7 +1604,6 @@ void test_assembleDirectWithOperands_given_first_operand_not_direct_expect_excep
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_EXPECTING_INTEGER, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -1708,7 +1618,6 @@ void test_assembleDirectWithOperands_given_correct_operands_but_missing_comma_ex
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -1723,7 +1632,6 @@ void test_assembleDirectWithOperands_given_invalid_second_operand_expect_excepti
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -1738,7 +1646,6 @@ void test_assembleDirectWithOperands_correct_operands_but_with_extra_parameter_e
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_EXTRA_PARAMETER, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -1757,7 +1664,6 @@ void test_assembleDirectWithOperands_given_dir_with_dir_expect_exception_ERR_INV
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -1771,7 +1677,6 @@ void test_assembleCWithOperands_given_CWithBarBit_expect_opcode_0xD0CA() {
     TEST_ASSERT_EQUAL_HEX16(0xD0CA, opcode);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -1786,7 +1691,6 @@ void test_assembleCWithOperands_given_CWithBit_expect_opcode_0x829B() {
     TEST_ASSERT_EQUAL_HEX16(0x829B, opcode);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -1802,7 +1706,6 @@ void test_assembleCWithOperands_given_c_barbit_but_flag_not_set_expect_exception
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_UNSUPPORTED_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -1817,7 +1720,6 @@ void test_assembleCWithOperands_given_c_bit_but_flag_not_set_expect_exception_ER
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_UNSUPPORTED_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -1832,7 +1734,6 @@ void test_assembleCWithOperands_given_first_operand_not_C_expect_exception_ERR_I
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -1847,7 +1748,6 @@ void test_assembleCWithOperands_given_correct_operands_but_missing_comma_expect_
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -1862,7 +1762,6 @@ void test_assembleCWithOperands_given_invalid_second_operand_expect_exception_ER
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -1877,7 +1776,6 @@ void test_assembleCWithOperands_given_correct_operands_but_with_extra_parameter_
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_EXTRA_PARAMETER, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -1895,7 +1793,6 @@ void test_assembleMOVInstruction_given_A_with_R3_expect_opcode_0xEB_stored_in_co
     TEST_ASSERT_EQUAL(1, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -1915,7 +1812,6 @@ void test_assembleMOVInstruction_given_A_with_0x56_expect_opcode_0xE556_stored_i
     TEST_ASSERT_EQUAL(2, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -1934,7 +1830,6 @@ void test_assembleMOVInstruction_given_A_with_indR0_expect_opcode_0xE6_stored_in
     TEST_ASSERT_EQUAL(1, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -1954,7 +1849,6 @@ void test_assembleMOVInstruction_given_A_with_imm0xAB_expect_opcode_0x74AB_store
     TEST_ASSERT_EQUAL(2, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -1973,7 +1867,6 @@ void test_assembleMOVInstruction_given_R7_with_A_expect_opcode_0xFF_stored_in_co
     TEST_ASSERT_EQUAL(1, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -1993,7 +1886,6 @@ void test_assembleMOVInstruction_given_R0_with_0xBA_expect_opcode_0xA8BA_stored_
     TEST_ASSERT_EQUAL(2, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -2013,7 +1905,6 @@ void test_assembleMOVInstruction_given_R6_with_immMINUS120_expect_opcode_0xA8BA_
     TEST_ASSERT_EQUAL(2, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -2033,7 +1924,6 @@ void test_assembleMOVInstruction_given_0xFA_with_A_expect_opcode_0xF5FA_stored_i
     TEST_ASSERT_EQUAL(2, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -2053,7 +1943,6 @@ void test_assembleMOVInstruction_given_0x5B_with_R7_expect_opcode_0x8F5B_stored_
     TEST_ASSERT_EQUAL(2, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -2074,7 +1963,6 @@ void test_assembleMOVInstruction_given_0x90_with_0xB1_expect_opcode_0x85B190_sto
     TEST_ASSERT_EQUAL(3, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -2094,7 +1982,6 @@ void test_assembleMOVInstruction_given_0xA0_with_indR1_expect_opcode_0x87A0_stor
     TEST_ASSERT_EQUAL(2, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -2115,7 +2002,6 @@ void test_assembleMOVInstruction_given_0x12_with_imm156_expect_opcode_0x75129C_s
     TEST_ASSERT_EQUAL(3, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -2134,7 +2020,6 @@ void test_assembleMOVInstruction_given_indR0_with_a_expect_opcode_0xF6_stored_in
     TEST_ASSERT_EQUAL(1, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -2154,7 +2039,6 @@ void test_assembleMOVInstruction_given_indR1_with_0xBB_expect_opcode_0xA7BB_stor
     TEST_ASSERT_EQUAL(2, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -2174,7 +2058,6 @@ void test_assembleMOVInstruction_given_indR1_with_immPLUS100_expect_opcode_0x776
     TEST_ASSERT_EQUAL(2, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -2194,7 +2077,6 @@ void test_assembleMOVInstruction_given_C_with_directBitAddr_expect_opcode_0xA22F
     TEST_ASSERT_EQUAL(2, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -2214,7 +2096,6 @@ void test_assembleMOVInstruction_given_directBitAddr_with_C_expect_opcode_0x922F
     TEST_ASSERT_EQUAL(2, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -2235,7 +2116,6 @@ void test_assembleMOVInstruction_given_DPTR_with_imm16bit_expect_opcode_0x90DCBA
     TEST_ASSERT_EQUAL(3, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -2253,7 +2133,6 @@ void test_assembleMOVInstruction_given_A_with_invalid_operand_expect_exception_E
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -2270,7 +2149,6 @@ void test_assembleMOVInstruction_given_reg_with_invalid_operand_expect_exception
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -2287,7 +2165,6 @@ void test_assembleMOVInstruction_given_dir_with_invalid_operand_expect_exception
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -2304,7 +2181,6 @@ void test_assembleMOVInstruction_given_ind_with_invalid_operand_expect_exception
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -2321,7 +2197,6 @@ void test_assembleMOVInstruction_given_c_with_invalid_operand_expect_exception_E
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_EXPECTING_INTEGER, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -2338,7 +2213,6 @@ void test_assembleMOVInstruction_given_DPTR_with_invalid_operand_expect_exceptio
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_EXPECTING_IMMEDIATE, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -2355,7 +2229,6 @@ void test_assembleMOVInstruction_given_correct_operands_but_no_comma_expect_exce
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -2372,7 +2245,6 @@ void test_assembleMOVInstruction_given_invalid_first_operand_expect_exception_ER
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -2390,7 +2262,6 @@ void test_assembleMOVXInstruction_given_A_with_indR1_expect_opcode_0xE3_stored_i
     TEST_ASSERT_EQUAL(1, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -2409,7 +2280,6 @@ void test_assembleMOVXInstruction_given_A_with_indDPTR_expect_opcode_0xE0_stored
     TEST_ASSERT_EQUAL(1, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -2428,7 +2298,6 @@ void test_assembleMOVXInstruction_given_indR0_with_A_expect_opcode_0xF2_stored_i
     TEST_ASSERT_EQUAL(1, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -2447,7 +2316,6 @@ void test_assembleMOVXInstruction_given_indDPTR_with_A_expect_opcode_0xF0_stored
     TEST_ASSERT_EQUAL(1, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -2465,7 +2333,6 @@ void test_assembleMOVXInstruction_given_invalid_first_operand_expect_exception_E
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -2482,7 +2349,6 @@ void test_assembleMOVXInstruction_given_A_with_invalid_second_operand_expect_exc
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -2499,7 +2365,6 @@ void test_assembleMOVXInstruction_given_ind_but_is_not_dptr_or_reg_expect_except
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -2516,7 +2381,6 @@ void test_assembleMOVXInstruction_given_ind_with_invalid_second_operand_expect_e
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -2533,7 +2397,6 @@ void test_assembleMOVXInstruction_given_valid_operand_but_no_comma_expect_except
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -2551,7 +2414,6 @@ void test_assembleMOVCInstruction_given_A_with_indAplusDPTR_expect_opcode_0x93_s
     TEST_ASSERT_EQUAL(1, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -2570,7 +2432,6 @@ void test_assembleMOVCInstruction_given_A_with_indAplusPC_expect_opcode_0x83_sto
     TEST_ASSERT_EQUAL(1, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -2588,7 +2449,6 @@ void test_assembleMOVCInstruction_given_A_with_invalid_operand_expect_exception_
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -2605,7 +2465,6 @@ void test_assembleMOVCInstruction_given_invalid_first_operand_expect_exception_E
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -2622,7 +2481,6 @@ void test_assembleMOVCInstruction_given_valid_operand_but_no_comma_expect_except
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -2641,7 +2499,6 @@ void test_assembleInstructionWithOnlyAccAsFirstOperand_given_instruction_xchd_ex
     TEST_ASSERT_EQUAL(24, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -2663,7 +2520,6 @@ void test_assembleInstructionWithOnlyAccAsFirstOperand_given_instruction_subb_ex
     TEST_ASSERT_EQUAL(5658, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -2685,7 +2541,6 @@ void test_assembleLogicalInstructionWithoutXRL_given_instruction_orl_C_expect_it
     TEST_ASSERT_EQUAL(2, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -2706,7 +2561,6 @@ void test_assembleLogicalInstructionWithoutXRL_given_instruction_anl_A_expect_it
     TEST_ASSERT_EQUAL(1, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -2729,7 +2583,6 @@ void test_assembleLogicalInstructionWithoutXRL_given_instruction_anl_dir_expect_
     TEST_ASSERT_EQUAL(3, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -2749,7 +2602,6 @@ void test_assembleLogicalInstructionWithoutXRL_given_invalid_first_operand_expec
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -2771,7 +2623,6 @@ void test_assembleXRLinstruction_given_instruction_xrl_dir_expect_it_is_assemble
     TEST_ASSERT_EQUAL(2003, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -2793,7 +2644,6 @@ void test_assembleXRLinstruction_given_instruction_xrl_A_expect_it_is_assembled_
     TEST_ASSERT_EQUAL(2002, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -2813,7 +2663,6 @@ void test_assembleXRLinstruction_given_invalid_first_operand_expect_ERR_INVALID_
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -2831,7 +2680,6 @@ void test_assembleJMPInstruction_given_ind_APlusDPTR_expect_it_is_assembled_and_
     TEST_ASSERT_EQUAL(1, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -2849,7 +2697,6 @@ void test_assembleJMPInstruction_given_ind_APlusDPTR_with_extra_token_expect_ERR
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_EXTRA_PARAMETER, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -2866,7 +2713,6 @@ void test_assembleJMPInstruction_given_invalid_operand_expect_ERR_INVALID_OPERAN
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -2898,7 +2744,6 @@ void test_assembleBitWithRel_given_jb_bit_with_label_and_label_exists_expect_it_
     TEST_ASSERT_EQUAL(103, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   for(int i = 0; i < 65536; i++)
@@ -2932,7 +2777,6 @@ void test_assembleBitWithRel_given_jbc_bit_with_label_and_label_exists_expect_it
     TEST_ASSERT_EQUAL(403, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   for(int i = 0; i < 65536; i++)
@@ -2959,7 +2803,6 @@ void test_assembleBitWithRel_given_jnb_bit_with_label_on_first_pass_expect_it_is
     TEST_ASSERT_EQUAL(503, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   for(int i = 0; i < 65536; i++)
@@ -2981,7 +2824,6 @@ void test_assembleBitWithRel_given_jbc_but_first_operand_is_NOT_integer_expect_E
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_EXPECTING_INTEGER, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -3000,7 +2842,6 @@ void test_assembleBitWithRel_given_jnb_valid_operands_but_no_comma_expect_ERR_IN
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -3021,7 +2862,6 @@ void test_assembleBitWithRel_given_jnb_valid_operands_but_with_extra_token_expec
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_EXTRA_PARAMETER, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -3049,7 +2889,6 @@ void test_assembleDJNZInstruction_given_reg_with_label_and_label_exists_expect_i
     TEST_ASSERT_EQUAL(0x3F, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   for(int i = 0; i < 65536; i++)
@@ -3082,7 +2921,6 @@ void test_assembleDJNZInstruction_given_direct_with_label_and_label_exists_expec
     TEST_ASSERT_EQUAL(0x98, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   for(int i = 0; i < 65536; i++)
@@ -3107,7 +2945,6 @@ void test_assembleDJNZInstruction_given_reg_with_label_on_first_pass_expect_it_i
     TEST_ASSERT_EQUAL(201, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   for(int i = 0; i < 65536; i++)
@@ -3127,7 +2964,6 @@ void test_assembleDJNZInstruction_given_invalid_first_operand_expect_ERR_INVALID
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -3144,7 +2980,6 @@ void test_assembleDJNZInstruction_given_missing_comma_expect_ERR_INVALID_OPERAND
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -3167,7 +3002,6 @@ void test_assembleDJNZInstruction_given_extra_parameter_expect_ERR_EXTRA_PARAMET
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_EXTRA_PARAMETER, e->errorCode);
-    freeException(e);
   }
   free(listPtr);
   freeTokenizer(tokenizer);
@@ -3194,7 +3028,6 @@ void test_assembleCJNEInstruction_given_A_DIR_with_label_and_label_exists_expect
     TEST_ASSERT_EQUAL(0x10, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   for(int i = 0; i < 65536; i++)
@@ -3224,7 +3057,6 @@ void test_assembleCJNEInstruction_given_A_IMM_with_label_and_label_exists_expect
     TEST_ASSERT_EQUAL(0xE8, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   for(int i = 0; i < 65536; i++)
@@ -3254,7 +3086,6 @@ void test_assembleCJNEInstruction_given_reg_imm_with_label_and_label_exists_expe
     TEST_ASSERT_EQUAL(0xAD, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   for(int i = 0; i < 65536; i++)
@@ -3284,7 +3115,6 @@ void test_assembleCJNEInstruction_given_ind_imm_with_label_and_label_exists_expe
     TEST_ASSERT_EQUAL(123, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   for(int i = 0; i < 65536; i++)
@@ -3310,7 +3140,6 @@ void test_assembleCJNEInstruction_given_ind_imm_with_label_on_first_pass_expect_
     TEST_ASSERT_EQUAL(123, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   for(int i = 0; i < 65536; i++)
@@ -3330,7 +3159,6 @@ void test_assembleCJNEInstruction_given_invalid_first_operand_expect_ERR_INVALID
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -3347,7 +3175,6 @@ void test_assembleCJNEInstruction_given_missing_second_comma_expect_ERR_INVALID_
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -3364,7 +3191,6 @@ void test_assembleCJNEInstruction_given_missing_first_comma_expect_ERR_INVALID_O
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -3387,7 +3213,6 @@ void test_assembleCJNEInstruction_given_extra_parameter_expect_ERR_EXTRA_PARAMET
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_EXTRA_PARAMETER, e->errorCode);
-    freeException(e);
   }
   free(listPtr);
   freeTokenizer(tokenizer);
@@ -3420,7 +3245,6 @@ void test_assembleSingleOperandWithLabel_given_jz_with_label_and_label_exists_ex
     TEST_ASSERT_EQUAL(5, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   for(int i = 0; i < 65536; i++)
@@ -3455,7 +3279,6 @@ void test_assembleSingleOperandWithLabel_given_acall_with_label_and_label_exists
     TEST_ASSERT_EQUAL(52, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   free(listPtr);
@@ -3489,7 +3312,6 @@ void test_assembleSingleOperandWithLabel_given_ljmp_with_label_and_label_exists_
     TEST_ASSERT_EQUAL(103, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   free(listPtr);
@@ -3514,7 +3336,6 @@ void test_assembleSingleOperandWithLabel_given_lcall_with_label_on_first_pass_ex
     TEST_ASSERT_EQUAL(253, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   for(int i = 0; i < 65536; i++)
@@ -3546,7 +3367,6 @@ void test_assembleSingleOperandWithLabel_given_ajmp_with_label_but_with_extra_pa
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_EXTRA_PARAMETER, e->errorCode);
-    freeException(e);
   }
   free(listPtr);
   freeTokenizer(tokenizer);
@@ -3578,7 +3398,6 @@ void test_assembleSingleOperandWithLabel_given_ajmp_A_expect_ERR_UNKNOWN_LABEL_i
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_UNKNOWN_LABEL, e->errorCode);
-    freeException(e);
   }
   free(listPtr);
   freeTokenizer(tokenizer);
@@ -3599,7 +3418,6 @@ void test_assembleSingleOperand_given_operand_ind_expect_it_is_assembled_correct
     TEST_ASSERT_EQUAL(2124, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -3618,7 +3436,6 @@ void test_assembleSingleOperand_given_operand_ind_but_flag_not_set_expect_ERR_UN
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_UNSUPPORTED_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -3638,7 +3455,6 @@ void test_assembleSingleOperand_given_operand_reg_expect_it_is_assembled_correct
     TEST_ASSERT_EQUAL(2, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -3657,7 +3473,6 @@ void test_assembleSingleOperand_given_operand_reg_but_flag_not_set_expect_ERR_UN
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_UNSUPPORTED_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -3677,7 +3492,6 @@ void test_assembleSingleOperand_given_operand_A_expect_it_is_assembled_correctly
     TEST_ASSERT_EQUAL(2, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -3698,7 +3512,6 @@ void test_assembleSingleOperand_given_operand_A_for_rotate_instructions_expect_i
     TEST_ASSERT_EQUAL(2, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -3717,7 +3530,6 @@ void test_assembleSingleOperand_given_operand_A_but_flag_not_set_expect_ERR_UNSU
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_UNSUPPORTED_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -3737,7 +3549,6 @@ void test_assembleSingleOperand_given_operand_AB_expect_it_is_assembled_correctl
     TEST_ASSERT_EQUAL(2, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -3756,7 +3567,6 @@ void test_assembleSingleOperand_given_operand_AB_but_flag_not_set_expect_ERR_UNS
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_UNSUPPORTED_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -3775,7 +3585,6 @@ void test_assembleSingleOperand_given_operand_C_expect_it_is_assembled_correctly
     TEST_ASSERT_EQUAL(2, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -3794,7 +3603,6 @@ void test_assembleSingleOperand_given_operand_C_but_flag_not_set_expect_ERR_UNSU
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_UNSUPPORTED_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -3814,7 +3622,6 @@ void test_assembleSingleOperand_given_operand_DPTR_expect_it_is_assembled_correc
     TEST_ASSERT_EQUAL(3, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -3833,7 +3640,6 @@ void test_assembleSingleOperand_given_operand_DPTR_but_flag_not_set_expect_ERR_U
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_UNSUPPORTED_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -3854,7 +3660,6 @@ void test_assembleSingleOperand_given_operand_direct_expect_it_is_assembled_corr
     TEST_ASSERT_EQUAL(2, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -3874,7 +3679,6 @@ void test_assembleSingleOperand_given_operand_direct_but_out_of_range_expect_ERR
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INTEGER_OUT_OF_RANGE, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -3895,7 +3699,6 @@ void test_assembleSingleOperand_given_operand_bit_expect_it_is_assembled_correct
     TEST_ASSERT_EQUAL(202, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -3915,7 +3718,6 @@ void test_assembleSingleOperand_given_operand_bit_but_out_of_range_expect_ERR_IN
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INTEGER_OUT_OF_RANGE, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -3935,7 +3737,6 @@ void test_assembleSingleOperand_given_operand_dir_for_stack_instructions_expect_
     TEST_ASSERT_EQUAL(1981, getCurrentAbsoluteAddr());
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   freeTokenizer(tokenizer);
@@ -3954,7 +3755,6 @@ void test_assembleSingleOperand_given_operand_dir_for_stack_instructions_but_out
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INTEGER_OUT_OF_RANGE, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -3972,7 +3772,6 @@ void test_assembleSingleOperand_given_operand_dir_but_flag_not_set_expect_ERR_UN
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_UNSUPPORTED_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -3990,7 +3789,6 @@ void test_assembleSingleOperand_given_invalid_single_operand_expect_ERR_INVALID_
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -4583,7 +4381,6 @@ void test_assembleInstruction_given_first_token_not_identifier_expect_ERR_EXPECT
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_EXPECTING_IDENTIFIER, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -4600,7 +4397,6 @@ void test_assembleInstruction_given_invalid_instruction_expect_ERR_INVALID_INSTR
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_INSTRUCTION, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -4617,7 +4413,6 @@ void test_assembleInstruction_given_instruction_mnemonic_used_as_label_expect_ER
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_ILLEGAL_LABEL, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -4635,7 +4430,6 @@ void test_assembleInstruction_given_two_label_is_used_in_one_instruction_expect_
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_INSTRUCTION, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }
@@ -4654,7 +4448,6 @@ void test_assembleInstruction_given_colon_after_an_instruction_expect_ERR_INVALI
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
-    freeException(e);
   }
   freeTokenizer(tokenizer);
 }

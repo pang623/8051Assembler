@@ -7,8 +7,6 @@
 #include "MemAlloc.h"
 #include "Error8051.h"
 #include "Errors.h"
-#include "CExceptionConfig.h"
-#include "CException.h"
 
 void throwMovAWithInvalidOperandException(Tokenizer *tokenizer);
 void throwMovRegWithInvalidOperandException(Tokenizer *tokenizer);

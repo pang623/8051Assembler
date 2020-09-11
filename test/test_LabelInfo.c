@@ -1,5 +1,4 @@
 #include "unity.h"
-#include "Exception.h"
 #include "mock_MemAlloc.h"
 #include "LabelInfo.h"
 #include <string.h>
