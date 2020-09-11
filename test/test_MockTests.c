@@ -1,15 +1,17 @@
 #include "unity.h"
 #include "Exception.h"
+#include "ExceptionThrowing.h"
+#include "TokenizerExceptionThrowing.h"
+#include "Token.h"
+#include "mock_Tokenizer.h"
 #include "Assembler8051.h"
 #include "DoubleLinkedList.h"
 #include "LabelInfo.h"
 #include "AssembleFile.h"
 #include "AssembleStrings.h"
 #include "SaveCodeToBin.h"
-#include "ExceptionThrowing.h"
 #include "mock_DummyLineReader.h"
 #include "mock_MemAlloc.h"
-#include "CExceptionConfig.h"
 #include "CException.h"
 
 void setUp(void)
@@ -23,7 +25,7 @@ void tearDown(void)
 CEXCEPTION_T e;
 
 extern uint8_t codeMemory[];
-
+/*
 void test_assembleInstructions_through_mocking_expect_expected_functions_are_called_and_assembled_correctly_into_code_memory() {
   int totalBytes;
   char *lines[] = {
@@ -33,16 +35,42 @@ void test_assembleInstructions_through_mocking_expect_expected_functions_are_cal
     "xrl 0x56, A",
     NULL
   };
+  
+  char *trimmedLines[] = {
+    "add a, r0",
+    "xchd a, @r0\n",
+    "",
+    "xrl 0x56, A",
+    NULL
+  };
+  
+  Tokenizer tokenizer1 = {trimmedLines[0], 0, 0, strlen(trimmedLines[0]), 0, NULL};
+  Tokenizer tokenizer2 = {trimmedLines[1], 0, 0, strlen(trimmedLines[1]), 0, NULL};
+  Tokenizer tokenizer3 = {trimmedLines[3], 0, 0, strlen(trimmedLines[3]), 0, NULL};
 
   Try{
     dummyLineReader_IgnoreAndReturn(lines[0]);
+    skipWhiteSpaces_ExpectAndReturn(lines[0], trimmedLines[0]);
+    createTokenizer_ExpectAndReturn(trimmedLines[0], &tokenizer1);
     memFree_Expect(lines[0]);
+    freeTokenizer_Expect(&tokenizer1);
+    
     dummyLineReader_IgnoreAndReturn(lines[1]);
+    skipWhiteSpaces_ExpectAndReturn(lines[1], trimmedLines[1]);
+    createTokenizer_ExpectAndReturn(trimmedLines[1], &tokenizer2);
     memFree_Expect(lines[1]);
+    freeTokenizer_Expect(&tokenizer2);
+    
     dummyLineReader_IgnoreAndReturn(lines[2]);
+    skipWhiteSpaces_ExpectAndReturn(lines[2], trimmedLines[2]);
     memFree_Expect(lines[2]);
+    
     dummyLineReader_IgnoreAndReturn(lines[3]);
+    skipWhiteSpaces_ExpectAndReturn(lines[3], trimmedLines[3]);
+    createTokenizer_ExpectAndReturn(trimmedLines[3], &tokenizer3);
     memFree_Expect(lines[3]);
+    freeTokenizer_Expect(&tokenizer3);
+    
     dummyLineReader_IgnoreAndReturn(lines[4]);
     totalBytes = assembleInstructions(dummyLineReader);
     TEST_ASSERT_EQUAL(4, totalBytes);
@@ -70,11 +98,15 @@ void test_assembleInstructions_given_initialised_code_memory_expect_code_memory_
     "CPL A",
     NULL
   };
+  
+  Tokenizer tokenizer = {NULL, 0, 0, 0, 0, NULL};
 
   Try{
     dummyLineReader_IgnoreAndReturn(lines[0]);
+    memAlloc_ExpectAndReturn(sizeof(Tokenizer), &tokenizer);
     memFree_Expect(lines[0]);
     dummyLineReader_IgnoreAndReturn(lines[1]);
+    memAlloc_ExpectAndReturn(sizeof(Tokenizer), &tokenizer);
     memFree_Expect(lines[1]);
     dummyLineReader_IgnoreAndReturn(lines[2]);
     totalBytes = assembleInstructions(dummyLineReader);
@@ -91,3 +123,4 @@ void test_assembleInstructions_given_initialised_code_memory_expect_code_memory_
   for(int i = 0; i < 65536; i++)
     codeMemory[i] = 0;
 }
+*/

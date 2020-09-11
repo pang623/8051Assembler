@@ -195,9 +195,11 @@ int getRelativeAddress(Tokenizer *tokenizer, int baseAddr, int min, int max) {
     pushBackToken(tokenizer, token);
     if(isIntegerTokenThenConsume(tokenizer, &addr, min, max))
       return addr;
-    else
-      throwException(ERR_INVALID_OPERAND, (Token *)(tokenizer->list->head->data), 0,
+    else {
+      token = getToken(tokenizer);
+      throwException(ERR_INVALID_OPERAND, token, 0,
       "Expecting a label or integer, but received '%s' instead", token->str);
+    }
   }
   if(addr < min || addr > max)
     throwException(ERR_TARGET_OUT_OF_RANGE, token, 0,
@@ -440,9 +442,11 @@ int assembleLogicalInstructionWithoutXRL(Tokenizer *tokenizer, _8051Instructions
     opcode = assembleCWithOperands(tokenizer, info->data[0] + 0x30, info->data[1]);
   else if(isIntegerToken(token))
     opcode = assembleDirectWithOperands(tokenizer, info->data[0], info->data[1]);
-  else
+  else {
+    token = getToken(tokenizer);
     throwException(ERR_INVALID_OPERAND, token, 0,
     "Expecting an 'A', 'C' or integer, received %s instead", token->str);
+  }
 
   len = writeCodeToCodeMemory(opcode, codePtr);
   (*codePtrPtr) += len;
@@ -460,9 +464,11 @@ int assembleXRLinstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_
     opcode = assembleAWithOperands(tokenizer, info->data[0], info->data[1]);
   else if(isIntegerToken(token))
     opcode = assembleDirectWithOperands(tokenizer, info->data[0], info->data[1]);
-  else
+  else {
+    token = getToken(tokenizer);
     throwException(ERR_INVALID_OPERAND, token, 0,
     "Expecting an 'A' or integer, received %s instead", token->str);
+  }
 
   len = writeCodeToCodeMemory(opcode, codePtr);
   (*codePtrPtr) += len;

@@ -1,13 +1,14 @@
 #ifndef EXCEPTIONTHROWING_H
 #define EXCEPTIONTHROWING_H
 
-#include "Error8051.h"
-#include "Errors.h"
+#include "Exception.h"
 #include "Token.h"
 #include "Tokenizer.h"
+#include "MemAlloc.h"
+#include "Error8051.h"
+#include "Errors.h"
 #include "CExceptionConfig.h"
 #include "CException.h"
-#include "Exception.h"
 
 void throwMovAWithInvalidOperandException(Tokenizer *tokenizer);
 void throwMovRegWithInvalidOperandException(Tokenizer *tokenizer);

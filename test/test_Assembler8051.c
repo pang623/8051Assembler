@@ -1406,7 +1406,6 @@ void test_throwUnsupportedOperandException_given_token_expect_ERR_UNSUPPORTED_OP
     TEST_ASSERT_EQUAL(ERR_UNSUPPORTED_OPERAND, e->errorCode);
     freeException(e);
   }
-  freeToken(token);
   freeTokenizer(tokenizer);
 }
 
