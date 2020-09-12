@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
-#include <stdlib.h>
 #include <ctype.h>
 
 _8051Instructions instructionsTable[45] = {
@@ -76,7 +75,7 @@ int assembleInstructions(InstructionLineReader lineReader) {
 
   while((line = lineReader()) != NULL) {
     instructionLine = skipWhiteSpaces(line);
-    if(isspace(*instructionLine) || *instructionLine == '\0') {
+    if(isspace(*instructionLine)) {
       memFree(line);
       continue;
     }else {
@@ -87,11 +86,11 @@ int assembleInstructions(InstructionLineReader lineReader) {
     }
   }
   return totalLen;
-}
+} 
 
 int assembleInstruction(Tokenizer *tokenizer, uint8_t **codePtrPtr) {
   Token* token = NULL;
-  int opcode, len;
+  int len;
   int i = 0;
   int iteration = 1;
   _8051Instructions *instructionPtr = NULL;
@@ -186,7 +185,7 @@ int getRelativeAddress(Tokenizer *tokenizer, int baseAddr, int min, int max) {
 
   token = getToken(tokenizer);
   if(isIdentifierToken(token)) {
-    if((labelIndex = getLabelIndex(token->str)) < 0)
+    if((labelIndex = getLabelIndex(token->str)) == -1)
       throwException(ERR_UNKNOWN_LABEL, token, 0,
       "Label '%s' is not found in this program", token->str);
     else

@@ -4370,6 +4370,48 @@ void test_assembleInstruction_given_reti_expect_opcode_0x32_written_in_code_memo
   freeTokenizer(tokenizer);
 }
 
+void test_assembleInstruction_given_operand_with_xxH_format_expect_it_is_able_to_be_assembled() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory + 0xABC;
+  Tokenizer *tokenizer = NULL;
+  Try{
+    tokenizer = createTokenizer("  mOv 0xB6, 65h   ;comment    ");
+    configureTokenizer(tokenizer, TOKENIZER_HEX_H);
+    len = assembleInstruction(tokenizer, &codePtr);
+    TEST_ASSERT_EQUAL(3, len);
+    TEST_ASSERT_EQUAL_HEX8(0x85, codeMemory[0xABC]);
+    TEST_ASSERT_EQUAL_HEX8(0x65, codeMemory[0xABD]);
+    TEST_ASSERT_EQUAL_HEX8(0xB6, codeMemory[0xABE]);
+    TEST_ASSERT_EQUAL(0xABF, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleInstruction_given_operand_with_xxH_xxxxxxxxb_format_expect_it_is_able_to_be_assembled() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory + 0xFF;
+  Tokenizer *tokenizer = NULL;
+  Try{
+    tokenizer = createTokenizer("  aNl  56H   , #01101001b ;ignore this    ");
+    configureTokenizer(tokenizer, TOKENIZER_BIN_B | TOKENIZER_HEX_H);
+    len = assembleInstruction(tokenizer, &codePtr);
+    TEST_ASSERT_EQUAL(3, len);
+    TEST_ASSERT_EQUAL_HEX8(0x53, codeMemory[0xFF]);
+    TEST_ASSERT_EQUAL_HEX8(0x56, codeMemory[0x100]);
+    TEST_ASSERT_EQUAL_HEX8(0x69, codeMemory[0x101]);
+    TEST_ASSERT_EQUAL(0x102, getCurrentAbsoluteAddr());
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
+  }
+  freeTokenizer(tokenizer);
+}
+
 void test_assembleInstruction_given_first_token_not_identifier_expect_ERR_EXPECTING_IDENTIFIER_to_be_thrown() {
   int len;
   uint8_t codeMemory[65536];
