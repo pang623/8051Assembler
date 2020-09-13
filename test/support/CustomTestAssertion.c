@@ -18,14 +18,14 @@ void testAssertEqualBinFile(uint8_t *expectedBinArr, char *filename, int length,
   FILE *fptr;
   char *msg;
   uint8_t actualBinArr[length];
-  
+
   if((fptr = fopen(filename, "rb")) == NULL) {
     printf("Error opening file!\n");
     exit(1);
   }
-  
+
   fread(actualBinArr, sizeof(uint8_t), length, fptr);
-  
+
   for(int i = 0; i < length; i++) {
     if(expectedBinArr[i] == actualBinArr[i])
       continue;

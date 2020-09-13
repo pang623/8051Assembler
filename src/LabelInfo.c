@@ -1,10 +1,10 @@
 #include "LabelInfo.h"
-#include "MemAlloc.h"
+#include "MemoryAlloc.h"
 #include <stdio.h>
 #include <string.h>
 
 LabelInfo *createLabelInfo(LabelInfo *info) {
-  LabelInfo *infoPtr = memAlloc(sizeof(LabelInfo));
+  LabelInfo *infoPtr = memoryAlloc(sizeof(LabelInfo));
   infoPtr->name      = info->name;
   infoPtr->indexNo   = info->indexNo;
   infoPtr->lineNo    = info->lineNo;
@@ -15,13 +15,13 @@ void freeLabelInfo(void *info) {
   if((LabelInfo *)info) {
     if(((LabelInfo *)info)->name)
       freeLabelName(((LabelInfo *)info)->name);
-    memFree((LabelInfo *)info);
+    memoryFree((LabelInfo *)info);
   }
 }
 
 char *createLabelName(char *labelToCreate) {
   int len = strlen(labelToCreate);
-  char *labelName = memAlloc(len + 1);
+  char *labelName = memoryAlloc(len + 1);
   strncpy(labelName, labelToCreate, len);
   labelName[len] = '\0';
   return labelName;
@@ -29,5 +29,5 @@ char *createLabelName(char *labelToCreate) {
 
 void freeLabelName(void *labelName) {
   if((char *)labelName)
-    memFree(labelName);
+    memoryFree(labelName);
 }

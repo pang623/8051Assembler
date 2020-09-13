@@ -76,17 +76,17 @@ int assembleInstructions(InstructionLineReader lineReader) {
   while((line = lineReader()) != NULL) {
     instructionLine = skipWhiteSpaces(line);
     if(isspace(*instructionLine)) {
-      memFree(line);
+      memoryFree(line);
       continue;
     }else {
       tokenizer = createTokenizer(instructionLine);
       totalLen += assembleInstruction(tokenizer, codePtrPtr);
-      memFree(line);
+      memoryFree(line);
       freeTokenizer(tokenizer);
     }
   }
   return totalLen;
-} 
+}
 
 int assembleInstruction(Tokenizer *tokenizer, uint8_t **codePtrPtr) {
   Token* token = NULL;

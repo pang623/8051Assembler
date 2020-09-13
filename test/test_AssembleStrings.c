@@ -4,6 +4,7 @@
 #include "DoubleLinkedList.h"
 #include "LabelInfo.h"
 #include "MemAlloc.h"
+#include "MemoryAlloc.h"
 #include "SaveCodeToBin.h"
 #include "Assembler8051.h"
 #include "ExceptionThrowing.h"

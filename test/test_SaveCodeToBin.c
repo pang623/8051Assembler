@@ -31,9 +31,8 @@ void test_saveCodeToBin_given_binary_file_expect_contents_of_file_is_same_as_cod
 void test_saveCodeToBin_given_binary_file_and_given_only_certain_bytes_to_be_written_expect_file_is_correctly_written_with_specified_binary_array() {
   char *filename = "./test/data/SaveCodeToBin/saveBin_test3.bin";
   uint8_t codeMemory[65536] = {0x23, 0x01, 0x00, 0x9A, 0x00};
-  uint8_t codeMemory1[65536] = {0x23};
-  int len = 1;
+  uint8_t codeMemory1[65536] = {0x23, 0x01};
   
-  saveCodeToBin(filename, codeMemory, len);
-  TEST_ASSERT_EQUAL_BIN_FILE(codeMemory1, filename, len);
+  saveCodeToBin(filename, codeMemory, 2);
+  TEST_ASSERT_EQUAL_BIN_FILE(codeMemory1, filename, 2);
 }
