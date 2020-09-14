@@ -441,7 +441,7 @@ int assembleLogicalInstructionWithoutXRL(Tokenizer *tokenizer, _8051Instructions
     opcode = assembleDirectWithOperands(tokenizer, info->data[0], info->data[1]);
   else
     throwException(ERR_INVALID_OPERAND, token, 0,
-    "Expecting an 'A', 'C' or integer, received %s instead", token->str);
+    "Expecting an 'A', 'C' or integer, but received %s instead", token->str);
 
   len = writeCodeToCodeMemory(opcode, codePtr);
   (*codePtrPtr) += len;
@@ -461,7 +461,7 @@ int assembleXRLinstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_
     opcode = assembleDirectWithOperands(tokenizer, info->data[0], info->data[1]);
   else
     throwException(ERR_INVALID_OPERAND, token, 0,
-    "Expecting an 'A' or integer, received %s instead", token->str);
+    "Expecting an 'A' or integer, but received %s instead", token->str);
 
   len = writeCodeToCodeMemory(opcode, codePtr);
   (*codePtrPtr) += len;
@@ -553,7 +553,7 @@ int assembleSingleOperand(Tokenizer *tokenizer, _8051Instructions *info, uint8_t
       throwUnsupportedOperandException(token);
   }else
     throwException(ERR_INVALID_OPERAND, token, 0,
-    "The operand '%s' entered is invalid", token->str);
+    "The operand '%s' inputted is not a valid operand", token->str);
 
   freeToken(token);
   freeTokenizer(tempTokenizer);
@@ -697,7 +697,7 @@ int isIntegerTokenThenConsume(Tokenizer *tokenizer, int *val, int min, int max) 
   }
   if(number < min || number > max)
     throwException(ERR_INTEGER_OUT_OF_RANGE, token, 0,
-    "Expecting integer of range %d to %d, received %d instead", min, max, number);
+    "Expecting integer of range %d to %d, but received %d instead", min, max, number);
   freeToken(token);
   *val = number;
   return 1;
@@ -869,13 +869,10 @@ int extractNum(char *start) {
 void checkExtraToken(Tokenizer *tokenizer) {
   Token *token = NULL;
   token = getToken(tokenizer);
-  if(token->type != TOKEN_NULL_TYPE && token->type != TOKEN_NEWLINE_TYPE) {
-    if(strcmp(token->str, ";"))
-      throwException(ERR_EXTRA_PARAMETER, token, 0,
-      "Does not expect an extra parameter '%s'", token->str);
-    else
-      freeToken(token);
-  }else
+  if(token->type != TOKEN_NULL_TYPE && token->type != TOKEN_NEWLINE_TYPE && strcmp(token->str, ";"))
+    throwException(ERR_EXTRA_PARAMETER, token, 0,
+    "Does not expect an extra parameter '%s' here", token->str);
+  else
     freeToken(token);
 }
 

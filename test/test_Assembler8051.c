@@ -47,7 +47,7 @@ void test_assembleInFileAndWriteToOutFile_given_asm_testCode1_as_input_file_expe
   }
 }
 
-//assemble another assembly txt file to see whether codeMemory will be reinitialized with new machine codes
+//file contains all instruction with different operand combinations
 void test_assembleInFileAndWriteToOutFile_given_allInstructions_test_as_input_file_expect_opcode_written_to_bin_file() {
   int totalBytes;
   char *inFile = "./test/data/allInstructions_test.txt";
@@ -141,7 +141,6 @@ void test_recordLabel_given_labelinfo_expect_it_is_stored_into_list_correctly() 
     TEST_ASSERT_EQUAL_PTR(NULL, listPtr->tail->next);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   linkedListFreeList(listPtr, freeLabelInfo);
@@ -158,7 +157,6 @@ void test_recordLabel_given_duplicate_label_expect_ERR_DUPLICATE_LABEL_is_thrown
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_DUPLICATE_LABEL, e->errorCode);
-    freeException(e);
   }
   linkedListFreeList(listPtr, freeLabelInfo);
 }
@@ -178,7 +176,6 @@ void test_getLabelIndex_given_label_and_label_exists_in_list_expect_index_of_the
     TEST_ASSERT_EQUAL(3, index);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   free(listPtr);
@@ -199,7 +196,6 @@ void test_getLabelIndex_given_label_and_but_label_not_exists_in_list_expect_MINU
     TEST_ASSERT_EQUAL(-1, index);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   free(listPtr);
@@ -214,7 +210,6 @@ void test_getLabelIndex_given_label_and_but_empty_list_expect_MINUSone_is_return
     TEST_ASSERT_EQUAL(-1, index);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
-    freeException(e);
     TEST_FAIL_MESSAGE("System Error: Don't expect any exception to be thrown!");
   }
   free(listPtr);
@@ -252,10 +247,12 @@ void test_getRelativeAddress_given_integer_as_token_expect_relative_is_computed_
   Tokenizer *tokenizer = NULL;
 
   //if number is directly inputted as relative, the number itself is returned back as relative address
-  //provided the number is in range of -127 to 128
+  //provided the number is in range of -128 to 127
   tokenizer = createTokenizer("+100");
   
   Try{
+    //0x90A base address in this case is actually can be any value, since it is not used to compute
+    //the relative, relative address has directly given as number by the user
     relative = getRelativeAddress(tokenizer, 0x90A, -128, 127);
     TEST_ASSERT_EQUAL(100, relative);
   } Catch(e){
@@ -294,6 +291,7 @@ void test_getRelativeAddress_given_non_existent_label_as_token_expect_ERR_UNKNOW
   linkedListAddItemToHead(&item1, listPtr);
   linkedListAddItemToHead(&item2, listPtr);
   
+  //Label 'HERE' is not seen anywhere before (not in the list)
   tokenizer = createTokenizer("HERE");
 
   Try{
@@ -323,6 +321,7 @@ void test_getRelativeAddress_given_label_as_token_but_out_of_branching_range_bac
   tokenizer = createTokenizer("END");
 
   Try{
+    //attempts to branch 129 bytes backwards (maximum -128 backwards)
     relative = getRelativeAddress(tokenizer, 152, -128, 127);
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
@@ -349,6 +348,7 @@ void test_getRelativeAddress_given_label_as_token_but_out_of_branching_range_for
   tokenizer = createTokenizer("NOW");
 
   Try{
+    //attempts to branch 128 bytes forward (maximum 127 forward)
     relative = getRelativeAddress(tokenizer, 22, -128, 127);
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
@@ -1149,6 +1149,7 @@ void test_isRegisterConsumeAndGetItsNumber_given_invalid_register_expect_excepti
   Tokenizer *tokenizer = NULL;
   int regNum;
   Try{
+    //R5 should be valid but it is appended with starry, which makes it invalid
     tokenizer = createTokenizer(" R5starry night");
     int isTrue = isRegisterConsumeAndGetItsNumber(tokenizer, REGISTER_ADDRESSING, &regNum);
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
@@ -1206,7 +1207,8 @@ void test_checkExtraToken_given_null_token_expect_no_exception_is_thrown() {
 void test_checkExtraToken_given_newline_token_expect_no_exception_is_thrown() {
   Tokenizer *tokenizer = NULL;
   Try{
-    tokenizer = createTokenizer("\n");
+    //tab is whitespaces, will be skipped by tokenizer
+    tokenizer = createTokenizer("\t\t\n");
     checkExtraToken(tokenizer);
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
@@ -2251,6 +2253,22 @@ void test_assembleMOVInstruction_given_invalid_first_operand_expect_exception_ER
   freeTokenizer(tokenizer);
 }
 
+void test_assembleMOVInstruction_given_extra_parameter_expect_exception_ERR_EXTRA_PARAMETER_to_be_thrown() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer *tokenizer = NULL;
+  Try{
+    tokenizer = createTokenizer("  0x56, 0x65   R3 ");
+    len = assembleMOVInstruction(tokenizer, NULL, &codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    TEST_ASSERT_EQUAL(ERR_EXTRA_PARAMETER, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
 void test_assembleMOVXInstruction_given_A_with_indR1_expect_opcode_0xE3_stored_in_code_memory() {
   int len;
   uint8_t codeMemory[65536];
@@ -2329,6 +2347,7 @@ void test_assembleMOVXInstruction_given_invalid_first_operand_expect_exception_E
   uint8_t *codePtr = codeMemory;
   Tokenizer *tokenizer = NULL;
   Try{
+    //neither A nor @
     tokenizer = createTokenizer("  R3, A");
     len = assembleMOVXInstruction(tokenizer, NULL, &codePtr);
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
@@ -2361,7 +2380,23 @@ void test_assembleMOVXInstruction_given_ind_but_is_not_dptr_or_reg_expect_except
   uint8_t *codePtr = codeMemory;
   Tokenizer *tokenizer = NULL;
   Try{
-    tokenizer = createTokenizer(" @money , #63");
+    tokenizer = createTokenizer(" @money , a");
+    len = assembleMOVXInstruction(tokenizer, NULL, &codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleMOVXInstruction_given_A_with_ind_but_not_dptr_or_reg_expect_exception_ERR_INVALID_OPERAND_to_be_thrown() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer *tokenizer = NULL;
+  Try{
+    tokenizer = createTokenizer("  A , @A+DPTR");
     len = assembleMOVXInstruction(tokenizer, NULL, &codePtr);
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
@@ -2399,6 +2434,22 @@ void test_assembleMOVXInstruction_given_valid_operand_but_no_comma_expect_except
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleMOVXInstruction_given_valid_operand_but_with_extra_parameter_exception_ERR_EXTRA_PARAMETER_to_be_thrown() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer *tokenizer = NULL;
+  Try{
+    tokenizer = createTokenizer(" @R0, A  0xBB ");
+    len = assembleMOVXInstruction(tokenizer, NULL, &codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    TEST_ASSERT_EQUAL(ERR_EXTRA_PARAMETER, e->errorCode);
   }
   freeTokenizer(tokenizer);
 }
@@ -2445,7 +2496,59 @@ void test_assembleMOVCInstruction_given_A_with_invalid_operand_expect_exception_
   uint8_t *codePtr = codeMemory;
   Tokenizer *tokenizer = NULL;
   Try{
+    //not @
     tokenizer = createTokenizer(" a , R3");
+    len = assembleMOVCInstruction(tokenizer, NULL, &codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleMOVCInstruction_given_A_with_ind_REG_expect_exception_ERR_INVALID_OPERAND_to_be_thrown() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer *tokenizer = NULL;
+  Try{
+    //is @, but not Acc
+    tokenizer = createTokenizer(" a , @r1");
+    len = assembleMOVCInstruction(tokenizer, NULL, &codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleMOVCInstruction_given_A_with_ind_A_slash_DPTR_expect_exception_ERR_INVALID_OPERAND_to_be_thrown() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer *tokenizer = NULL;
+  Try{
+    //given '/' instead of '+'
+    tokenizer = createTokenizer(" a , @A/DPTR ");
+    len = assembleMOVCInstruction(tokenizer, NULL, &codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleMOVCInstruction_given_A_with_ind_A_plus_number_expect_exception_ERR_INVALID_OPERAND_to_be_thrown() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer *tokenizer = NULL;
+  Try{
+    //given 1234, should be DPTR or PC
+    tokenizer = createTokenizer(" a , @A+1234 ");
     len = assembleMOVCInstruction(tokenizer, NULL, &codePtr);
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
@@ -2461,6 +2564,7 @@ void test_assembleMOVCInstruction_given_invalid_first_operand_expect_exception_E
   uint8_t *codePtr = codeMemory;
   Tokenizer *tokenizer = NULL;
   Try{
+    //not Acc
     tokenizer = createTokenizer(" 0x65 , @A+DPTR");
     len = assembleMOVCInstruction(tokenizer, NULL, &codePtr);
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
@@ -2483,6 +2587,22 @@ void test_assembleMOVCInstruction_given_valid_operand_but_no_comma_expect_except
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleMOVCInstruction_given_valid_operand_but_with_extra_parameter_expect_exception_ERR_EXTRA_PARAMETER_to_be_thrown() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer *tokenizer = NULL;
+  Try{
+    tokenizer = createTokenizer(" A  ,@A+DPTR  durian");
+    len = assembleMOVCInstruction(tokenizer, NULL, &codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    TEST_ASSERT_EQUAL(ERR_EXTRA_PARAMETER, e->errorCode);
   }
   freeTokenizer(tokenizer);
 }
