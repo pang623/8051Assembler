@@ -2607,6 +2607,8 @@ void test_assembleMOVCInstruction_given_valid_operand_but_with_extra_parameter_e
   freeTokenizer(tokenizer);
 }
 
+//this function calls assembleAWithOperands, which is only used for assembling A with Rn, @Ri, dir, imm
+//and write the opcode returned from that function into code memory
 void test_assembleInstructionWithOnlyAccAsFirstOperand_given_instruction_xchd_expect_it_is_assembled_correctly() {
   _8051Instructions table = {"xchd", assembleInstructionWithOnlyAccAsFirstOperand, {0xD0, A_IND}};
   int len;
@@ -2647,6 +2649,9 @@ void test_assembleInstructionWithOnlyAccAsFirstOperand_given_instruction_subb_ex
   freeTokenizer(tokenizer);
 }
 
+//this function calls assembleAWithOperands or assembleDirectWithOperands or assembleCWithOperands
+//depending on the first operand, else it will throw invalid operand exception if first operand
+//is other than those 3
 void test_assembleLogicalInstructionWithoutXRL_given_instruction_orl_C_expect_it_is_assembled_correctly() {
   _8051Instructions table = {"orl", assembleLogicalInstructionWithoutXRL,
   {0x40, A_DIR | A_IMM | A_IND | A_REG | DIR_A | DIR_IMM | C_BIT | C_BARBIT}};
@@ -2718,6 +2723,7 @@ void test_assembleLogicalInstructionWithoutXRL_given_invalid_first_operand_expec
   uint8_t *codePtr = codeMemory;
   Tokenizer *tokenizer = NULL;
   Try{
+    //can have only A, dir or C as first operand
     tokenizer = createTokenizer(" R3 , #-109  ");
     len = assembleLogicalInstructionWithoutXRL(tokenizer, &table, &codePtr);
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
@@ -2728,6 +2734,9 @@ void test_assembleLogicalInstructionWithoutXRL_given_invalid_first_operand_expec
   freeTokenizer(tokenizer);
 }
 
+//this function calls assembleAWithOperands or assembleDirectWithOperands
+//depending on the first operand, else it will throw invalid operand exception if first operand
+//is other than those 2
 void test_assembleXRLinstruction_given_instruction_xrl_dir_expect_it_is_assembled_correctly() {
   _8051Instructions table = {"xrl", assembleXRLinstruction,
   {0x60, A_DIR | A_IMM | A_IND | A_REG | DIR_A | DIR_IMM}};
@@ -2779,6 +2788,7 @@ void test_assembleXRLinstruction_given_invalid_first_operand_expect_ERR_INVALID_
   uint8_t *codePtr = codeMemory;
   Tokenizer *tokenizer = NULL;
   Try{
+    //XRL dont have C as the first operand, unlike ORL and ANL
     tokenizer = createTokenizer(" C , 0x88  ");
     len = assembleXRLinstruction(tokenizer, &table, &codePtr);
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
@@ -2823,13 +2833,65 @@ void test_assembleJMPInstruction_given_ind_APlusDPTR_with_extra_token_expect_ERR
   freeTokenizer(tokenizer);
 }
 
-void test_assembleJMPInstruction_given_invalid_operand_expect_ERR_INVALID_OPERAND_is_thrown() {
+void test_assembleJMPInstruction_given_not_ind_expect_ERR_INVALID_OPERAND_is_thrown() {
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
   Tokenizer *tokenizer = NULL;
   Try{
-    tokenizer = createTokenizer(" @a + PC ; comment  ");
+    //should be @ first
+    tokenizer = createTokenizer(" a + PC ; comment  ");
+    len = assembleJMPInstruction(tokenizer, NULL, &codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleJMPInstruction_given_indR5_plus_PC_expect_ERR_INVALID_OPERAND_is_thrown() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer *tokenizer = NULL;
+  Try{
+    //should be A after the @
+    tokenizer = createTokenizer(" @R5 + PC ; comment  ");
+    len = assembleJMPInstruction(tokenizer, NULL, &codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleJMPInstruction_given_indA_question_mark_PC_expect_ERR_INVALID_OPERAND_is_thrown() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer *tokenizer = NULL;
+  Try{
+    //should be a '+' after the @A
+    tokenizer = createTokenizer(" @A?PC  ");
+    len = assembleJMPInstruction(tokenizer, NULL, &codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleJMPInstruction_given_indA_plus_PC_expect_ERR_INVALID_OPERAND_is_thrown() {
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer *tokenizer = NULL;
+  Try{
+    //should be @A + DPTR instead of @A + PC
+    tokenizer = createTokenizer(" @A + PC  ");
     len = assembleJMPInstruction(tokenizer, NULL, &codePtr);
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
@@ -2932,8 +2994,44 @@ void test_assembleBitWithRel_given_jnb_bit_with_label_on_first_pass_expect_it_is
   freeTokenizer(tokenizer);
 }
 
+void test_assembleBitWithRel_given_bit_addr_out_of_range_expect_ERR_INTEGER_OUT_OF_RANGE_to_be_thrown() {
+  _8051Instructions table = {"jnb", assembleBitWithRel, {0x30, 0}};
+  int len;
+  uint8_t *codePtr = codeMemory;
+  Tokenizer *tokenizer = NULL;
+
+  Try{
+    tokenizer = createTokenizer(" 0x100, -50 ");
+    len = assembleBitWithRel(tokenizer, &table, &codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    TEST_ASSERT_EQUAL(ERR_INTEGER_OUT_OF_RANGE, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleBitWithRel_given_number_directly_as_relative_address_but_out_of_range_expect_ERR_INTEGER_OUT_OF_RANGE_to_be_thrown() {
+  _8051Instructions table = {"jnb", assembleBitWithRel, {0x30, 0}};
+  int len;
+  uint8_t *codePtr = codeMemory;
+  Tokenizer *tokenizer = NULL;
+  muteOnNoLabel = 0;
+
+  Try{
+    //relative address can only be within the range of -128 -> 127
+    tokenizer = createTokenizer(" 0x2F , -130 ");
+    len = assembleBitWithRel(tokenizer, &table, &codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    TEST_ASSERT_EQUAL(ERR_INTEGER_OUT_OF_RANGE, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
 void test_assembleBitWithRel_given_jbc_but_first_operand_is_NOT_integer_expect_ERR_EXPECTING_INTEGER_is_thrown() {
-  _8051Instructions table = {"jbc", assembleBitWithRel, {0x10, 0}};
+  _8051Instructions table = {"jnb", assembleBitWithRel, {0x30, 0}};
   int len;
   uint8_t codeMemory[65536];
   uint8_t *codePtr = codeMemory;
@@ -3003,7 +3101,7 @@ void test_assembleDJNZInstruction_given_reg_with_label_and_label_exists_expect_i
   linkedListAddItemToHead(&item2, listPtr);
 
   Try{
-    tokenizer = createTokenizer(" r7, AGAIN ");
+    tokenizer = createTokenizer(" r7, AGAIN     ");
     len = assembleDJNZInstruction(tokenizer, NULL, &codePtr);
     TEST_ASSERT_EQUAL(2, len);
     TEST_ASSERT_EQUAL_HEX8(0xDF, codeMemory[0x3D]);
@@ -3059,7 +3157,7 @@ void test_assembleDJNZInstruction_given_reg_with_label_on_first_pass_expect_it_i
   muteOnNoLabel = 1;
 
   Try{
-    tokenizer = createTokenizer(" r5, NOW ");
+    tokenizer = createTokenizer(" r5, NOW \n");
     len = assembleDJNZInstruction(tokenizer, NULL, &codePtr);
     TEST_ASSERT_EQUAL(2, len);
     TEST_ASSERT_EQUAL_HEX8(0xDD, codeMemory[199]);
@@ -3071,6 +3169,40 @@ void test_assembleDJNZInstruction_given_reg_with_label_on_first_pass_expect_it_i
   }
   for(int i = 0; i < 65536; i++)
     codeMemory[i] = 0;
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleDJNZInstruction_given_dir_with_rel_but_dir_out_of_range_expect_ERR_INTEGER_OUT_OF_RANGE_to_be_thrown() {
+  int len;
+  uint8_t *codePtr = codeMemory;
+  Tokenizer *tokenizer = NULL;
+
+  Try{
+    tokenizer = createTokenizer(" 0xABC, +50 ");
+    len = assembleDJNZInstruction(tokenizer, NULL, &codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    TEST_ASSERT_EQUAL(ERR_INTEGER_OUT_OF_RANGE, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleDJNZInstruction_given_number_directly_as_relative_address_but_out_of_range_expect_ERR_INTEGER_OUT_OF_RANGE_to_be_thrown() {
+  int len;
+  uint8_t *codePtr = codeMemory;
+  Tokenizer *tokenizer = NULL;
+  muteOnNoLabel = 0;
+
+  Try{
+    //relative address can only be within the range of -128 -> 127
+    tokenizer = createTokenizer(" R3, +200 ");
+    len = assembleDJNZInstruction(tokenizer, NULL, &codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    TEST_ASSERT_EQUAL(ERR_INTEGER_OUT_OF_RANGE, e->errorCode);
+  }
   freeTokenizer(tokenizer);
 }
 
@@ -3170,7 +3302,7 @@ void test_assembleCJNEInstruction_given_A_IMM_with_label_and_label_exists_expect
   linkedListAddItemToHead(&item1, listPtr);
 
   Try{
-    tokenizer = createTokenizer(" a, #-55, HALT ");
+    tokenizer = createTokenizer(" a, #-55, HALT ;this is CJNE");
     len = assembleCJNEInstruction(tokenizer, NULL, &codePtr);
     TEST_ASSERT_EQUAL(3, len);
     TEST_ASSERT_EQUAL_HEX8(0xB4, codeMemory[0xE5]);
@@ -3269,29 +3401,65 @@ void test_assembleCJNEInstruction_given_ind_imm_with_label_on_first_pass_expect_
   freeTokenizer(tokenizer);
 }
 
+void test_assembleCJNEInstruction_given_dir_as_second_operand_but_out_of_range_expect_ERR_INTEGER_OUT_OF_RANGE_to_be_thrown() {
+  int len;
+  uint8_t *codePtr = codeMemory;
+  Tokenizer *tokenizer = NULL;
+
+  Try{
+    //direct can only be within the range of 0 -> 255, negative value is not accepted
+    tokenizer = createTokenizer(" A, -50, +2 ");
+    len = assembleCJNEInstruction(tokenizer, NULL, &codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    TEST_ASSERT_EQUAL(ERR_INTEGER_OUT_OF_RANGE, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleCJNEInstruction_given_imm_as_second_operand_but_out_of_range_expect_ERR_INTEGER_OUT_OF_RANGE_to_be_thrown() {
+  int len;
+  uint8_t *codePtr = codeMemory;
+  Tokenizer *tokenizer = NULL;
+
+  Try{
+    tokenizer = createTokenizer(" A, #55555, -100 ");
+    len = assembleCJNEInstruction(tokenizer, NULL, &codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    TEST_ASSERT_EQUAL(ERR_INTEGER_OUT_OF_RANGE, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleCJNEInstruction_given_number_directly_as_relative_address_but_out_of_range_expect_ERR_INTEGER_OUT_OF_RANGE_to_be_thrown() {
+  int len;
+  uint8_t *codePtr = codeMemory;
+  Tokenizer *tokenizer = NULL;
+  muteOnNoLabel = 0;
+
+  Try{
+    //relative address can only be within the range of -128 -> 127
+    tokenizer = createTokenizer(" R3, #100, -199 ");
+    len = assembleCJNEInstruction(tokenizer, NULL, &codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    TEST_ASSERT_EQUAL(ERR_INTEGER_OUT_OF_RANGE, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
 void test_assembleCJNEInstruction_given_invalid_first_operand_expect_ERR_INVALID_OPERAND_to_be_thrown() {
   int len;
   uint8_t *codePtr = codeMemory;
   Tokenizer *tokenizer = NULL;
 
   Try{
+    //CJNE can only take A, Rn, or @Ri as first operand
     tokenizer = createTokenizer(" DPTR, #20, HERE ");
-    len = assembleCJNEInstruction(tokenizer, NULL, &codePtr);
-    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
-  } Catch(e){
-    dumpTokenErrorMessage(e, __LINE__);
-    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
-  }
-  freeTokenizer(tokenizer);
-}
-
-void test_assembleCJNEInstruction_given_missing_second_comma_expect_ERR_INVALID_OPERAND_to_be_thrown() {
-  int len;
-  uint8_t *codePtr = codeMemory;
-  Tokenizer *tokenizer = NULL;
-
-  Try{
-    tokenizer = createTokenizer(" A, 0x55 HERE ");
     len = assembleCJNEInstruction(tokenizer, NULL, &codePtr);
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
@@ -3308,6 +3476,22 @@ void test_assembleCJNEInstruction_given_missing_first_comma_expect_ERR_INVALID_O
 
   Try{
     tokenizer = createTokenizer(" R3 0x55, THERE ");
+    len = assembleCJNEInstruction(tokenizer, NULL, &codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleCJNEInstruction_given_missing_second_comma_expect_ERR_INVALID_OPERAND_to_be_thrown() {
+  int len;
+  uint8_t *codePtr = codeMemory;
+  Tokenizer *tokenizer = NULL;
+
+  Try{
+    tokenizer = createTokenizer(" A, 0x55 HERE ");
     len = assembleCJNEInstruction(tokenizer, NULL, &codePtr);
     TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
   } Catch(e){
@@ -3465,6 +3649,64 @@ void test_assembleSingleOperandWithLabel_given_lcall_with_label_on_first_pass_ex
   freeTokenizer(tokenizer);
 }
 
+void test_assembleSingleOperandWithLabel_given_number_directly_as_rel_but_out_of_range_expect_ERR_INTEGER_OUT_OF_RANGE_is_thrown() {
+  _8051Instructions table = {"jz", assembleSingleOperandWithLabel, {0x60, OPERAND_REL}};
+  int len;
+  uint8_t *codePtr = codeMemory + 600;
+  Tokenizer *tokenizer = NULL;
+  muteOnNoLabel = 0;
+
+  Try{
+    tokenizer = createTokenizer(" +1000 ");
+    len = assembleSingleOperandWithLabel(tokenizer, &table, &codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    TEST_ASSERT_EQUAL(ERR_INTEGER_OUT_OF_RANGE, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleSingleOperandWithLabel_given_number_directly_as_absolute_but_out_of_range_absolute_branch_expect_ERR_INTEGER_OUT_OF_RANGE_is_thrown() {
+  _8051Instructions table = {"ajmp", assembleSingleOperandWithLabel,
+  {0x01, OPERAND_DIR11}};
+  int len;
+  uint8_t *codePtr = codeMemory;
+  Tokenizer *tokenizer = NULL;
+  muteOnNoLabel = 0;
+
+  Try{
+    //absolute branch can only branch within 0 -> 2047 range
+    tokenizer = createTokenizer(" 0xABCD ");
+    len = assembleSingleOperandWithLabel(tokenizer, &table, &codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    TEST_ASSERT_EQUAL(ERR_INTEGER_OUT_OF_RANGE, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleSingleOperandWithLabel_given_number_directly_as_absolute_but_out_of_range_long_branch_expect_ERR_INTEGER_OUT_OF_RANGE_is_thrown() {
+  _8051Instructions table = {"ljmp", assembleSingleOperandWithLabel,
+  {0x02, OPERAND_DIR16}};
+  int len;
+  uint8_t *codePtr = codeMemory;
+  Tokenizer *tokenizer = NULL;
+  muteOnNoLabel = 0;
+
+  Try{
+    //absolute long branch can only branch within 0 -> 65535 range
+    tokenizer = createTokenizer(" 0xABCDE ");
+    len = assembleSingleOperandWithLabel(tokenizer, &table, &codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    TEST_ASSERT_EQUAL(ERR_INTEGER_OUT_OF_RANGE, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
 void test_assembleSingleOperandWithLabel_given_ajmp_with_label_but_with_extra_parameter_expect_ERR_EXTRA_PARAMETER_is_thrown() {
   _8051Instructions table = {"ajmp", assembleSingleOperandWithLabel,
   {0x01, OPERAND_DIR11}};
@@ -3512,7 +3754,7 @@ void test_assembleSingleOperandWithLabel_given_ajmp_A_expect_ERR_UNKNOWN_LABEL_i
   linkedListAddItemToHead(&item2, listPtr);
 
   Try{
-    //A is considered a label here, as absolute branch instructions can only accept label or integer
+    //A is considered a label here, as branch instructions can only accept label or integer as relative
     //thus, this A considered an invalid label
     tokenizer = createTokenizer(" A ");
     len = assembleSingleOperandWithLabel(tokenizer, &table, &codePtr);
@@ -3911,6 +4153,23 @@ void test_assembleSingleOperand_given_invalid_single_operand_expect_ERR_INVALID_
   } Catch(e){
     dumpTokenErrorMessage(e, __LINE__);
     TEST_ASSERT_EQUAL(ERR_INVALID_OPERAND, e->errorCode);
+  }
+  freeTokenizer(tokenizer);
+}
+
+void test_assembleSingleOperand_given_extra_parameter_expect_ERR_EXTRA_PARAMETER_to_be_thrown() {
+  _8051Instructions table = {"rrc", assembleSingleOperand, {0x10, OPERAND_A_ROT}};
+  int len;
+  uint8_t codeMemory[65536];
+  uint8_t *codePtr = codeMemory;
+  Tokenizer *tokenizer = NULL;
+  Try{
+    tokenizer = createTokenizer(" A 0x55  ");
+    len = assembleSingleOperand(tokenizer, &table, &codePtr);
+    TEST_FAIL_MESSAGE("System Error: An exception is expected, but none received!");
+  } Catch(e){
+    dumpTokenErrorMessage(e, __LINE__);
+    TEST_ASSERT_EQUAL(ERR_EXTRA_PARAMETER, e->errorCode);
   }
   freeTokenizer(tokenizer);
 }

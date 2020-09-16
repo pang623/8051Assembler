@@ -428,7 +428,7 @@ int assembleInstructionWithOnlyAccAsFirstOperand(Tokenizer *tokenizer, _8051Inst
 //orl, anl
 int assembleLogicalInstructionWithoutXRL(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr) {
   Token *token = NULL;
-  int value, opcode, len;
+  int opcode, len;
   uint8_t *codePtr = *codePtrPtr;
 
   token = getToken(tokenizer);
@@ -450,7 +450,7 @@ int assembleLogicalInstructionWithoutXRL(Tokenizer *tokenizer, _8051Instructions
 
 int assembleXRLinstruction(Tokenizer *tokenizer, _8051Instructions *info, uint8_t **codePtrPtr) {
   Token *token = NULL;
-  int value, opcode, len;
+  int opcode, len;
   uint8_t *codePtr = *codePtrPtr;
 
   token = getToken(tokenizer);
