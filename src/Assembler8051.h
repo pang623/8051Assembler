@@ -12,7 +12,6 @@
 #include "LabelInfo.h"
 #include "AssembleFile.h"
 #include "MemoryAlloc.h"
-#include "MemAlloc.h"
 #include "SaveCodeToBin.h"
 
 #define     getCurrentAbsoluteAddr()        (codePtr - codeMemory)

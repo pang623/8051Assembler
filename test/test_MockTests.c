@@ -10,9 +10,9 @@
 #include "AssembleFile.h"
 #include "AssembleStrings.h"
 #include "SaveCodeToBin.h"
+#include "MemAlloc.h"
 #include "mock_DummyLineReader.h"
 #include "mock_MemoryAlloc.h"
-#include "MemAlloc.h"
 
 void setUp(void)
 {
@@ -71,6 +71,10 @@ void test_assembleInstructions_given_initialised_code_memory_expect_code_memory_
     NULL
   };
 
+  //initialises code memory
+  for(int i = 0; i < 1000; i++)
+    codeMemory[i] = 0xAA;
+
   Try{
     dummyLineReader_IgnoreAndReturn(lines[0]);
     memoryFree_Expect(lines[0]);
@@ -79,6 +83,8 @@ void test_assembleInstructions_given_initialised_code_memory_expect_code_memory_
     dummyLineReader_IgnoreAndReturn(lines[2]);
     totalBytes = assembleInstructions(dummyLineReader);
     TEST_ASSERT_EQUAL(2, totalBytes);
+    
+    //initialised code memory is rewritten with new machine code according to the instructions given
     TEST_ASSERT_EQUAL_HEX8(0xD4, codeMemory[0]);
     TEST_ASSERT_EQUAL_HEX8(0xF4, codeMemory[1]);
     for(int i = 2; i < 65536; i++)

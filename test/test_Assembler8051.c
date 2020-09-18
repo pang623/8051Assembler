@@ -4923,6 +4923,7 @@ void test_assembleInstruction_given_instruction_with_label_on_second_pass_expect
     TEST_ASSERT_EQUAL(1, getCurrentAbsoluteAddr());
     
     //label is not recorded on second pass, list is empty
+    //label has been recorded on the first pass
     TEST_ASSERT_NULL(listPtr->head);
     TEST_ASSERT_NULL(listPtr->tail);
   } Catch(e){

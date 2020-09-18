@@ -11,7 +11,7 @@ void tearDown(void)
 {
 }
 
-void test_createLabelInfo_through_mocking_memAlloc() {
+void test_createLabelInfo_through_mocking_memoryAlloc() {
   LabelInfo info = {"END", 5, 6};
   LabelInfo info1 = {"SKIP", 1, 2};
   LabelInfo *infoPtr;
@@ -28,7 +28,7 @@ void test_createLabelInfo_through_mocking_memAlloc() {
   freeLabelInfo(infoPtr);
 }
 
-void test_freeLabelInfo_through_mocking_memFree() {
+void test_freeLabelInfo_through_mocking_memoryFree() {
   LabelInfo info = {"HERE", 5, 7};
   LabelInfo *infoPtr = &info;
   
@@ -37,7 +37,7 @@ void test_freeLabelInfo_through_mocking_memFree() {
   freeLabelInfo(infoPtr);
 }
 
-void test_freeLabelInfo_through_mocking_memFree_given_empty_label_name_expect_only_info_is_freed() {
+void test_freeLabelInfo_through_mocking_memoryFree_given_empty_label_name_expect_only_info_is_freed() {
   LabelInfo info = {NULL, 5, 7};
   LabelInfo *infoPtr = &info;
 
@@ -45,12 +45,12 @@ void test_freeLabelInfo_through_mocking_memFree_given_empty_label_name_expect_on
   freeLabelInfo(infoPtr);
 }
 
-void test_freeLabelInfo_given_empty_info_expect_memFree_not_called() {
+void test_freeLabelInfo_given_empty_info_expect_memoryFree_not_called() {
   LabelInfo *infoPtr = NULL;
   freeLabelInfo(infoPtr);
 }
 
-void test_createLabelName_through_mocking_memAlloc() {
+void test_createLabelName_through_mocking_memoryAlloc() {
   char *label = "HELLO";
   char tempLabel[strlen(label) + 1];
   
@@ -63,14 +63,14 @@ void test_createLabelName_through_mocking_memAlloc() {
   freeLabelName(labelCreated);
 }
 
-void test_freeLabelName_through_mocking_memFree() {
+void test_freeLabelName_through_mocking_memoryFree() {
   char *labelName = "DELAY";
   
   memoryFree_Expect(labelName);
   freeLabelName(labelName);
 }
 
-void test_freeLabelName_given_NULL_label_expect_memFree_not_called() {
+void test_freeLabelName_given_NULL_label_expect_memoryFree_not_called() {
   char *labelName = NULL;
   freeLabelName(labelName);
 }
