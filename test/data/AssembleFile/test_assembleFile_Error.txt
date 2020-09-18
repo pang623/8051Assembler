@@ -1,5 +1,5 @@
 	Mov r7, #0x0A
-	Mov r0, #0x20	EXTRATOKENHERE
+	Mov r0, #0x20         EXTRATOKENHERE
 	Mov dptr, #0x1020
 
 Nxt:	Mov a, @r0

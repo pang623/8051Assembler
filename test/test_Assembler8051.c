@@ -4778,7 +4778,7 @@ void test_assembleInstruction_given_operand_with_xxH_xxxxxxxxb_format_expect_it_
   Tokenizer *tokenizer = NULL;
   Try{
     tokenizer = createTokenizer("  aNl  56H   , #01101001b ;ignore this    ");
-    configureTokenizer(tokenizer, TOKENIZER_BIN_B | TOKENIZER_HEX_H);
+    configureTokenizer(tokenizer, TOKENIZER_HEX_H | TOKENIZER_BIN_B);
     len = assembleInstruction(tokenizer, &codePtr);
     TEST_ASSERT_EQUAL(3, len);
     TEST_ASSERT_EQUAL_HEX8(0x53, codeMemory[0xFF]);
